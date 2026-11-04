@@ -5,6 +5,27 @@ features work. Preserve user-created content. The user asked to find issues
 before starting repairs. The first controlled live pass is complete; coordinated
 repairs are implemented locally. Proposed embedding grants remain unapplied.
 
+The [latest precommit capacity report](precommit-capacity-20261104.md) gives
+exact A/B results and persistent evidence paths. Current100%Lambda high-load
+diagnostics saturate the local database; capacity-dependent release progress
+waits for Suraj. Independent audit and local validation continue. The previous
+live website has not received these source repairs.
+
+The [search optimisation checkpoint](search-optimisation/README.md) records the
+subsequent local first-time-search changes, exact comparisons, retained failed
+approaches and capacity limits. It also records the application-side numerical
+prototype and the subsequently implemented common application-side scorer/cache.
+These lunch changes remain uncommitted and undeployed; owned local diagnostic
+images exercise actual code, while final release images still need rebuilding.
+
+The [complete optimisation ledger](optimisation-ledger.md) tracks connection,
+browser, search, caching and resource proposals together, including rejected
+approaches and what has actually been implemented or deployed.
+
+The [active lunch-batch plan](lunch-batch-plan.md) adds explicit application/tooling
+alignment now and immediately before deployment, the implemented balanced NFR-03
+schedule, current AWS access evidence and the precise local-versus-live repair state.
+
 ## Findings and evidence
 
 The [requirement coverage ledger](coverage.md) identifies tested, sampled and

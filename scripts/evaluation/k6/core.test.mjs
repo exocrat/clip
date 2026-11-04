@@ -28,3 +28,11 @@ test('valid public shape still requires correct fixture result, page, availabili
     const p=page(); edit(p); assert.equal(validPage(p,item),false);
   }
 });
+
+
+test('arrival budgets cover fractional-rate phases and reject invalid schedules', async () => {
+  const { plannedArrivalCount } = await import('./core.js');
+  assert.equal(plannedArrivalCount({ rate: 50, duration: '300s', timeUnit: '1s' }), 15000);
+  assert.equal(plannedArrivalCount({ rate: 1, duration: '300s', timeUnit: '5s' }), 60);
+  assert.throws(() => plannedArrivalCount({ rate: 1, duration: '1s', timeUnit: '5s' }));
+});

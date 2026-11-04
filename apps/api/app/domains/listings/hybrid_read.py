@@ -94,7 +94,11 @@ def hybrid_statement(
     relevance=True selects original/expanded/semantic tiers and blended score.
     Otherwise preserve the public request's recency/price semantics. The caller
     chooses this reader for Hybrid mode. Model/query/compiler binding failures
-    are dependency errors.
+    are dependency errors. bind_query validates the request vector; NOT NULL and
+    the embedding_chunks CHECK validate stored vectors at every write. Compute
+    the query norm once and inline the original ordered cosine arithmetic, so
+    every candidate does not repeat validation and query-norm SQL. Retain exact
+    norms rather than assuming that the allowed near-unit vectors have norm1.
     """
     query = _text_request(request)
     assert query.q is not None
@@ -116,15 +120,39 @@ def hybrid_statement(
     ):
         raise ValueError("Invalid hybrid query binding")
     page = PageRequest(query.page, query.page_size)
+    # Relevance tiers strictly dominate similarity. Skip lower tiers only when
+    # higher tiers alone fill this exact page plus its has-next lookahead. Other
+    # sorts need similarity only for non-lexical membership. Coverage still
+    # checks every eligible source before either optimisation is allowed.
+    tier_policy = (
+        "CASE WHEN (SELECT count(*) FROM classified WHERE original_match)>=input.window_end THEN 2 "
+        "WHEN (SELECT count(*) FROM classified WHERE original_match OR expanded_match)>=input.window_end THEN 1 ELSE 0 END"
+        if relevance
+        else "0"
+    )
+    tier_gate = (
+        " AND (CASE WHEN current.original_match THEN 2 WHEN current.expanded_match THEN 1 ELSE 0 END)>=score_policy.minimum_tier"
+        if relevance
+        else ""
+    )
+    scoring_gate = (
+        tier_gate
+        if relevance
+        else " AND NOT (current.original_match OR current.expanded_match)"
+    )
     statement = (
-        """WITH input AS MATERIALIZED (
+        """WITH input_base AS MATERIALIZED (
         SELECT %s::bytea AS pipeline_id,%s::jsonb AS encoding,%s::real[] AS vector,
         %s::timestamptz AS now,%s::bigint AS sensitive_threshold,
         %s::double precision AS title_weight,%s::double precision AS description_weight,
         %s::double precision AS cutoff,
         plainto_tsquery('pg_catalog.english', %s) AS original, """
         + text_query.sql
-        + """ AS expanded
+        + """ AS expanded,%s::bigint AS window_end
+    ), input AS MATERIALIZED (
+        SELECT input_base.*,(SELECT sqrt(sum(component::double precision ^ 2 ORDER BY ordinal))
+          FROM unnest(input_base.vector) WITH ORDINALITY AS item(component,ordinal)) AS query_norm
+        FROM input_base
     ), catalogue AS MATERIALIZED (SELECT
         NOT EXISTS(SELECT 1 FROM unnest(%s::text[]) AS requested(code)
           WHERE NOT EXISTS(SELECT 1 FROM listings.categories WHERE code=requested.code AND active)) AS category_valid,
@@ -166,6 +194,7 @@ def hybrid_statement(
         SEMANTIC_THRESHOLD,
         query.q,
         *text_query.parameters,
+        page.offset + page.page_size + 1,
         query.category_code,
         query.condition_code,
     )
@@ -207,17 +236,31 @@ def hybrid_statement(
     ), status AS MATERIALIZED (
         SELECT catalogue.*,(EXISTS(SELECT 1 FROM pipeline)
           AND NOT EXISTS(SELECT 1 FROM current WHERE complete IS DISTINCT FROM true)) AS ready FROM catalogue
-    ), scored AS MATERIALIZED (
+    ), classified AS MATERIALIZED (
         SELECT current.*,current.discovery_vector @@ input.original AS original_match,
-        current.discovery_vector @@ input.expanded AS expanded_match,
+        current.discovery_vector @@ input.expanded AS expanded_match FROM current CROSS JOIN input
+    ), score_policy AS MATERIALIZED (SELECT """
+        + tier_policy
+        + """ AS minimum_tier FROM input
+    ), scored AS MATERIALIZED (
+        SELECT current.*,
         input.title_weight*scores.title_score+input.description_weight*scores.description_score AS semantic_score
-        FROM current CROSS JOIN input CROSS JOIN status
+        FROM classified AS current CROSS JOIN input CROSS JOIN status CROSS JOIN score_policy
         CROSS JOIN LATERAL (SELECT
-          max(listings.embedding_cosine(chunk.vector,input.vector)) FILTER (WHERE part_kind='title') AS title_score,
-          max(listings.embedding_cosine(chunk.vector,input.vector)) FILTER (WHERE part_kind='description') AS description_score
+          max(math.cosine) FILTER (WHERE chunk.part_kind='title') AS title_score,
+          max(math.cosine) FILTER (WHERE chunk.part_kind='description') AS description_score
           FROM listings.embedding_chunks AS chunk
-          WHERE chunk.generation_id=current.generation_id AND status.ready AND current.complete) AS scores
-        WHERE status.ready AND current.complete
+          CROSS JOIN LATERAL (SELECT greatest(-1.0,least(1.0,
+            sum(left_value::double precision * right_value::double precision ORDER BY ordinal)
+            /(sqrt(sum(left_value::double precision ^ 2 ORDER BY ordinal))*input.query_norm))) AS cosine
+            FROM unnest(chunk.vector,input.vector) WITH ORDINALITY
+              AS component(left_value,right_value,ordinal)) AS math
+          WHERE chunk.generation_id=current.generation_id AND status.ready AND current.complete"""
+        + scoring_gate
+        + """) AS scores
+        WHERE status.ready AND current.complete"""
+        + tier_gate
+        + """
     ), ranked AS (
         SELECT scored.*,row_number() OVER (ORDER BY """
         + (_RELEVANCE if relevance else _SORTS[query.sort])
@@ -240,7 +283,8 @@ def hybrid_statement(
     ) SELECT status.*,
       COALESCE((SELECT jsonb_agg(summary ORDER BY position) FROM payload),'[]'::jsonb) AS items FROM status"""
     )
-    return statement, parameters + (page.page_size + 1, page.offset)
+    parameters += (page.page_size + 1, page.offset)
+    return statement, parameters
 
 
 async def read_hybrid_page(
@@ -302,6 +346,25 @@ async def read_hybrid_page(
         raise PublicError(ERRORS[503]) from None
 
 
+async def encode_hybrid_query(
+    helper: SemanticHelper, request: ListingQuery
+) -> QueryEmbedding:
+    """Encode/bind original text before a search borrows a database connection.
+
+    Only immutable query/model vectors can be reused by the helper. Current
+    authorization, availability, coverage and ranking still run on every request.
+    No inference failure falls back to keyword or previously retrieved results.
+    """
+    query = _text_request(request)
+    assert query.q is not None
+    try:
+        async with asyncio.timeout(20):
+            encoded = await helper.encode_query(query.q)
+            return bind_query(query.q, helper.spec, encoded.vector)
+    except HelperUnavailable, TimeoutError, ValueError, TypeError:
+        raise PublicError(ERRORS[503]) from None
+
+
 async def search_hybrid_page(
     connection: AsyncConnection[dict[str, Any]],
     helper: SemanticHelper,
@@ -327,8 +390,7 @@ async def search_hybrid_page(
         ):
             raise ValueError("Hybrid helper requires idle connection")
         async with asyncio.timeout(20):
-            encoded = await helper.encode_query(query.q)
-            bound = bind_query(query.q, helper.spec, encoded.vector)
+            bound = await encode_hybrid_query(helper, query)
             return await read_hybrid_page(
                 connection,
                 query,

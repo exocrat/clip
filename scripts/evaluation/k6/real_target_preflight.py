@@ -411,9 +411,9 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
     """Read actual AWS topology and an unauthenticated HTTPS liveness endpoint."""
     validate_plan(plan)
     if session_factory is None:
-        import boto3  # type: ignore[import-untyped]
+        from data.generators.reference_login import sdk_profile_session
 
-        session_factory = boto3.Session
+        session_factory = sdk_profile_session
     session = session_factory(
         profile_name=plan["aws_profile"], region_name=plan["region"]
     )

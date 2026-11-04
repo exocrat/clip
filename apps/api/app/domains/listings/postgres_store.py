@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
@@ -10,6 +11,7 @@ from uuid import UUID, uuid4
 
 from psycopg import AsyncConnection, OperationalError
 from psycopg.types.json import Jsonb
+from psycopg.pq import TransactionStatus
 from psycopg_pool import AsyncConnectionPool, PoolTimeout
 
 from app.core.errors import ERRORS, FieldError, PublicError
@@ -48,7 +50,12 @@ from app.domains.listings.browse_store import (
 )
 from app.domains.listings.browse_validation import normalize_query
 from app.domains.listings.embedding_client import SemanticHelper
-from app.domains.listings.hybrid_read import search_hybrid_page
+from app.domains.listings.hybrid_read import encode_hybrid_query
+from app.domains.listings.hybrid_snapshot import (
+    HybridVectorCache,
+    read_snapshot,
+    score_snapshot,
+)
 
 # This projection keeps list/detail reads to one SQL query per request. The
 # threshold is injected from typed API settings so every read uses the same
@@ -155,6 +162,9 @@ class PostgresListingsStore:
         # closed rather than changing a caller-owned transaction configuration.
         self._hybrid_helper = hybrid_helper
         self._hybrid_pool = hybrid_pool
+        self._hybrid_vectors = HybridVectorCache()
+        self._hybrid_slots = asyncio.Semaphore(2)
+        self._hybrid_waiting = 0
         self._pool = pool
         self._threshold = sensitive_price_threshold_paise
         if isolated_listing_limit is not None and (
@@ -181,22 +191,70 @@ class PostgresListingsStore:
             raise PublicError(ERRORS[503])
         # Only Hybrid borrows the lifecycle-owned autocommit pool. Keyword and
         # commands retain their original pool and transaction configuration.
-        connections = (
-            self._connection(self._hybrid_pool)
-            if hybrid and self._hybrid_pool is not None
-            else self._connection()
-        )
-        async with connections as connection:
-            if hybrid:
-                assert self._hybrid_helper is not None
-                return await search_hybrid_page(
-                    connection,
-                    self._hybrid_helper,
-                    request,
-                    now,
-                    self._threshold,
-                    relevance=request.sort == "relevance",
-                )
+        if hybrid:
+            assert self._hybrid_helper is not None
+            if self._hybrid_waiting >= 32:
+                raise PublicError(ERRORS[503])
+            self._hybrid_waiting += 1
+            try:
+                # Model queueing/inference needs no DB lease. Bound the complete
+                # sequence, then acquire an idle connection for current SQL only.
+                async with asyncio.timeout(20):
+                    embedding = await encode_hybrid_query(self._hybrid_helper, request)
+                    await self._hybrid_slots.acquire()
+                    scoring_task: asyncio.Task[Page[ListingSummary]] | None = None
+                    try:
+                        cached = self._hybrid_vectors.snapshot(
+                            embedding.spec.pipeline_id
+                        )
+                        async with self._connection(self._hybrid_pool) as connection:
+                            if (
+                                not connection.autocommit
+                                or connection.info.transaction_status
+                                != TransactionStatus.IDLE
+                            ):
+                                raise PublicError(ERRORS[503])
+                            snapshot = await read_snapshot(
+                                connection,
+                                request,
+                                now,
+                                self._threshold,
+                                embedding,
+                                cached,
+                                relevance=request.sort == "relevance",
+                            )
+                        # DB transaction/lease is finished before numerical work.
+                        # Two bounded workers keep the event loop responsive;
+                        # no background task may retain a borrowed DB connection.
+                        scoring_task = asyncio.create_task(
+                            asyncio.to_thread(
+                                score_snapshot,
+                                snapshot,
+                                request,
+                                embedding,
+                                cached,
+                                self._hybrid_vectors,
+                            )
+                        )
+
+                        # Cancellation ends the request, not its CPU thread. Keep
+                        # the slot until actual completion so timed-out callers
+                        # cannot accumulate unbounded numerical workers.
+                        def finished(task: asyncio.Task[Page[ListingSummary]]) -> None:
+                            self._hybrid_slots.release()
+                            if not task.cancelled():
+                                task.exception()  # Retrieve errors after caller cancellation.
+
+                        scoring_task.add_done_callback(finished)
+                        return await asyncio.shield(scoring_task)
+                    finally:
+                        if scoring_task is None:
+                            self._hybrid_slots.release()
+            except TimeoutError:
+                raise PublicError(ERRORS[503]) from None
+            finally:
+                self._hybrid_waiting -= 1
+        async with self._connection() as connection:
             return await read_browse_page(
                 connection,
                 request,

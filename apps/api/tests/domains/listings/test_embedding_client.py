@@ -390,3 +390,60 @@ def test_cancellation_during_launch_keeps_ownership_until_child_is_reaped(tmp_pa
             await client.close()
 
     asyncio.run(scenario())
+
+
+def test_query_cache_reuses_only_live_checked_vectors_and_expires(tmp_path):
+    """Identical warm queries save inference; expiry/closure never bypass guards."""
+    import time
+
+    async def scenario():
+        client = FaultClient(tmp_path, "echo")
+        try:
+            first = await client.encode_query("Controlled repeated query")
+            assert await client.encode_query("Controlled repeated query") == first
+            assert client.windows_started == 1
+            assert all(
+                isinstance(key, bytes) and len(key) == 32 for key in client._query_cache
+            )
+            key = next(iter(client._query_cache))
+            _, value = client._query_cache[key]
+            client._query_cache[key] = (time.monotonic() - 1, value)
+            assert await client.encode_query("Controlled repeated query") == first
+            assert client.windows_started == 2
+            with pytest.raises(ValueError):
+                await client.encode_query(" ")
+            assert client.windows_started == 2
+        finally:
+            await client.close()
+        assert not client._query_cache
+        with pytest.raises(HelperUnavailable):
+            await client.encode_query("Controlled repeated query")
+
+    asyncio.run(scenario())
+
+
+def test_query_cache_is_bounded_lru_and_does_not_hide_a_dead_helper(tmp_path):
+    """Eviction limits memory; a dead child must restart instead of serving a hit."""
+
+    async def scenario():
+        client = FaultClient(tmp_path, "echo")
+        try:
+            for index in range(128):
+                await client.encode_query(f"Controlled query {index}")
+            await client.encode_query("Controlled query 0")
+            await client.encode_query("Controlled query 128")
+            assert len(client._query_cache) == 128 and client.windows_started == 129
+            await client.encode_query("Controlled query 1")
+            assert client.windows_started == 130
+            process = client._process
+            assert process is not None
+            process.kill()
+            await process.wait()
+            old_starts = client.starts
+            await client.encode_query("Controlled query 1")
+            assert client.starts == old_starts + 1
+            assert len(client._query_cache) == 1
+        finally:
+            await client.close()
+
+    asyncio.run(scenario())

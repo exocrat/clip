@@ -3,6 +3,7 @@ import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { preliminaryOutcome } from './comparison_outcomes.js';
+import { plannedArrivalCount } from './core.js';
 
 // Replace k6 APIs with local fakes; no network or workload is run.
 function prepare({ throws = false, negative = false, timeout = false, parity = false, timerStartFails = false } = {}) {
@@ -24,7 +25,8 @@ function prepare({ throws = false, negative = false, timeout = false, parity = f
     open: path => JSON.stringify(path==='parity'?[]:profile), Counter: Metric, Trend: Metric,
     localApiTarget: () => 'http://127.0.0.1', comparisonPath: () => '/synthetic',
     validateSequenceStarts: value => value, validateComparisonCases: value => value,
-    validExpected: () => true, comparisonScenarios: () => ({}),
+    validExpected: () => true, comparisonScenarios: () => ({ low_measured: { rate: 1, duration: '300s', timeUnit: '5s' } }),
+    plannedArrivalCount,
     execution: { scenario: { name: 'low_measured', iterationInTest: 0 } },
     sequenceStartForScenario: () => 0, caseForIteration: () => item,
     preliminaryOutcome,
@@ -100,4 +102,14 @@ test('invalid setup is refused before reading the local session', () => {
     assert.throws(()=>vm.runInNewContext(source,context));
     assert.equal(cookieReads,0,invalid);
   }
+});
+
+
+test('an extra boundary execution sends no request and creates no request outcome', () => {
+  const { context, recorded } = prepare();
+  context.execution.scenario.iterationInTest = 60;
+  context.run();
+  assert.equal(recorded.clip_comparison_issued.length, 0);
+  assert.equal(recorded.clip_comparison_outcomes.length, 0);
+  assert.equal(recorded.clip_schedule_boundary_skipped.length, 1);
 });

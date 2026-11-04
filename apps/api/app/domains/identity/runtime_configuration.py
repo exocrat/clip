@@ -281,7 +281,10 @@ def prepare_hosted_test_identity_reads(
             dsn, settings.environment, max_size=1, retain_idle=False
         )
         return IdentityReadDependencies(
-            IdentitySessions(pooled, keys, clock), policy, close=pooled.close
+            IdentitySessions(pooled, keys, clock),
+            policy,
+            close=pooled.close,
+            request_scope=pooled.invocation,
         )
     except Exception:
         raise ConfigurationError("Identity read startup validation failed") from None

@@ -33,3 +33,15 @@ required. This read-only check does not prove that each B query was served by a
 particular weighted backend or accept the NFR result. Preserve path-level
 attribution as an open evidence question if separate Lambda/ECS Success@5
 scores are required.
+
+
+The retrieval runner consumes the accepted freeze through
+`scripts/evaluation/frozen_reference.py`. It verifies the published freeze,
+original archive and all member hashes, paired logical fingerprints, reviewed
+label bytes and binding. It does not regenerate old inputs from today's API
+contracts or require ignored expanded dataset files. The historical generation
+validators remain strict and unchanged. Current application/model/schema/target
+bindings are still independently required by the run manifest/preflight. The
+legacy optional `--image-root` argument is retained for invocation compatibility; source
+photos are verified inside the accepted archive. No labels or frozen receipts
+are rewritten by this adapter.

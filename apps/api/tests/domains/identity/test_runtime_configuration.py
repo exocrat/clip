@@ -503,3 +503,124 @@ def test_reviewed_hosted_databases_are_accepted_without_connecting(database):
         "test",
     )
     assert callable(connect)
+
+
+def test_lambda_invocation_reuses_transport_but_closes_before_next_call(runtime_case):
+    """Both thread helpers share one backend; the next invocation opens a new one."""
+    import asyncio
+    from starlette.concurrency import run_in_threadpool
+
+    pooled = IdentityConnectionPool(
+        runtime_case.target.dsn, "test", max_size=1, retain_idle=False
+    )
+
+    def read():
+        with pooled() as connection, connection.transaction():
+            return (
+                connection.execute("SELECT pg_backend_pid()").fetchone()[0],
+                connection,
+            )
+
+    async def exercise():
+        async with pooled.invocation():
+            first = await asyncio.to_thread(read)
+            second = await run_in_threadpool(read)
+            assert first[0] == second[0] and first[1] is second[1]
+            assert pooled._pool.get_stats()["connections_num"] == 1
+        assert first[1].closed
+        assert pooled._pool.get_stats()["pool_size"] == 0
+        async with pooled.invocation():
+            third = await asyncio.to_thread(read)
+            assert third[0] != first[0]
+        assert third[1].closed
+
+    try:
+        asyncio.run(exercise())
+    finally:
+        pooled.close()
+
+
+def test_lambda_invocation_preserves_rollback_and_fresh_logout(runtime_case):
+    """Reuse does not cache decisions or carry a failed transaction into another call."""
+    import asyncio
+    from app.core.errors import PublicError
+    from app.domains.identity.sessions import IdentitySessions
+
+    state = bootstrap(runtime_case)
+    mailbox = CaptureMail()
+    challenge = state.sessions.challenges.start(
+        EMAIL, "initial_verification", uuid4(), ip_address("192.0.2.27")
+    )
+    assert challenge.delivery.dispatch(mailbox, now=NOW)
+    grant = state.sessions.activate(challenge.challenge_id, mailbox.code(), PASSWORD)
+    pooled = IdentityConnectionPool(
+        runtime_case.target.dsn, "test", max_size=1, retain_idle=False
+    )
+    service = IdentitySessions(
+        pooled,
+        parse_authentication_keys(SecretStr(json.dumps(runtime_case.document))),
+        lambda: NOW,
+    )
+
+    def fail_then_read():
+        with pytest.raises(errors.DivisionByZero):
+            with pooled() as connection, connection.transaction():
+                connection.execute("SELECT 1/0")
+        with pooled() as connection, connection.transaction():
+            assert connection.execute("SELECT 1").fetchone() == (1,)
+
+    async def exercise():
+        token = grant.token.get_secret_value()
+        async with pooled.invocation():
+            await asyncio.to_thread(fail_then_read)
+            await asyncio.to_thread(service.authenticate, token)
+            await asyncio.to_thread(state.sessions.logout, token)
+            with pytest.raises(PublicError):
+                await asyncio.to_thread(service.authenticate, token)
+        async with pooled.invocation():
+            with pytest.raises(PublicError):
+                await asyncio.to_thread(service.authenticate, token)
+        assert pooled._pool.get_stats()["pool_size"] == 0
+
+    try:
+        asyncio.run(exercise())
+    finally:
+        pooled.close()
+
+
+def test_lambda_cancellation_joins_inflight_sql_before_releasing_scope(runtime_case):
+    """A cancelled request cannot freeze a thread that will return an idle backend later."""
+    import asyncio
+    import threading
+
+    pooled = IdentityConnectionPool(
+        runtime_case.target.dsn, "test", max_size=1, retain_idle=False
+    )
+    started, finished = threading.Event(), threading.Event()
+    connections = []
+
+    def slow():
+        with pooled() as connection:
+            connections.append(connection)
+            started.set()
+            connection.execute("SELECT pg_sleep(0.1)")
+            finished.set()
+
+    async def request():
+        async with pooled.invocation():
+            await asyncio.to_thread(slow)
+
+    async def exercise():
+        task = asyncio.create_task(request())
+        while not started.is_set():
+            await asyncio.sleep(0.001)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+        assert finished.is_set() and connections[0].closed
+        assert pooled._pool.get_stats()["pool_size"] == 0
+
+    try:
+        asyncio.run(exercise())
+    finally:
+        pooled.close()

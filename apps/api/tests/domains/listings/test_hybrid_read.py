@@ -373,3 +373,139 @@ def test_policy_threshold_matches_keyword_without_bigint_overflow(threshold):
     )
     expected = min(threshold, ((2**63 - 1) // 100) * 100)
     assert keyword[1] == hybrid[4] == expected
+
+
+def test_hosted_search_encodes_before_acquiring_database_connection():
+    """Model work never occupies a scarce Hybrid lease; SQL still reads fresh."""
+    from contextlib import asynccontextmanager
+    from app.domains.listings.postgres_store import PostgresListingsStore
+
+    async def exercise():
+        events = []
+        connection = transport()
+        connection.execute.return_value.fetchone.return_value.update(
+            candidates=[], vectors=[]
+        )
+
+        class Pool:
+            @asynccontextmanager
+            async def connection(self):
+                events.append("database-acquired")
+                assert events[0] == "query-encoded"
+                yield connection
+                events.append("database-released")
+
+        async def encode(text):
+            assert events == [] and text == "vehicle"
+            events.append("query-encoded")
+            return EncodedQuery(VECTOR, 1)
+
+        helper = MagicMock()
+        helper.spec = default_pipeline_spec()
+        helper.encode_query = AsyncMock(side_effect=encode)
+        store = PostgresListingsStore(
+            Pool(), 500000, hybrid_helper=helper, hybrid_pool=Pool()
+        )
+        from app.domains.listings.hybrid_snapshot import score_snapshot
+
+        def score_after_release(*args):
+            assert events[-1] == "database-released"
+            return score_snapshot(*args)
+
+        with (
+            patch(
+                "app.domains.listings.hybrid_snapshot.compile_expansion",
+                AsyncMock(return_value=scripted_plan("vehicle")),
+            ),
+            patch(
+                "app.domains.listings.postgres_store.score_snapshot",
+                side_effect=score_after_release,
+            ),
+        ):
+            page = await store.browse_available_listings(
+                ListingQuery(q="vehicle", search_mode="hybrid"), NOW
+            )
+        assert page.items == ()
+        assert events == ["query-encoded", "database-acquired", "database-released"]
+        events.clear()
+        helper.encode_query.side_effect = HelperUnavailable("fixed")
+        with pytest.raises(PublicError) as raised:
+            await store.browse_available_listings(
+                ListingQuery(q="vehicle", search_mode="hybrid"), NOW
+            )
+        assert raised.value.spec == ERRORS[503] and events == []
+
+    asyncio.run(exercise())
+
+
+def test_cancelled_search_keeps_its_worker_slot_until_cpu_work_finishes():
+    """Disconnects cannot bypass the numerical concurrency limit or retain SQL."""
+    from contextlib import asynccontextmanager
+    import threading
+    from app.domains.listings.postgres_store import PostgresListingsStore
+    from app.domains.listings.hybrid_snapshot import score_snapshot
+
+    async def exercise():
+        released = False
+        started = threading.Event()
+        finish = threading.Event()
+        connection = transport()
+        connection.execute.return_value.fetchone.return_value.update(
+            candidates=[], vectors=[]
+        )
+
+        class Pool:
+            @asynccontextmanager
+            async def connection(self):
+                nonlocal released
+                try:
+                    yield connection
+                finally:
+                    released = True
+
+        def slow_score(*args):
+            assert released
+            started.set()
+            assert finish.wait(3)
+            return score_snapshot(*args)
+
+        helper = MagicMock()
+        helper.spec = default_pipeline_spec()
+        helper.encode_query = AsyncMock(return_value=EncodedQuery(VECTOR, 1))
+        store = PostgresListingsStore(
+            Pool(), 500000, hybrid_helper=helper, hybrid_pool=Pool()
+        )
+        with (
+            patch(
+                "app.domains.listings.hybrid_snapshot.compile_expansion",
+                AsyncMock(return_value=scripted_plan("vehicle")),
+            ),
+            patch(
+                "app.domains.listings.postgres_store.score_snapshot",
+                side_effect=slow_score,
+            ),
+        ):
+            request = asyncio.create_task(
+                store.browse_available_listings(
+                    ListingQuery(q="vehicle", search_mode="hybrid"), NOW
+                )
+            )
+            try:
+                for _ in range(100):
+                    if started.is_set():
+                        break
+                    await asyncio.sleep(0.01)
+                assert started.is_set()
+                request.cancel()
+                with pytest.raises(asyncio.CancelledError):
+                    await request
+                assert store._hybrid_slots._value == 1
+            finally:
+                finish.set()
+            for _ in range(100):
+                if store._hybrid_slots._value == 2:
+                    break
+                await asyncio.sleep(0.01)
+            assert store._hybrid_slots._value == 2
+
+    asyncio.run(exercise())

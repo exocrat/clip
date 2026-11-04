@@ -5,6 +5,8 @@ forwarding and explicit opt-in application lifecycle binding. Failures never use
 """
 
 import asyncio
+from collections import OrderedDict
+import hashlib
 from dataclasses import dataclass, field
 from pathlib import Path
 import os
@@ -121,6 +123,11 @@ class SemanticHelper:
         self.starts = 0
         self.windows_started = 0
         self.helper_peak_rss_bytes = 0
+        # Process-local immutable query vectors only:128 hashed keys,5minute
+        # monotonic TTL. Never cache sessions, listing visibility or result pages.
+        self._query_cache: OrderedDict[bytes, tuple[float, EncodedQuery]] = (
+            OrderedDict()
+        )
 
     @property
     def pid(self) -> int | None:
@@ -178,6 +185,7 @@ class SemanticHelper:
 
     async def _stop(self, *, failed: bool = False) -> None:
         """Kill/reap only this child; never start another if reaping fails."""
+        self._query_cache.clear()
         if os.getpid() != self._api_pid:
             # Forked descendants never signal an inherited parent's helper.
             self._process = None
@@ -310,6 +318,7 @@ class SemanticHelper:
     async def close(self) -> None:
         """Reject new work, interrupt active owned child, then reap it under the lock."""
         self._closed = True
+        self._query_cache.clear()
         if os.getpid() != self._api_pid:
             self._process = None
             self._broken = True
@@ -533,11 +542,42 @@ class SemanticHelper:
         return value
 
     async def encode_query(self, text: str) -> EncodedQuery:
-        """Return a private bound model vector; no retrieval or ranking is performed."""
+        """Reuse an identical checked query vector, never private search results.
+
+        Exact text and immutable model identity form a hashed in-memory key.
+        Entries expire after300monotonic seconds and the LRU holds at most128.
+        Known dead/closed/broken or fork-inherited helpers cannot satisfy a hit;
+        normal startup/recovery and all original protocol validation still apply.
+        """
+        validate_request(
+            {
+                "v": VERSION,
+                "request_id": str(uuid4()),
+                "pipeline_id": self.spec.pipeline_id.hex(),
+                "operation": "query",
+                "text": text,
+            },
+            self.spec.pipeline_id.hex(),
+        )
+        if self._closed or self._broken:
+            raise HelperUnavailable("helper_closed")
+        self._claim_owner()
+        key = hashlib.sha256(
+            self.spec.pipeline_id + b"\0" + text.encode("utf-8")
+        ).digest()
+        cached = self._query_cache.pop(key, None)
+        if cached is not None and self.pid is not None and time.monotonic() < cached[0]:
+            self._query_cache[key] = cached
+            return cached[1]
         value = await self._request("query", {"text": text})
-        return EncodedQuery(
+        result = EncodedQuery(
             validated_vector(value["parts"][0]["vector"]), value["query_tokens"]
         )
+        if self.pid is not None and not self._closed and not self._broken:
+            self._query_cache[key] = (time.monotonic() + 300, result)
+            while len(self._query_cache) > 128:
+                self._query_cache.popitem(last=False)
+        return result
 
     async def encode_listing(self, title: str, description: str) -> EncodedListing:
         """Return every title/description window, safe for later fenced publication."""

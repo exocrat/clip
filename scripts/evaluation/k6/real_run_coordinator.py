@@ -46,6 +46,7 @@ NFR_MODULES = {
         "comparison_cases.js",
         "comparison_checks.js",
         "comparison_outcomes.js",
+        "core.js",
     ),
     "nfr-02": (
         "nfr_load.js",
@@ -53,19 +54,30 @@ NFR_MODULES = {
         "comparison_cases.js",
         "comparison_checks.js",
         "comparison_outcomes.js",
+        "core.js",
     ),
     "nfr-03": (
         "nfr03_load.js",
+        "nfr03_schedule.js",
+        "nfr03_checks.js",
         "comparison_cases.js",
         "comparison_checks.js",
         "comparison_outcomes.js",
+        "core.js",
     ),
     "exp05-pilot": (
         "exp05_pilot_load.js",
         "comparison_cases.js",
         "comparison_checks.js",
         "comparison_outcomes.js",
+        "core.js",
     ),
+}
+# Included even in deployed bundles so import closure is complete; the helper
+# rejects its short-window opt-in whenever a real runner is selected.
+NFR_MODULES = {
+    kind: (*modules, "local_capacity_window.js")
+    for kind, modules in NFR_MODULES.items()
 }
 PLAN_KEYS = {
     "format_version",
@@ -536,7 +548,22 @@ def _verify_modules(plan: dict[str, Any]) -> dict[str, bytes]:
     }[plan["workload_kind"]]
     if script_name not in result:
         raise ValueError("load_script_missing_from_module_bundle")
+    verify_import_closure(result)
     return result
+
+
+def verify_import_closure(modules: dict[str, bytes]) -> None:
+    """Reject a staged workload missing a static relative JavaScript dependency.
+
+    The source directory can hide missing bundle files during local execution;
+    check the hash-bound staged module set itself before opening a session.
+    All reviewed workload imports use one-line static named imports.
+    """
+    pattern = re.compile(rb"(?m)^\s*import[^\n]*\bfrom\s*['\"]\./([^'\"]+)['\"]")
+    for content in modules.values():
+        for dependency in pattern.findall(content):
+            if dependency.decode("utf-8") not in modules:
+                raise ValueError("load_module_dependency_missing")
 
 
 def _write_new(path: Path, payload: bytes, mode: int = 0o600) -> None:

@@ -495,9 +495,9 @@ def main() -> int:
             or args.output_dir.parts[:3] != ("docs", "evaluation", "experiment-runs")
         ):
             raise ValueError("output_directory_must_be_relative")
-        import boto3  # type: ignore[import-untyped]
+        from data.generators.reference_login import sdk_profile_session
 
-        session = boto3.Session(
+        session = sdk_profile_session(
             profile_name=plan["aws_profile"], region_name=plan["region"]
         )
         result = capture(

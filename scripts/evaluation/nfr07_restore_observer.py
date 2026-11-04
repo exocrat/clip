@@ -700,10 +700,20 @@ def run(
     plan: dict[str, Any], approval: dict[str, Any], *, profile_name: str | None = None
 ) -> dict[str, Any]:
     """Restore the exact snapshot to a new private target and inspect it read-only."""
-    import boto3  # type: ignore[import-untyped]
+    from data.generators.reference_login import sdk_profile_session
     import psycopg
+    from scripts.evaluation.k6.live_parity import read_bound
+    from scripts.evaluation.k6.real_target_preflight import (
+        validate_plan as validate_source,
+    )
 
-    session = boto3.Session(profile_name=profile_name, region_name=plan["region"])
+    source = validate_source(
+        read_bound(plan["source_target_plan_path"], plan["target_manifest_sha256"])
+    )
+    if profile_name is not None and profile_name != source["aws_profile"]:
+        raise ValueError("aws_profile_mismatch")
+    profile_name = source["aws_profile"]
+    session = sdk_profile_session(profile_name=profile_name, region_name=plan["region"])
     sts = session.client("sts")
     identity = sts.get_caller_identity()
     if identity.get("Account") != plan["account_id"]:

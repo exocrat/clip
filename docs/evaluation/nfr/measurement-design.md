@@ -155,7 +155,8 @@ actual conversation and five saved listings; use the finalized category code.
 The exact target and creation/retention of synthetic wanted requests require an
 approved run plan. Run this test outside frozen A/B comparison windows.
 
-1. Implement a deterministic cycle of 100 operations: 30 browse, 25 Hybrid
+1. Implement a deterministic, well-spread cycle of 100 operations using the
+   hash-bound `nfr03_schedule.js` smooth weighted ordering: 30 browse, 25 Hybrid
    search, 15 listing detail, 10 public wanted-request reads, 10 own conversation
    list reads, 9 saved-list reads and 1 wanted-request creation. Resolve route,
    body, response and CSRF behavior from the current generated contract. For each
@@ -376,3 +377,21 @@ acceptance without complete project scope and human closeout review.
    requires **strictly less than USD 200**; exactly USD 200 or missing evidence
    does not pass. Record the source periods and treatment of credits, refunds and
    delayed charges; obtain current bill evidence at closeout.
+
+
+### Lunch-batch workload alignment
+
+NFR-03 validates its designated Wanted fixture by detail before measurement.
+During the workload, public Wanted-page checks allow correctly newer controlled
+writes to move that fixture off page one; shape, IDs, uniqueness and descending
+creation/ID order remain checked. Every write keeps its unique operation ID and
+post-run reconciliation. This avoids falsely rejecting correct pagination after
+more than20new rows. The preflight request is counted separately from both cohorts.
+
+All k6 workloads cap issued HTTP operations at the fixed scenario arrival budget.
+An engine iteration started at the exact duration boundary is retained as a
+`clip_schedule_boundary_skipped` point without issuing an extra operation; it is
+not a failed request removed from a denominator. Reports still reject dropped,
+missing or extra actual requests. No raw output is edited. Real-run staged bundles
+must include every static relative import; missing transitive helpers fail before
+execution. Updated sources/hashes must be rebound before any deployed measurement.

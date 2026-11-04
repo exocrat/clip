@@ -1,6 +1,8 @@
 // Candidate-weight pilot: 60-second 10-read/s warm-up, then 120 seconds at 50 read/s.
 // Only the shared coordinator may set approved-runner inputs for a live target.
 import http from 'k6/http';
+import { localCapacityWindow } from './local_capacity_window.js';
+import { plannedArrivalCount } from './core.js';
 import execution from 'k6/execution';
 import { Counter, Trend } from 'k6/metrics';
 import { sha256 } from 'k6/crypto';
@@ -36,10 +38,12 @@ const paths = cases.map(item => {
 });
 const cookie = realMode ? __ENV.CLIP_REAL_RUN_SESSION_COOKIE : __ENV.CLIP_EXP05_LOCAL_COOKIE;
 if (typeof cookie !== 'string' || !cookie || /[\r\n]/.test(cookie)) throw Error('pilot_session_required');
+const window = localCapacityWindow(__ENV, realMode, profile);
 const scenarios = {
-  burst_warmup: { executor: 'constant-arrival-rate', rate: 10, timeUnit: '1s', duration: '60s', startTime: '0s', preAllocatedVUs: profile.capacity.preAllocatedVUs, maxVUs: profile.capacity.maxVUs, gracefulStop: '5s' },
-  burst_measured: { executor: 'constant-arrival-rate', rate: 50, timeUnit: '1s', duration: '120s', startTime: '65s', preAllocatedVUs: profile.capacity.preAllocatedVUs, maxVUs: profile.capacity.maxVUs, gracefulStop: '5s' },
+  burst_warmup: { executor: 'constant-arrival-rate', rate: 10, timeUnit: '1s', duration: `${window.warmup_seconds}s`, startTime: '0s', preAllocatedVUs: profile.capacity.preAllocatedVUs, maxVUs: profile.capacity.maxVUs, gracefulStop: '5s' },
+  burst_measured: { executor: 'constant-arrival-rate', rate: 50, timeUnit: '1s', duration: `${window.measured_seconds}s`, startTime: `${window.warmup_seconds + 5}s`, preAllocatedVUs: profile.capacity.preAllocatedVUs, maxVUs: profile.capacity.maxVUs, gracefulStop: '5s' },
 };
+const boundarySkipped = new Counter('clip_schedule_boundary_skipped');
 const issued = new Counter('clip_comparison_issued');
 const outcomes = new Counter('clip_comparison_outcomes');
 const elapsed = new Trend('clip_comparison_elapsed_ms', true);
@@ -50,6 +54,10 @@ export const options = { scenarios, maxRedirects: 0, summaryTrendStats: ['med','
 export default function () {
   const phase = execution.scenario.name;
   const iteration = execution.scenario.iterationInTest;
+  if (execution.scenario.iterationInTest >= plannedArrivalCount(scenarios[phase])) {
+    boundarySkipped.add(1, { phase: execution.scenario.name });
+    return;
+  }
   const index = (profile.sequence_start + iteration) % cases.length;
   const item = cases[index];
   const tags = { phase, kind: item.request.kind, case_index: String(index), ...(realMode ? { run_id: profile.run_id, configuration: profile.configuration } : {}) };

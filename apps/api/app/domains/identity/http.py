@@ -7,6 +7,7 @@ checks; forwarded identity/IP headers are deliberately not trusted here.
 """
 
 from dataclasses import dataclass, field
+from contextlib import AbstractAsyncContextManager
 from datetime import datetime
 import hmac
 from ipaddress import IPv4Address, IPv6Address, ip_address
@@ -120,6 +121,42 @@ def session_view(identity: SessionIdentity) -> SessionView:
         display_name=identity.display_name,
         handle_ready=identity.handle_ready,
     )
+
+
+class IdentityInvocationConnectionsMiddleware:
+    """Finish request-owned DB cleanup before Lambda receives a complete body.
+
+    Only the terminal body is held. Status, headers and any streaming chunks keep
+    their original values. Exceptions/cancellation still unwind the connection
+    scope; a cleanup failure cannot be presented as a complete successful response.
+    """
+
+    def __init__(
+        self,
+        app: ASGIApp,
+        request_scope: Callable[[], AbstractAsyncContextManager[None]],
+    ):
+        self.app, self.request_scope = app, request_scope
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or scope.get("path") == "/health":
+            await self.app(scope, receive, send)
+            return
+        terminal: Message | None = None
+
+        async def send_after_cleanup(message: Message) -> None:
+            nonlocal terminal
+            if message["type"] == "http.response.body" and not message.get(
+                "more_body", False
+            ):
+                terminal = message
+            else:
+                await send(message)
+
+        async with self.request_scope():
+            await self.app(scope, receive, send_after_cleanup)
+        if terminal is not None:
+            await send(terminal)
 
 
 class IdentityBrowserMiddleware:
@@ -265,6 +302,9 @@ class IdentityReadDependencies:
     sessions: IdentitySessions = field(repr=False)
     policy: BrowserPolicy
     close: Callable[[], None] | None = field(default=None, repr=False)
+    request_scope: Callable[[], AbstractAsyncContextManager[None]] | None = field(
+        default=None, repr=False
+    )
 
     def __post_init__(self) -> None:
         """Reject incomplete bindings before middleware or routes are installed."""
@@ -290,6 +330,10 @@ def install_identity_reads(app: FastAPI, runtime: IdentityReadDependencies) -> N
     app.add_middleware(
         IdentityBrowserMiddleware, sessions=runtime.sessions, policy=runtime.policy
     )
+    if runtime.request_scope is not None:
+        app.add_middleware(
+            IdentityInvocationConnectionsMiddleware, request_scope=runtime.request_scope
+        )
     app.state.identity_reads_installed = True
 
 

@@ -69,3 +69,46 @@ for link-expiry checks, avoiding failures caused by a fast/slow client clock whi
 retaining URL/expiry validation. `image-delivery-batch.test.ts` reproduces both
 clock directions and restores the clock mock after each test. API payloads and
 monotonic experiment timing are unaffected.
+
+## Lunch batch: search and experiment alignment
+
+- `pyproject.toml`, `uv.lock` — Pin NumPy2.5.4 in the API environment. The separate pinned model interpreter remains unchanged.
+- `apps/api/Dockerfile` — Keep numerical-library threads at one per process, so application concurrency does not multiply hidden CPU threads.
+- `apps/api/app/domains/listings/hybrid_read.py` — Keep the validated source/filter/coverage SQL, exact inline SQL diagnostic scorer, one query norm and page-aware lexical-tier pruning; model encoding can precede the DB lease.
+- `apps/api/app/domains/listings/hybrid_snapshot.py` — Read fresh candidates plus missing binary vectors, bound an immutable generation cache, precompute stored norms, score with ordered double arithmetic and retain original ordering/pagination.
+- `apps/api/app/domains/listings/postgres_store.py` — Wire the same snapshot/scorer into ECS and Lambda; return the DB lease before CPU work and bound pending requests/workers through cancellation.
+- `apps/api/app/domains/listings/embedding_client.py` — Reuse bounded exact-text/model query vectors, with monotonic expiry and helper lifecycle/fork guards; cache no authorization or pages.
+- `apps/api/tests/domains/listings/hybrid_reference.py` — Preserve original SQL as an independent test/diagnostic oracle; production imports none of this file.
+- `apps/api/tests/domains/listings/test_hybrid_read.py`, `test_hybrid_snapshot.py`, `test_hybrid_read_postgres.py`, `test_embedding_client.py` — Check exact SQL equivalence, pages/filters/coverage/edits, cache bounds/expiry, inference/lease order and cancellation/lifecycle behavior.
+- `apps/api/tests/domains/identity/postgres_fixtures.py` — Add explicit owned-container CPU/memory/connection limits for diagnostics; ordinary fixture defaults stay intact.
+- `scripts/evaluation/search_local_profile.py` — Preserve the explicitly isolated original-versus-optimised SQL diagnostic, separate from the new full API capacity runs.
+- `scripts/evaluation/capacity_local.py`, `capacity_local_worker.py` — Exercise real session/domain SQL/model paths in owned limited local containers; run required profiles, retain raw output/resource metrics and remove only owned resources. The worker is UDS-only and is never a deployment entry point.
+- `scripts/evaluation/frozen_reference.py` — Verify/read the published accepted archive, paired fingerprints and unchanged judgments without regenerating historical inputs against new API contracts.
+- `scripts/evaluation/nfr04_retrieval.py` — Use that frozen consumer; preserve current-target/revision and execution gates. The legacy image-root option is optional because archive photos are verified directly.
+- `scripts/evaluation/k6/nfr03_schedule.js`, `nfr03_schedule.test.mjs` — Define/check the deterministic well-spread original100-operation mix shared by A/B.
+- `scripts/evaluation/k6/nfr03_checks.js`, `nfr03_checks.test.mjs` — Validate Wanted page fields/uniqueness/order while controlled new writes displace older rows.
+- `scripts/evaluation/k6/nfr03_load.js` — Use that schedule, check the designated Wanted fixture before measurement and preserve write IDs/reconciliation.
+- `scripts/evaluation/k6/nfr03_profile_builder.py` — Document that the coordinator binds the frozen schedule with the profile.
+- `scripts/evaluation/k6/nfr03_report.py`, `tests/evaluation/test_nfr_reports.py` — Account for the separate preflight request and retain strict mixed-route/write accounting.
+- `scripts/evaluation/k6/core.js`, `core.test.mjs` — Compute the exact fixed arrival budget, including fractional-rate conditions.
+- `scripts/evaluation/k6/comparison_load.js`, `exp05_pilot_load.js`, `nfr_load.js`, `nfr03_load.js` — Send exactly the frozen number of HTTP operations; retain surplus boundary executions separately without hiding failed/short/dropped traffic.
+- `scripts/evaluation/k6/real_run_coordinator.py`, `tests/evaluation/test_workload_import_closure.py` — Stage transitive helpers and reject incomplete static import bundles before session access/execution.
+- `data/generators/reference_login.py` — Expose the existing private CLI-login credential-refresh bridge with the explicit named-profile factory signature.
+- `scripts/evaluation/k6/real_target_preflight.py`, `cloudwatch_capture.py`, `lambda_initialization.py`, `scripts/evaluation/nfr06_recovery.py`, `nfr07_restore_observer.py` — Use the existing login bridge consistently; restore derives its profile from the hash-bound source plan and rejects mismatches. Exact task-stop/restore approvals remain mandatory.
+- `tests/evaluation/test_frozen_reference.py` — Verify accepted inputs load without regeneration and changed judgments are rejected.
+- `docs/evaluation/deployment-20261103/public-input-overlay.json` — Record the approved1024CPU-unit ECS task allocation for a future reviewed deployment; no live change is applied.
+
+## Invocation reuse and short local precommit diagnostics
+
+- `apps/api/app/domains/identity/runtime_database.py` — Add an invocation-owned exclusive Identity connection. Separate session/account transactions share it; cleanup waits for active borrowers and physically closes it through cancellation. ECS keeps its existing pool.
+- `apps/api/app/domains/identity/http.py` — Install the optional invocation scope around read-only Identity middleware; delay the terminal body until connection cleanup finishes. Preserve response content and normal authorization.
+- `apps/api/app/domains/identity/runtime_configuration.py` — Wire that scope only into Lambda's one-connection null pool.
+- `apps/api/tests/domains/identity/test_runtime_configuration.py`, `test_invocation_response.py` — Verify backend reuse across thread helpers, closure between requests, rollback/revocation/cancellation and response-before-cleanup ordering.
+- `apps/api/tests/domains/listings/test_search_modes.py` — Update the fake ports to the new snapshot/scorer interface; preserve mode/filter normalization and rejection checks.
+- `scripts/evaluation/k6/local_capacity_window.js`, `local_capacity_window.test.mjs` — Opt into10/60second diagnostic windows only after normal local target/profile validation; reject the flag on real targets. Formal inputs are unchanged.
+- `scripts/evaluation/k6/exp05_pilot_load.js`, `nfr_load.js`, `nfr03_load.js` — Use that optional local window for scenarios and exact request/write-reconciliation budgets; normal deployed timing stays fixed.
+- `scripts/evaluation/k6/nfr_report.py`, `nfr03_report.py`, `tests/evaluation/test_nfr_reports.py` — Add an explicit library-only diagnostic mode with exact shortened accounting; default formal parsers reject shortened profiles and no report accepts an NFR.
+- `scripts/evaluation/k6/nfr_load.test.mjs` — Exercise the actual entry point despite k6 rewriting exported options, and preserve latency-versus-ranking separation.
+- `scripts/evaluation/k6/real_run_coordinator.py` — Include the helper in staged import closure; its deployed environment never enables short mode.
+- `scripts/evaluation/capacity_local.py`, `capacity_local_worker.py` — Add the short release sequence, immutable source versus runtime timing profiles, and invocation-scope wiring; retain failed raw results and stop incomplete delivery.
+- `apps/api/app/domains/listings/hybrid_snapshot.py` — Final strict-type cleanup adds explicit clock/vector/index types and rejects missing Hybrid query text. Valid query arithmetic and ordering are unchanged.

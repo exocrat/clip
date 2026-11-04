@@ -5,15 +5,17 @@ Only explicit bootstrap calls connect. All diagnostics are fixed/redacted; no
 connection string, database error, fingerprint or key is returned or logged.
 """
 
-from collections.abc import Iterator
-from contextlib import AbstractContextManager, contextmanager
+import asyncio
+from collections.abc import AsyncIterator, Iterator
+from contextlib import AbstractContextManager, asynccontextmanager, contextmanager
+from contextvars import ContextVar
 from threading import Lock
 from typing import Callable
 
 import psycopg
 from psycopg.conninfo import conninfo_to_dict
 from pydantic import SecretStr
-from psycopg_pool import ConnectionPool, NullConnectionPool
+from psycopg_pool import ConnectionPool, NullConnectionPool, PoolTimeout
 
 from app.core.config import ConfigurationError
 from app.domains.identity.temporary_challenges import Database
@@ -138,6 +140,46 @@ def connection_factory(dsn: SecretStr, environment: str) -> Callable[[], Databas
     return connect
 
 
+class _InvocationConnection:
+    """One exclusive connection shared by this invocation's separate transactions.
+
+    A borrower never shares an active transaction with another thread. Cleanup
+    waits for an in-flight borrower, then returns the lease to the null pool,
+    which physically closes it before the HTTP response can complete.
+    """
+
+    def __init__(self, pool: ConnectionPool):
+        self._pool = pool
+        self._lock = Lock()
+        self._lease: AbstractContextManager[Database] | None = None
+        self._connection: Database | None = None
+        self._closed = False
+
+    @contextmanager
+    def borrow(self) -> Iterator[Database]:
+        if not self._lock.acquire(timeout=1):
+            raise PoolTimeout("Identity invocation connection busy")
+        try:
+            if self._closed:
+                raise ConfigurationError("Identity invocation has finished")
+            if self._connection is None:
+                lease = self._pool.connection(timeout=1)
+                connection = lease.__enter__()
+                self._lease, self._connection = lease, connection
+            yield self._connection
+        finally:
+            self._lock.release()
+
+    def close(self) -> None:
+        """Join any remaining SQL borrower; never leave a late idle connection."""
+        with self._lock:
+            self._closed = True
+            lease, self._lease = self._lease, None
+            self._connection = None
+            if lease is not None:
+                lease.__exit__(None, None, None)
+
+
 class IdentityConnectionPool:
     """Reuse bounded, exclusive connections without caching authentication state.
 
@@ -161,6 +203,10 @@ class IdentityConnectionPool:
             raise ConfigurationError("Invalid Identity pool bound")
         self._lock = Lock()
         self._opened = False
+        self._retain_idle = retain_idle
+        self._request_lease: ContextVar[_InvocationConnection | None] = ContextVar(
+            "clip_identity_request_connection", default=None
+        )
         pool_type = ConnectionPool if retain_idle else NullConnectionPool
         self._pool: ConnectionPool = pool_type(
             conninfo=dsn.get_secret_value(),
@@ -186,8 +232,44 @@ class IdentityConnectionPool:
             if not self._opened:
                 self._pool.open(wait=False)
                 self._opened = True
+        invocation = self._request_lease.get()
+        if invocation is not None:
+            with invocation.borrow() as connection:
+                yield connection
+            return
         with self._pool.connection(timeout=1) as connection:
             yield connection
+
+    @asynccontextmanager
+    async def invocation(self) -> AsyncIterator[None]:
+        """Reuse physical Identity transport, never authorization, within one call.
+
+        Context propagates into both supported thread helpers. Every Identity
+        operation retains its original SQL/transaction. Cleanup is completed
+        through cancellation; the HTTP integration holds the terminal body until
+        this scope exits, so Lambda cannot freeze an idle retained connection.
+        """
+        if self._retain_idle:
+            raise ConfigurationError("Invocation cleanup requires a null pool")
+        if self._request_lease.get() is not None:
+            raise ConfigurationError("Nested Identity invocation scope")
+        invocation = _InvocationConnection(self._pool)
+        token = self._request_lease.set(invocation)
+        try:
+            yield
+        finally:
+            self._request_lease.reset(token)
+            cleanup = asyncio.create_task(asyncio.to_thread(invocation.close))
+            while True:
+                try:
+                    await asyncio.shield(cleanup)
+                    break
+                except asyncio.CancelledError:
+                    if cleanup.cancelled():
+                        raise
+                    if cleanup.done():
+                        cleanup.result()
+                        break
 
     def close(self) -> None:
         """Close only this app's pool after request and worker shutdown."""

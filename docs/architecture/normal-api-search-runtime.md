@@ -1,5 +1,20 @@
 # Normal API Hybrid read lifecycle
 
+Current optimisation checkpoint: the
+[2026-11-04 measurements](../evaluation/deployment-20261103/functional-audit/search-optimisation/README.md)
+record first-use SQL improvements, inference before the read-pool lease and a
+bounded immutable query-vector cache. Session checks and live result snapshots
+are still required. Historical pool numbers below are superseded by the
+[functional repair connection budget](../evaluation/deployment-20261103/functional-audit/connection-budget.md).
+The lunch batch implements common ECS/Lambda application-side numerical scoring
+in `hybrid_snapshot.py`: fresh SQL eligibility/readiness and metadata on every
+request, missing-generation binary vector transfer, a bounded immutable-vector
+cache and precomputed norms, then ordered-double NumPy scoring after returning
+the DB lease. Numerical workers are limited to two per process, with32pending
+requests and an overall20second deadline. Cancellation retains its numerical slot
+until the underlying CPU work finishes. There is no cached authorization/page or
+automatic Keyword fallback. This remains uncommitted/local, not deployed.
+
 Merge follow-up: [the combined deployment handoff](listings-search-deployment.md)
 now provides and locally verifies an optional Linux AMD64 Hybrid image and normal
 website-serving configuration. The original checkpoint evidence below remains

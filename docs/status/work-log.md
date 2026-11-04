@@ -1,3 +1,163 @@
+### Precommit local capacity gate and independent audit — 2026-11-04 10:42:05 UTC
+
+Suraj authorises autonomous local work until immediately before commit; the
+theoretical discussion follows actual measurements. Stop capacity-dependent
+progress if PostgreSQL saturates; independent audit/validation may continue.
+Commit, push, hosted CI, merge, cloud/SQL changes and unapproved resource upgrades
+remain held. Shared pooling and a second database are discussed fallbacks only.
+
+The latest Lambda invocation change shares one exclusive physical Identity
+connection across fresh session/account transactions, then closes it before the
+terminal HTTP body. The short local diagnostic uses10seconds warm-up/60seconds
+measurement at unchanged rates; affected deployed runners reject this mode and
+formal profiles/reports stay strict. Integrated local inspection passed26groups.
+Both paths retrieved22reviewed queries with zero failures,Success@5=1.0and exact
+ordered-page equality to original SQL. At the formal mix's50Listing reads/s,
+A completed3000/3000correct with zero drops,p95=65.25msand0.4729of2DB cores.
+B100%selected-read offload issued2922of3000,with2510correct/412timeouts/78drops,
+p95=5001.04msand1.9903of2DB cores. No sampled pool errors. The high-load gate
+remains blocked; six new short NFR profiles were not run after that failure.
+No weight/resource choice or further performance optimisation was made.
+
+Independent final checks:Python2429passed/180skipped,data331passed,web504passed/
+3skippedandlint/types/buildpassed,nativeListings/Hybrid27passed/3skipped,
+CIparity/boundaries/contracts/types,35wrapper safety cases,clean migration and
+retirement checks passed;Terraform backend-free validation and23mock tests passed.
+Strict scorer typing and final Black check passed. The aggregate stopped only
+at its final Gitleaks check on a documentation false positive;descriptive wording
+was corrected without scanner exceptions and the focused scan passed. Retain
+the original failed aggregate log rather than claim a clean aggregate rerun.
+
+[Capacity results and exact evidence paths](../evaluation/deployment-20261103/functional-audit/precommit-capacity-20261104.md)
+and the [requirement-to-tooling audit](../evaluation/deployment-20261103/functional-audit/precommit-audit-20261104.md)
+record the handoff. Persistent private evidence is under
+`/home/suraj/src/.clip-private/exp261103/precommit-20261104/`, including prior06–08
+attempts and137source/module files matching the tested hashes. Current live
+website remains on its old image. Next:Suraj reviews capacity options;retest the
+selected change before commit/integration and renewed exact cloud approvals.
+
+### Lunch batch implementation and first required-rate diagnostic — 2026-11-04 07:57:33 UTC
+
+Suraj explicitly authorised the autonomous local lunch batch. Commits, publication,
+hosted CI, deployment/live SQL and unapproved resource changes remain held.
+Common ECS/Lambda search now takes a fresh SQL eligibility/readiness snapshot,
+fetches only missing immutable-generation vectors, returns its DB lease, then
+performs ordered-double NumPy scoring using bounded cached vectors/norms. CPU
+workers and waiting requests remain bounded even after caller cancellation.
+Focused scoring/lease/cancellation checks pass33; native equivalence had27passed/
+3skipped with migrated PostgreSQL and original SQL comparisons, including pages,
+filters, live edits and96description chunks. The approved1vCPU/task is recorded
+in the deployment overlay only; live tasks remain512CPU units.
+
+Experiment changes align NFR-03's deterministic well-spread100-operation schedule,
+Wanted fixture preflight/dynamic pagination, static staged module dependencies
+and the existing credential-private AWS CLI-login bridge. A local harness uses
+the accepted archive's exact1000listings/5000users, pinned actual model and real
+session/domain SQL on owned resource-limited containers. The first full50rps run
+retains18001correct/zero HTTP failures but is invalid: one extra k6 boundary
+iteration caused15001instead of15000measured requests. The report refused success;
+raw evidence remains`/tmp/clip-lunch-capacity-03/`. All four load scripts now cap
+HTTP work at frozen arrival budgets and retain surplus scheduler executions in
+raw boundary counters; dropped/short work still fails reporting. Required-rate
+A/B profiles are continuing under`/tmp/clip-lunch-capacity-04/`; no cloud result
+or deployed functional acceptance is claimed.
+
+### Required-only test scope and image/Saved repair trace — 2026-11-04 07:11:52 UTC
+
+Suraj declines optional grouped stress testing and prioritises PRD/experiment
+requirements within the deadline. The paused plan now excludes grouped/over-rate
+stress campaigns and optional Lambda reset; required implementation correctness
+checks remain. Read-only source/evidence review confirms the repair addresses
+reproduced image-link/Saved503s correlated with Identity connection rejection:
+four-connection Identity pools/task, coalesced photo/Saved batches, replacement
+of per-card whole-Saved pagination, API-clock expiry and bounded image-link refresh.
+Existing evidence includes20complete S3 decodes, real restricted-DB pool tests,
+batch HTTP/SQL integration and web clock/cancellation/isolation regressions.
+No new tests, app changes, load or deployment occurred; old live image remains.
+
+### Paused planning, NFR-03 ordering and current access/release check — 2026-11-04 07:06:12 UTC
+
+Suraj keeps implementation/load tests paused, requests explicit tooling/code
+alignment now and immediately before deployment, and asks for current access and
+photo/Saved status. The PRD specifies50rps/five minutes/95%success, not consecutive
+operation blocks. The [revised plan](../evaluation/deployment-20261103/functional-audit/lunch-batch-plan.md)
+proposes well-spread deterministic ordering with unchanged integrated counts,
+writes, cases, timing and denominators, frozen identically for A/B before formal
+results. No workload code or production resource was changed.
+
+Read-only STS confirms surajs2/account335523638354; actual ECS/RDS/ECR/ALB/Lambda/
+SSM/EC2 reads pass, both hosts/SSM agents are up and ECS has2running/no pending
+tasks at revision13/512CPU/2048MiB. Its image is still860c8c15..., so image/Saved
+repairs remain local despite3691a50CI/local verification. IAM simulation allows
+all20checked deployment/telemetry/task-loss/restore actions; GitHub auth works.
+Plain root SDK login hits MissingDependencyException for optional CRT, while the
+existing private CLI-login bridge's actual STS call succeeds. Several experiment
+entry points need bridge wiring; record this as local tooling integration, not
+an AWS permission failure. No new dependency or credentials were written; no
+deployment, workload, SQL grant or task-stop action was attempted.
+
+### Published-vector cache invariant confirmed — 2026-11-04 06:28:55 UTC
+
+Suraj confirms no privileged actor will replace vectors under an existing
+generation. The proposed cache therefore adopts the normal application's existing
+ready-generation immutability: key by pipeline/generation/part, without per-search
+vector hashing or a new revision mechanism for manual edits. Fresh eligibility,
+serving-pipeline and complete-ready checks remain mandatory. Recorded in the
+[optimisation ledger](../evaluation/deployment-20261103/functional-audit/optimisation-ledger.md#generation-ids-and-vector-changes).
+No product/schema/cloud changes accompany this decision.
+
+### NumPy/PostgreSQL numerical and ranking equivalence — 2026-11-04 06:27:45 UTC
+
+Suraj requested actual equivalence evidence and review of other NumPy candidates.
+An isolated diagnostic used real migrated PostgreSQL18.6 and the existing local
+NumPy2.5.4 environment:2568part-score comparisons had zero numerical differences
+or threshold mismatches;72ordered result sets/360page windows matched. Fixtures
+included near-unit/threshold/tie cases, four sorts, fixture metadata filters and
+96description chunks. [Raw evidence and limits](../evaluation/deployment-20261103/functional-audit/search-optimisation/README.md#differential-equivalence-follow-up).
+This proves the tested arithmetic/ranking, not a production retrieval/cache path;
+lexical tiers were supplied fixture metadata. The owned DB was removed. No cloud,
+dependency, product-code, commit or CI change occurred. The optimisation ledger
+adds precomputed cached-vector norms and bulk chunk/blend calculations as proposals;
+the model already uses NumPy/ONNX, and transactional/authorization work stays SQL.
+
+### Incremental vector-cache proposal and full optimisation tracking — 2026-11-04 06:22:02 UTC
+
+Suraj proposed an initial vector load followed by compact per-search change
+checks and requested tracking of all optimisations. The
+[combined ledger](../evaluation/deployment-20261103/functional-audit/optimisation-ledger.md)
+now distinguishes implemented, proposed and rejected work across pooling,
+browser batches, search, caching and resource sizing. Source audit found no normal
+application path updating published vectors in place: publication inserts under
+a leased generation, and source changes create fresh IDs. The schema permits
+valid privileged direct updates; that is not evidence of actual production use.
+Any application vector cache needs an explicit immutable-generation or revision
+invariant and snapshot tests. The8.73ms arithmetic result was local NumPy only,
+not an ECS benchmark or full request measurement. No product/cache/DB/cloud change
+or new test run was performed for this documentation/source-inspection increment.
+
+### First-time search optimisation and scoring-location investigation — 2026-11-04 06:17:24 UTC
+
+Suraj authorised testable local search optimisation, required later-page
+correctness and a capacity estimate, then held commits/CI for further discussion.
+He prioritised first-time search over repeated-score caching and proposed moving
+the arithmetic to ECS. Current uncommitted code inlines exact cosine, computes
+the query norm once, safely skips lower tiers only beyond the requested page's
+lookahead, encodes before borrowing the DB lease and reuses bounded query vectors.
+The slower-first-use numerical-score cache was removed; all diagnostic attempts
+remain preserved. No cloud, SQL grant, publication or resource change occurred.
+
+[Checkpoint and raw evidence](../evaluation/deployment-20261103/functional-audit/search-optimisation/README.md):
+73focused tests passed; native26passed/3skipped and migration/smoke/rollback checks
+passed. Final synthetic SQL medians: broad896.60->213.87ms, selective page1
+935.95->35.32ms, page3 853.62->193.19ms; exact original responses retained.
+Four-connection broad SQL reached4.35/s at460.89DB-CPU ms/query; selective34.36/s.
+These local measurements do not prove the formal10search/s or50mixed/s targets.
+Controlled pooled-session SQL200/200 passed. A separate existing-NumPy prototype
+scored2000vectors in8.73CPU ms, excluding retrieval/decoding/auth/HTTP; application
+scoring remains a proposal needing full numerical/snapshot/transport verification.
+Next: discuss that scoring placement and task CPU budget before final checks,
+commit/CI/images and renewed gated cloud work. Prior cloud window has expired.
+
 ### Photo repair device-clock correction — 2026-11-03 20:31:39 UTC
 
 Final review reproduced two failures in the new batch client when a device clock
@@ -2925,7 +3085,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
-| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Source A remains deployed on two hosts/tasks. PR32 repair implemented locally; finalize follow-up CI/images, renew AWS login, then approved image-only rollout and live rechecks. | Initial repair CI passed; integrated local26groups, final web504/3skipped, native DB24/3skipped. No repaired image deployed. | Suraj authorized autonomous functional repairs and image-only redeployments with checks/rollback; existing runtime through2026-11-04 04:00UTC within USD30 cap. Exact grants and future merge remain gated. | [PR32](https://github.com/exocrat/clip/pull/32); [functional audit](../evaluation/deployment-20261103/functional-audit/README.md) | AWS login expired; proposed worker grants await exact approval; real mailbox receipt and repaired live acceptance; B deployment/parity, pilot and all live NFR/measurements. No automatic shutdown. | 2026-11-03 20:25:30 UTC |
+| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Local precommit capacity gate blocked: ECS burst succeeds; 100% Lambda local burst saturates PostgreSQL. Independent audit and final local checks complete. No commit/deployment. | Python 2429/180 skipped; data 331; web 504/3 skipped; native 27/3 skipped; integrated 26 groups; Terraform 23 mocks. Final secret/format/type checks pass after documented prose false positive. | Suraj authorised autonomous local work up to before commit; capacity changes wait for his decision. No automatic proxy, second DB, resize or weight change. | [PR32](https://github.com/exocrat/clip/pull/32); [capacity report](../evaluation/deployment-20261103/functional-audit/precommit-capacity-20261104.md); [audit](../evaluation/deployment-20261103/functional-audit/precommit-audit-20261104.md) | Review CPU remediation, then repeat affected capacity checks. Commit/CI/integration and exact SQL/resource/cloud approvals remain; live B/pilot/NFR evidence pending. | 2026-11-04 10:42:05 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |

@@ -36,6 +36,7 @@ own their detailed commands and limits.
 | NFR-04/05 retrieval and chat capture | [NFR measurement procedures](../evaluation/nfr/measurement-design.md) and the NFR-04/05 run manifests and action-approval templates under `docs/evaluation/nfr/` |
 | Load-runner local pilot and EXP-02 input preparation | [k6 tool guide](../../scripts/evaluation/k6/README.md); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
 | NFR measures and final-run requirements | [NFR measurement design](../evaluation/nfr/measurement-design.md) and the approved [ECS/Lambda experiment design](../evaluation/ecs-only-vs-ecs-lambda-task-list.md) |
+| Resource-limited local capacity diagnostics | `uv run --locked python scripts/evaluation/capacity_local.py --synthetic-local --output /tmp/NEW-DIRECTORY/result.json`; see [lunch batch plan](../evaluation/deployment-20261103/functional-audit/lunch-batch-plan.md). Existing directory/new file required; default NFR01–03 A/B; `--profile-set comparison-quality --lambda-weight-percent 50` checks original-SQL-bound pilot mix, mixed B profile and all22reviewed queries. |
 | Disposable database and SQL diagnostics | [Database guide](../../database/README.md) |
 | Identity provider setup and real-run gates | [Identity setup guide](identity-provider-setup.md) |
 | Cloud plans, targets and lifecycle | [Cloud inventory](cloud-inventory.md), the relevant [Terraform runbook](../../infra/terraform/shared/test/README.md), and the owning task's reviewed plan |
@@ -1282,6 +1283,24 @@ this portable command. [Protocol and exact implementation limits](../architectur
 
 ## SE-01 checkpoint C — repository-local native PostgreSQL route
 
+### First-use search diagnostic — local only
+
+```bash
+uv run --locked python scripts/evaluation/search_local_profile.py --synthetic-local --output /tmp/clip-search-profile-new.json
+```
+
+Choose a new output filename; existing files are rejected. Requires the installed
+pinned API environment, Docker and the existing pinned PostgreSQL/dbmate images.
+Rejects ambient PG/CLIP/AWS overrides. Creates only its own network-isolated
+PostgreSQL fixture with2CPU/2GiB,1000synthetic listings and2000vector parts, then
+removes it. Records all old/new SQL comparisons, SQL concurrency observations and
+controlled pooled-session SQL timings. No retained target, model download, AWS,
+email, real sign-in or workload traffic is used. Nonzero means the diagnostic
+failed; neither a zero exit nor local rates establish an NFR pass. See the
+[measurement checkpoint](../evaluation/deployment-20261103/functional-audit/search-optimisation/README.md).
+
+### Historical native macOS route
+
 User verified storage increment B and requested native testing. The existing
 native harness now accepts optional `--listings-store`. Exact invocation from
 this clone after verifying the pinned local tools:
@@ -2169,3 +2188,24 @@ See the [live parity, Lambda initialization and NFR-07 provisioning guide](../ev
 for exact inputs, commands, evidence outputs, permission gates and limitations.
 The historical USD 10 credit cap is superseded for this experiment; retain the
 strict under-USD-200 project budget and separately reviewed per-action caps.
+
+
+For the explicitly authorised short local precommit gate, add
+`--profile-set short-release --lambda-weight-percent 100`. It checks the same
+reviewed quality/original-SQL cases, then A/B main bursts and A/B NFR01/02/03
+with10seconds warm-up/60seconds measured at the required rates. Runtime timing
+profiles are retained separately from unchanged strict profiles. Real runners
+reject short mode; no output is formal evidence. It stops at invalid delivery,
+so later profiles may remain unrun. See the
+[latest capacity checkpoint](../evaluation/deployment-20261103/functional-audit/precommit-capacity-20261104.md).
+
+The lunch capacity command refuses ambient AWS/CLIP/PG settings and accepts no
+external target or database. It needs Docker's local default Unix context, the
+accepted archive, locked Python dependencies, pinned model artifacts, the existing
+source3691a50diagnostic base image and a matching monotonic k6 binary/build receipt
+(`--k6` can select its local path). It creates/removes only its own temporary
+containers/image/database, retains immutable raw output plus derived reports, and
+never pushes an image, calls AWS or accepts a deployed NFR. Default full profiles
+take about37minutes plus preparation; the comparison/quality set takes about13minutes.
+These local diagnostic image layers are not release images; rebuild the canonical
+API/Lambda release artifacts from the reviewed final source/lock before deployment.
