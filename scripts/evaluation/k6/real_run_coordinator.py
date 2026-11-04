@@ -780,6 +780,7 @@ def _prepare_child_env(
                 "CLIP_EXP05_REAL_PROFILE": str(profile_path),
                 "CLIP_EXP05_REAL_RUN_ID": plan["run_id"],
                 "CLIP_EXP05_REAL_CONFIGURATION": plan["configuration"],
+                "CLIP_REAL_RUN_SESSION_COOKIE": cookie,
                 "CLIP_EXP05_LOCAL_LOAD": "false",
             }
         )

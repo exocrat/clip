@@ -1,3 +1,64 @@
+### Pilot stopped before traffic; workload startup repair checked — 2026-11-04 17:19:16 UTC
+
+First A coordinator recorded k6exit107in0.20seconds with zero raw/workload samples.
+Batch stopped and selected rule is absent, leaving public ECS. Offline actual-k6
+inspection found approvedApiTarget's browser URL dependency; pilot child env
+also omitted the session cookie. Fixed strict HTTPS DNS-origin validation and
+private pilot session handoff, with regression checks. Repaired real binary
+initialization-only inspect passes; four Node files/three Python checks pass,
+Black/diff checks pass. Retain initial monitor/receipt-name failures separately.
+[Changed files, exact evidence and review checkpoint](../evaluation/deployment-20261103/functional-audit/pilot-20261104-plan.md).
+Next: integrate reviewed tool repair, create new immutable replacement plans and
+review restart under the existing caps/expiry; no capacity result or NFR pass.
+
+### Six-run cloud pilot approved; first run starting — 2026-11-04 17:14:52 UTC
+
+Suraj explicitly approved exact six-run pilot batch71fc6a99... under60minutes,
+USD2and39,600workload requests, selected-rule-only routing changes and ECS finish.
+Approval expires2026-11-04T18:12:36.388980Z. Initial monitor failed before any
+workload: ps returned1because k6had not started; corrected absence handling.
+A second attempt refused to overwrite the retained approval file; changed only
+new attempt receipt names. Both attempts issued zero workload and left ECS.
+Original receipts and caps/expiry retained; corrected batch-plan-v4and helper
+hashes recorded privately. Current monitor observes7DBconnections, no long lock
+waits, healthy2API/1pooltasks; first A coordinator is starting.
+[Exact plan and evidence roots](../evaluation/deployment-20261103/functional-audit/pilot-20261104-plan.md).
+
+### Exact six-run cloud pilot prepared — 2026-11-04 17:11:12 UTC
+
+Suraj requested proceeding with current2048-MiB Lambda and retaining import/model
+startup optimization as future work. Six pilot plans now pass offline validation;
+exact monotonic binary/extension and clock bridge match. Current DB:7connections,
+max78/reserved3,1003ready embeddings,900available listings and unchanged indexes.
+Gross account usageOctober1–November4isUSD31.5397798548before credits/refunds and
+pending billing, not experiment-only spend. Proposed batch60minutes/USD2,
+three A then three100%B,39,600workload requests. Numeric safety stops, immutable
+raw evidence, routing rollback and fixed post-run gates are prepared; fixture
+checks reject incorrect data, low success, drops and missing DB metrics.
+[Complete pilot plan and exact private artifact locations](../evaluation/deployment-20261103/functional-audit/pilot-20261104-plan.md).
+Exact batch SHA71fc6a997985425887655fd658abb17391979948502dd1124dc4b7489851e703;
+separate live-load/routing/window approval pending. No pilot traffic issued.
+
+### Approved Lambda repair deployed; normal HTTPS parity passed — 2026-11-04 16:50:54 UTC
+
+Suraj approved PR34 exact head db8e19c755584f24502c118970438ad9797df78d;
+required CI41867966011 passed and accepted main is8d3e159dab5a11cd59ce0955d8f523bfedb6a309.
+After the requested AWS login refresh, approved plan40afb20d... applied16:45:10.
+Only async Lambda initialization and the selected-GET rule changed; API14/pool3,
+images, five-second timeout, memory, SQL and permissions stayed unchanged.
+Selected Listing GETs now100%Lambda; all other routes remain ECS.
+
+Browser smoke17/17functional assertions passed. First request5147.45ms is above
+formal client deadline and retained, not a performance pass. Normal DNS now
+matches ALB after hotspot switch. Strict A/B captures each passed ten cases,
+anonymous401 and hidden404; all response hashes match. B case times271.37–454.27ms.
+Aggregate logs contain27Lambda REPORTs, one4574.25ms initialization; per-request
+correlation/log completeness is not claimed. Two API tasks and pool healthy.
+B repair smoke used31/50explicit requests. No pilot/NFR/comparison run started.
+[Exact evidence, result details and limitations](../evaluation/deployment-20261103/functional-audit/cloud-pool-checkpoint-20261104.md).
+Next: freeze exact pilot bindings/monitoring and obtain traffic/window approval;
+current B smoke window ends17:23UTC. Email receipt remains unverified.
+
 ### Lambda startup traced; bounded async repair prepared — 2026-11-04 16:27:00 UTC
 
 Suraj approved the exact temporary diagnostic plan bad7664a... and requested a
@@ -3265,7 +3326,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
-| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | PR33 merged b4d7419; pool and API14 deployed; ECS website/workflows pass. B startup failed; approved manual rollback leaves public ECS routing. | Two16/16live website checks; controlled workflows and1003ready embeddings. Local B10 throttles and live startup failures retained. | Approved diagnostic restored; async-startup repair locally checked and exact two-action plan prepared; source/cloud approvals and normal generator DNS remain. | [Cloud checkpoint](../evaluation/deployment-20261103/functional-audit/cloud-pool-checkpoint-20261104.md); [pool plan](../evaluation/deployment-20261103/functional-audit/pgbouncer-plan.md) | Release approved async-startup repair, verify B parity/DNS and prepare exact pilot approval. | 2026-11-04 15:52:19 UTC |
+| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | PR34 merged 8d3e159; approved async repair deployed; selected GETs100%Lambda, others ECS. | Browser17/17; normal HTTPS A/B ten-case parity, anonymous401/hidden404 pass; aggregate Lambda telemetry verified. | First browser read5147ms retained above formal deadline; no load evidence. | [Cloud checkpoint](../evaluation/deployment-20261103/functional-audit/cloud-pool-checkpoint-20261104.md) | Prepare exact pilot bindings/monitoring and traffic/window approval; no measurements yet. | 2026-11-04 16:50:54 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
@@ -3307,7 +3368,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | INT-01 | A coordinator; all domain slices | in progress | Tooling and bounded deployment proposal complete locally; normal A/B deployment uses two ECS tasks/two hosts by Suraj decision. Publishing through the authorized PR/check/merge batch; cloud work remains gated. | Full make check passed: Python 2401 passed/176 skipped; data 331; web 498 passed/3 skipped; contracts/types/boundaries, 35 DB safety cases, PostgreSQL migration checks, 184 Conversations operations and Gitleaks passed. Terraform mocks 23 passed. | Suraj authorized plan before commit/PR checks/merge; he remains the sole human reviewer by session direction. | [Deployment plan](../evaluation/deployment-20261103/plan.md); [capacity decision](../decisions/experiment-runtime-capacity.md); [NFR tools](../evaluation/predeployment-gap-tools.md) | Exact cloud release/plan approval, DNS/certificate/Microsoft registration, live smoke/site inspection, pilot, cost-score input freeze and formal measurements remain. No live acceptance claimed. | 2026-11-03 15:11:50 UTC |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
-| EXP-05 | C | in progress | Fixed 15-run candidate matrix, dedicated profile/load script and shared coordinator launch path are prepared; no pilot traffic or weight selection has occurred. | Evaluation suite 364 passed/5 skipped; each run keeps distinct A/B bindings and receipt-bound summaries. No run results. | Human review pending for the proposed selection rule and exact resource/cost limits | [EXP-05 procedure](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#exp-05--pilot-and-confirm-safe-limits); [pilot helper](../../scripts/evaluation/k6/exp05_pilot.py) | Review/merge; finalize deployment and pilot limits; live smoke/site inspection; actual DB/load-generator limits, frozen criteria, pilot execution and review. GOPATH-mode Go tests pass; module mode has a local testdeps lookup issue. | 2026-11-03 12:52:00 UTC |
+| EXP-05 | C; Suraj operator/reviewer | in progress | Six-run100%pilot approved; initial launch stopped before workload, k6exit107. | Real-k6 offline inspection isolates/fixes browser URL and missing pilot cookie; focused checks pass. | No capacity measurements; repaired source/replacement run bindings pending review. | [Pilot checkpoint](../evaluation/deployment-20261103/functional-audit/pilot-20261104-plan.md) | Integrate tool repair and review bounded restart; preserve original zero-request failure. | 2026-11-04 17:19:16 UTC |
 | EXP-06 | C operator; B infra support | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-05 | — |
 | EXP-07 | A; C/D calculation review | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-06 | — |
 | EXP-08 | B; A cost review | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-07 | — |
