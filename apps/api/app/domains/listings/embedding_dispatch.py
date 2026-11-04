@@ -12,6 +12,11 @@ from typing import Any, Literal
 from psycopg import AsyncConnection, Error as DatabaseError
 from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool, PoolTimeout
+from app.core.database_transport import (
+    uses_proxy,
+    connection_kwargs,
+    check_async_proxy_connection,
+)
 
 from app.domains.listings.embedding_client import SemanticHelper, HelperUnavailable
 from app.domains.listings.embedding_store import EmbeddingStore
@@ -62,11 +67,20 @@ class EmbeddingDispatcher:
         self._started = True
         self._pool = AsyncConnectionPool(
             conninfo=self._conninfo,
-            kwargs={
-                "row_factory": dict_row,
-                "autocommit": True,
-                "options": "-c statement_timeout=5000 -c lock_timeout=1000 -c idle_in_transaction_session_timeout=5000",
-            },
+            kwargs=connection_kwargs(
+                self._conninfo,
+                **{
+                    "row_factory": dict_row,
+                    "autocommit": True,
+                    "options": "-c statement_timeout=5000 -c lock_timeout=1000 -c idle_in_transaction_session_timeout=5000",
+                },
+            ),
+            configure=check_async_proxy_connection,
+            check=(
+                AsyncConnectionPool.check_connection
+                if uses_proxy(self._conninfo)
+                else None
+            ),
             min_size=1,
             max_size=1,
             timeout=5,

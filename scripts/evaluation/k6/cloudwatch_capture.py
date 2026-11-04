@@ -204,6 +204,23 @@ def build_queries(plan: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
         ],
     }
 
+    proxy = resources.get("database_proxy")
+    if proxy is not None:
+        proxy_dims = [{"Name": "ProxyName", "Value": proxy["name"]}]
+        groups["proxy"] = [
+            _query("proxy_" + str(index), "AWS/RDS", metric, proxy_dims, stat)
+            for index, (metric, stat) in enumerate(
+                [
+                    ("ClientConnections", "Sum"),
+                    ("DatabaseConnections", "Sum"),
+                    ("DatabaseConnectionsCurrentlyBorrowed", "Sum"),
+                    ("DatabaseConnectionsCurrentlySessionPinned", "Sum"),
+                    ("DatabaseConnectionsBorrowLatency", "Average"),
+                    ("DatabaseConnectionsSetupFailed", "Sum"),
+                    ("MaxDatabaseConnectionsAllowed", "Sum"),
+                ]
+            )
+        ]
     lambda_arn = resources["lambda_function_arn"]
     lambda_target_arn = resources["lambda_target_group_arn"]
     if plan["configuration"] == "B":

@@ -368,6 +368,7 @@ async def run_profiles(
     profile_set,
     lambda_weight,
     short_diagnostic=False,
+    ecs_fallback_only=False,
 ):
     """Serve actual A/B app paths through loopback, run unchanged required profiles."""
     docker = list(connect.profile_docker)
@@ -390,7 +391,7 @@ async def run_profiles(
     (runtime / "runtime.json").chmod(0o600)
     root_socket = Path(parameters["host"])
     try:
-        for kind in ["ecs", "lambda"]:
+        for kind in (["ecs"] if ecs_fallback_only else ["ecs", "lambda"]):
             for number in range(2 if kind == "ecs" else 4):
                 name = f"{kind}-{number}"
                 identifier = command(
@@ -452,7 +453,12 @@ async def run_profiles(
                     await asyncio.sleep(0.2)
         print(
             json.dumps(
-                {"stage": "six_local_apps_ready", "cpu_each": 1, "memory_gib_each": 2}
+                {
+                    "stage": "local_apps_ready",
+                    "app_count": len(containers),
+                    "cpu_each": 1,
+                    "memory_gib_each": 2,
+                }
             ),
             flush=True,
         )
@@ -590,8 +596,8 @@ async def run_profiles(
             "application_cpus": 1,
             "application_memory_gib": 2,
             "ecs_tasks": 2,
-            "lambda_serial_environments_tested": 4,
-            "B_read_weight_percent": lambda_weight,
+            "lambda_serial_environments_tested": 0 if ecs_fallback_only else 4,
+            "B_read_weight_percent": None if ecs_fallback_only else lambda_weight,
             "database_cpus": 2,
             "database_memory_gib": 1,
             "database_max_connections": 78,
@@ -722,7 +728,7 @@ async def run_profiles(
             async with httpx.AsyncClient(
                 base_url=origin + "/api", timeout=20, headers={"Cookie": cookie}
             ) as quality_client:
-                for config_name in ("A", "B"):
+                for config_name in (("A",) if ecs_fallback_only else ("A", "B")):
                     configuration[0] = config_name
                     routing_weight[0] = (
                         100  # Every reviewed query exercises each code path.
@@ -789,6 +795,8 @@ async def run_profiles(
                     )
         routing_weight[0] = lambda_weight
         for config_name, kind in phases:
+            if ecs_fallback_only and config_name != "A":
+                continue
             configuration[0] = config_name
             run_id = f"lunch-{config_name.lower()}-{kind}-{secrets.token_hex(3)}"
             if kind == "exp-05":
@@ -1017,8 +1025,15 @@ def main():
     parser.add_argument(
         "--lambda-weight-percent", type=int, choices=(25, 50, 75, 100), default=100
     )
+    parser.add_argument(
+        "--ecs-fallback-only",
+        action="store_true",
+        help="Check only the preserved direct ECS behavior in short-release mode; never claims a B result.",
+    )
     args = parser.parse_args()
     short_diagnostic = args.profile_set == "short-release"
+    if args.ecs_fallback_only and not short_diagnostic:
+        parser.error("ECS fallback selection requires short-release mode")
     if (
         args.output.exists()
         or args.output.is_symlink()
@@ -1033,6 +1048,8 @@ def main():
         "complete": False,
         "profile_set": args.profile_set,
         "short_local_diagnostic": short_diagnostic,
+        "configurations": ["A"] if args.ecs_fallback_only else ["A", "B"],
+        "database_transport": "direct-local-postgresql-not-managed-proxy",
         "runtime_window": (
             {"warmup_seconds": 10, "measured_seconds": 60} if short_diagnostic else None
         ),
@@ -1099,6 +1116,7 @@ def main():
                         args.profile_set,
                         args.lambda_weight_percent,
                         short_diagnostic,
+                        args.ecs_fallback_only,
                     )
                 )
         report["complete"] = True

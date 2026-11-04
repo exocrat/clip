@@ -6,17 +6,20 @@ before starting repairs. The first controlled live pass is complete; coordinated
 repairs are implemented locally. Proposed embedding grants remain unapplied.
 
 The [latest precommit capacity report](precommit-capacity-20261104.md) gives
-exact A/B results and persistent evidence paths. Current100%Lambda high-load
-diagnostics saturate the local database; capacity-dependent release progress
-waits for Suraj. Independent audit and local validation continue. The previous
-live website has not received these source repairs.
+exact A/B results and persistent evidence paths. The direct 100% Lambda diagnostic
+saturated the local database. Suraj selected a shared RDS Proxy for both paths;
+the [shared-pool plan](shared-pool-plan.md) records implementation, the saved
+provisioning plan, costs, rollback and experiment order. The [local validation report](shared-pool-validation.md) records completed checks
+and short ECS fallback results. No proxy has been created and the live website has not received
+these source repairs.
 
 The [search optimisation checkpoint](search-optimisation/README.md) records the
 subsequent local first-time-search changes, exact comparisons, retained failed
 approaches and capacity limits. It also records the application-side numerical
 prototype and the subsequently implemented common application-side scorer/cache.
-These lunch changes remain uncommitted and undeployed; owned local diagnostic
-images exercise actual code, while final release images still need rebuilding.
+The lunch changes are preserved in commit `6193ca7` and remain undeployed.
+An optimized ECS fallback image has been built from that exact source; the newer
+proxy changes are uncommitted and require their own release image.
 
 The [complete optimisation ledger](optimisation-ledger.md) tracks connection,
 browser, search, caching and resource proposals together, including rejected

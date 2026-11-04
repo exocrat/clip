@@ -18,6 +18,11 @@ from pydantic import SecretStr
 from psycopg_pool import ConnectionPool, NullConnectionPool, PoolTimeout
 
 from app.core.config import ConfigurationError
+from app.core.database_transport import (
+    uses_proxy,
+    connection_kwargs,
+    check_proxy_connection,
+)
 from app.domains.identity.temporary_challenges import Database
 from app.domains.identity.temporary_crypto import TemporaryKeys
 
@@ -127,13 +132,22 @@ def connection_factory(dsn: SecretStr, environment: str) -> Callable[[], Databas
     def connect() -> Database:
         """Open with explicit credentials/timeouts and no local passfile lookup."""
         try:
-            return psycopg.connect(
+            connection = psycopg.connect(
                 raw,
-                passfile="/dev/null",
-                connect_timeout=3,
-                application_name="clip-identity",
-                autocommit=True,
+                **connection_kwargs(
+                    raw,
+                    passfile="/dev/null",
+                    connect_timeout=3,
+                    application_name="clip-identity",
+                    autocommit=True,
+                ),
             )
+            try:
+                check_proxy_connection(connection)
+            except BaseException:
+                connection.close()
+                raise
+            return connection
         except Exception:
             raise ConfigurationError("Identity database unavailable") from None
 
@@ -210,13 +224,22 @@ class IdentityConnectionPool:
         pool_type = ConnectionPool if retain_idle else NullConnectionPool
         self._pool: ConnectionPool = pool_type(
             conninfo=dsn.get_secret_value(),
-            kwargs={
-                "passfile": "/dev/null",
-                "connect_timeout": 3,
-                "application_name": "clip-identity-pooled",
-                "autocommit": True,
-                "options": "-c statement_timeout=5000 -c lock_timeout=3000 -c idle_in_transaction_session_timeout=5000",
-            },
+            kwargs=connection_kwargs(
+                dsn.get_secret_value(),
+                **{
+                    "passfile": "/dev/null",
+                    "connect_timeout": 3,
+                    "application_name": "clip-identity-pooled",
+                    "autocommit": True,
+                    "options": "-c statement_timeout=5000 -c lock_timeout=3000 -c idle_in_transaction_session_timeout=5000",
+                },
+            ),
+            configure=check_proxy_connection,
+            check=(
+                ConnectionPool.check_connection
+                if uses_proxy(dsn.get_secret_value())
+                else None
+            ),
             min_size=0,
             max_size=max_size,
             max_waiting=64,

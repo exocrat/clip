@@ -13,6 +13,28 @@ from scripts.evaluation.k6.cloudwatch_capture import (
 )
 
 
+def test_proxy_metrics_bind_name_and_aggregate_all_proxy_nodes():
+    plan = _plan()
+    plan["format_version"] = 2
+    plan["resources"]["database_proxy"] = {
+        "name": "clip-shared-test-pool",
+        "arn": "arn:aws:rds:ap-south-1:335523638354:db-proxy:prx-example",
+        "endpoint": "clip-shared-test-pool.proxy-example.ap-south-1.rds.amazonaws.com",
+    }
+    queries = build_queries(plan)["proxy"]
+    assert len(queries) == 7
+    for query in queries:
+        metric = query["MetricStat"]
+        assert metric["Metric"]["Dimensions"] == [
+            {"Name": "ProxyName", "Value": "clip-shared-test-pool"}
+        ]
+        assert metric["Stat"] == (
+            "Average"
+            if metric["Metric"]["MetricName"] == "DatabaseConnectionsBorrowLatency"
+            else "Sum"
+        )
+
+
 def _plan(configuration: str = "B") -> dict[str, object]:
     is_b = configuration == "B"
     account = "335523638354"

@@ -1,5 +1,10 @@
 # Precommit requirement and release audit — 2026-11-04
 
+Current follow-up: optimized direct behavior is preserved at `6193ca7`; the
+[shared-pool plan](shared-pool-plan.md) supersedes the earlier hold and four-weight
+pilot. Earlier evidence below remains historical; proxy source is uncommitted
+and no proxy or repaired image has been deployed.
+
 This is a source/tooling audit and local validation checkpoint, not deployed
 acceptance. Suraj authorises work up to immediately before commit, with capacity
 decisions held if the local database saturates. The

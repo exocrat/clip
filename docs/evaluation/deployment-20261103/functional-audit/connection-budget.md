@@ -1,5 +1,13 @@
 # Connection budget for the functional repair
 
+Current amendment: the [shared-pool plan](shared-pool-plan.md) keeps these client
+pool bounds but routes both architectures through one separately approved proxy.
+The table below describes client maxima and the direct fallback, not a promise
+of one physical database connection per client when proxy routing is active.
+Proxy backend allocation is bounded to 75% with 50% idle retention; actual
+available capacity, role limits, session pinning and admin headroom must be
+verified before traffic. Source credentials and roles remain unchanged.
+
 Observed RDS maximum:78, including3 superuser-reserved. Current shared role
 limits are Identity10, Marketplace32 and Conversations4. These are shared by
 all clients using each role, not per task. Resource sizes are unchanged.
@@ -25,7 +33,7 @@ connections would otherwise invalidate the budget. Lambda has no notification or
 embedding worker and no Conversations pool. Startup safety-audit connections are
 closed before serving; recheck transient rollout/initialization use in telemetry.
 
-The current uncommitted Lambda change shares one physical Identity connection
+The preserved `6193ca7` Lambda change shares one physical Identity connection
 between the session and account-eligibility transactions within one invocation.
 It retains separate current-state SQL/transactions and restricted database roles.
 Cleanup joins any outstanding borrower and physically closes the null-pool lease

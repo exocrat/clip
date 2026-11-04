@@ -17,6 +17,11 @@ from psycopg.rows import dict_row
 from psycopg_pool import AsyncConnectionPool, AsyncNullConnectionPool, PoolTimeout
 
 from app.core.config import Settings
+from app.core.database_transport import (
+    uses_proxy,
+    connection_kwargs,
+    check_async_proxy_connection,
+)
 from app.domains.listings.embedding_client import SemanticHelper, HelperUnavailable
 from app.domains.listings.embedding_dispatch import EmbeddingDispatcher
 
@@ -104,6 +109,7 @@ async def search_runtime(
         assert settings.database_url is not None
         assert settings.hybrid_search_interpreter is not None
         assert settings.hybrid_search_model_dir is not None
+        runtime_dsn = settings.routed_database(settings.database_url).get_secret_value()
         try:
             pool_type = (
                 AsyncConnectionPool
@@ -111,12 +117,21 @@ async def search_runtime(
                 else AsyncNullConnectionPool
             )
             pool = pool_type(
-                conninfo=settings.database_url.get_secret_value(),
-                kwargs={
-                    "row_factory": dict_row,
-                    "autocommit": True,
-                    "options": "-c statement_timeout=5000 -c lock_timeout=1000 -c idle_in_transaction_session_timeout=5000",
-                },
+                conninfo=runtime_dsn,
+                kwargs=connection_kwargs(
+                    runtime_dsn,
+                    **{
+                        "row_factory": dict_row,
+                        "autocommit": True,
+                        "options": "-c statement_timeout=5000 -c lock_timeout=1000 -c idle_in_transaction_session_timeout=5000",
+                    },
+                ),
+                configure=check_async_proxy_connection,
+                check=(
+                    AsyncConnectionPool.check_connection
+                    if uses_proxy(runtime_dsn)
+                    else None
+                ),
                 min_size=1 if retain_idle_connections else 0,
                 max_size=pool_max_size,
                 timeout=5,
@@ -142,9 +157,7 @@ async def search_runtime(
             pool = None
             logger.warning("Hybrid search startup unavailable")
         if helper is not None and worker_enabled:
-            dispatcher = EmbeddingDispatcher(
-                settings.database_url.get_secret_value(), helper
-            )
+            dispatcher = EmbeddingDispatcher(runtime_dsn, helper)
             await dispatcher.start()
         yield (
             SearchRuntime("ready", helper, pool, dispatcher)

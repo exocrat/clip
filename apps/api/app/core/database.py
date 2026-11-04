@@ -5,6 +5,12 @@ from typing import Protocol
 
 from psycopg_pool import AsyncConnectionPool
 
+from app.core.database_transport import (
+    uses_proxy,
+    connection_kwargs,
+    check_async_proxy_connection,
+)
+
 
 class PoolLifecycle(Protocol):
     """The narrow pool lifecycle used by FastAPI and deterministic tests."""
@@ -26,6 +32,9 @@ def create_async_connection_pool(conninfo: str) -> AsyncConnectionPool:
     """
     return AsyncConnectionPool(
         conninfo=conninfo,
+        kwargs=connection_kwargs(conninfo),
+        configure=check_async_proxy_connection,
+        check=AsyncConnectionPool.check_connection if uses_proxy(conninfo) else None,
         min_size=0,
         max_size=2,
         max_waiting=32,

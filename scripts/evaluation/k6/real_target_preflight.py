@@ -104,12 +104,80 @@ def _exact_object(value: Any, keys: set[str], code: str) -> dict[str, Any]:
     return value
 
 
+def _verify_database_proxy(
+    rds: Any,
+    proxy: dict[str, Any] | None,
+    database: dict[str, Any],
+    ecs_environment: dict[str, Any],
+    lambda_environment: dict[str, Any] | None,
+) -> None:
+    """Bind both runtime overrides to one healthy proxy and its exact source DB.
+
+    Old/direct plans refuse an unrecorded override. A healthy proxy alone is not
+    sufficient: its target, TLS and bounded backend policy must also match.
+    """
+    expected = proxy["endpoint"] if proxy is not None else None
+    for environment in (ecs_environment, lambda_environment):
+        if (
+            environment is not None
+            and environment.get("CLIP_DATABASE_PROXY_ENDPOINT") != expected
+        ):
+            raise ValueError("runtime_database_proxy_mismatch")
+    if proxy is None:
+        return
+    rows = rds.describe_db_proxies(DBProxyName=proxy["name"]).get("DBProxies", [])
+    if len(rows) != 1 or any(
+        (
+            rows[0].get("DBProxyArn") != proxy["arn"],
+            rows[0].get("Endpoint") != proxy["endpoint"],
+            rows[0].get("Status") != "available",
+            rows[0].get("EngineFamily") != "POSTGRESQL",
+            rows[0].get("RequireTLS") is not True,
+            rows[0].get("DebugLogging") is not False,
+            rows[0].get("IdleClientTimeout") != 300,
+        )
+    ):
+        raise ValueError("database_proxy_state_mismatch")
+    groups = rds.describe_db_proxy_target_groups(DBProxyName=proxy["name"]).get(
+        "TargetGroups", []
+    )
+    expected_pool = {
+        "ConnectionBorrowTimeout": 1,
+        "MaxConnectionsPercent": 75,
+        "MaxIdleConnectionsPercent": 50,
+        "InitQuery": "SET statement_timeout='5s'; SET lock_timeout='1s'; SET idle_in_transaction_session_timeout='5s'",
+    }
+    if (
+        len(groups) != 1
+        or groups[0].get("TargetGroupName") != "default"
+        or any(
+            groups[0].get("ConnectionPoolConfig", {}).get(key) != value
+            for key, value in expected_pool.items()
+        )
+    ):
+        raise ValueError("database_proxy_pool_mismatch")
+    targets = rds.describe_db_proxy_targets(
+        DBProxyName=proxy["name"], TargetGroupName="default"
+    ).get("Targets", [])
+    if len(targets) != 1 or any(
+        (
+            targets[0].get("Type") != "RDS_INSTANCE",
+            targets[0].get("RdsResourceId") != database.get("DbiResourceId"),
+            not database.get("DbiResourceId"),
+            targets[0].get("Endpoint") != database.get("Endpoint", {}).get("Address"),
+            targets[0].get("Port") != database.get("Endpoint", {}).get("Port"),
+            targets[0].get("TargetHealth", {}).get("State") != "AVAILABLE",
+        )
+    ):
+        raise ValueError("database_proxy_target_mismatch")
+
+
 def validate_plan(plan: Any) -> dict[str, Any]:
     """Check complete plan shape and A/B routing semantics before AWS access."""
     _exact_object(plan, PLAN_KEYS, "invalid_plan_shape")
     if (
         type(plan["format_version"]) is not int
-        or plan["format_version"] != 1
+        or plan["format_version"] not in (1, 2)
         or plan["purpose"] != "clip-read-experiment-target"
         or plan["execution_permitted"] is not False
         or plan["nfr_accepted"] is not False
@@ -137,8 +205,34 @@ def validate_plan(plan: Any) -> dict[str, Any]:
     ):
         raise ValueError("https_origin_required")
     resources = _exact_object(
-        plan["resources"], RESOURCE_KEYS, "invalid_resource_shape"
+        plan["resources"],
+        RESOURCE_KEYS | ({"database_proxy"} if plan["format_version"] == 2 else set()),
+        "invalid_resource_shape",
     )
+    proxy = resources.get("database_proxy")
+    if proxy is not None:
+        _exact_object(
+            proxy, {"arn", "name", "endpoint"}, "invalid_database_proxy_shape"
+        )
+        if (
+            not isinstance(proxy["name"], str)
+            or not re.fullmatch(r"[a-z][a-z0-9-]{1,62}", proxy["name"])
+            or not isinstance(proxy["endpoint"], str)
+            or not re.fullmatch(
+                r"[a-z][a-z0-9-]*\.proxy-[a-z0-9]+\.ap-south-1\.rds\.amazonaws\.com",
+                proxy["endpoint"],
+            )
+            or not isinstance(proxy["arn"], str)
+            or not re.fullmatch(
+                r"arn:aws:rds:"
+                + re.escape(plan["region"])
+                + ":"
+                + plan["account_id"]
+                + r":db-proxy:prx-[a-z0-9]+",
+                proxy["arn"],
+            )
+        ):
+            raise ValueError("invalid_database_proxy_binding")
     routing = _exact_object(plan["routing"], ROUTING_KEYS, "invalid_routing_shape")
     revisions = _exact_object(
         plan["revisions"], REVISION_KEYS, "invalid_revision_shape"
@@ -486,6 +580,7 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
         or db_secrets[0].get("valueFrom") != resources["database_parameter_arn"]
     ):
         raise ValueError("ecs_database_parameter_mismatch")
+    lambda_environment = None
     if plan["configuration"] == "B":
         lam = session.client("lambda")
         function = lam.get_function_configuration(
@@ -498,6 +593,7 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
         ):
             raise ValueError("lambda_function_state_mismatch")
         env = function.get("Environment", {}).get("Variables", {})
+        lambda_environment = env
         if env.get("CLIP_LAMBDA_DATABASE_PARAMETER_ENABLED") != "true":
             raise ValueError("lambda_database_binding_disabled")
         if function.get("ImageConfigResponse", {}).get("Error"):
@@ -537,7 +633,8 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
                     can_read_parameter = True
         if not can_read_parameter:
             raise ValueError("lambda_database_parameter_permission_mismatch")
-    rds = session.client("rds").describe_db_instances(
+    rds_client = session.client("rds")
+    rds = rds_client.describe_db_instances(
         DBInstanceIdentifier=resources["database_instance_id"]
     )["DBInstances"]
     if (
@@ -548,6 +645,13 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
         raise ValueError("database_state_mismatch")
     if rds[0].get("DBInstanceArn", "").split(":")[4] != plan["account_id"]:
         raise ValueError("database_account_mismatch")
+    _verify_database_proxy(
+        rds_client,
+        resources.get("database_proxy"),
+        rds[0],
+        {row["name"]: row.get("value") for row in app.get("environment", [])},
+        lambda_environment,
+    )
     parameter = (
         session.client("ssm")
         .get_parameter(Name=resources["database_parameter_arn"], WithDecryption=True)
@@ -605,6 +709,7 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
         "database_parameter_resolves_to_planned_instance": True,
         "lambda_image_verified": plan["configuration"] == "B",
         "database_available_private": True,
+        "database_proxy_verified": resources.get("database_proxy") is not None,
         "https_liveness_verified": True,
         "origin_dns_to_load_balancer_verified": True,
         "application_revision_attested": False,

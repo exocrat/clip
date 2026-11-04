@@ -103,7 +103,7 @@ resource "aws_ecs_task_definition" "api" {
       ] : [], var.identity_runtime_enabled ? [
       { name = "CLIP_NOTIFICATION_WORKER_ENABLED", value = tostring(var.notification_worker_enabled) },
       { name = "CLIP_NOTIFICATION_ALLOW_UNLISTED_RECIPIENTS", value = tostring(var.notification_allow_unlisted_recipients) },
-    ] : [])
+    ] : [], local.database_proxy_environment)
     secrets = concat(var.identity_runtime_enabled ? [{
       name      = "CLIP_DATABASE_URL"
       valueFrom = "arn:aws:ssm:${local.region}:${local.account_id}:parameter/clip/test/listings-database-url"

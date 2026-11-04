@@ -12,6 +12,7 @@ from pydantic import SecretStr
 import app.application as composition
 from app.application import application_lifespan, create_app
 from app.core.config import Settings
+from app.core.database_transport import check_async_proxy_connection
 from app.core.database import PoolLifecycle
 
 
@@ -61,6 +62,8 @@ def test_lambda_read_lifecycle_uses_single_pools_and_skips_other_runtimes(monkey
         assert kwargs == {
             "conninfo": shared_dsn,
             "kwargs": {"row_factory": dict_row},
+            "configure": check_async_proxy_connection,
+            "check": None,
             "min_size": 0,
             "max_size": 1,
             "timeout": 5,

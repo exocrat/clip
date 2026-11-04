@@ -46,7 +46,9 @@ def test_idle_capacity_and_failed_jobs_are_paced_after_releasing_connection(
     async def exercise():
         pool = ScriptedPool()
         helper = object()
-        dispatcher = EmbeddingDispatcher("synthetic-unused", helper)
+        dispatcher = EmbeddingDispatcher(
+            "postgresql://synthetic@database.invalid/unused", helper
+        )
         dispatcher._pool = pool
         one = SimpleNamespace(run_one=AsyncMock(return_value=outcome))
         pauses = []
@@ -77,7 +79,9 @@ def test_idle_capacity_and_failed_jobs_are_paced_after_releasing_connection(
 def test_ten_job_burst_is_serial_then_yields_without_backfill():
     async def exercise():
         pool = ScriptedPool()
-        dispatcher = EmbeddingDispatcher("synthetic-unused", object())
+        dispatcher = EmbeddingDispatcher(
+            "postgresql://synthetic@database.invalid/unused", object()
+        )
         dispatcher._pool = pool
         one = SimpleNamespace(run_one=AsyncMock(return_value="published"))
         pauses = []
@@ -114,7 +118,9 @@ def test_ten_job_burst_is_serial_then_yields_without_backfill():
 def test_dependency_errors_pause_without_replay_or_private_logs(error, caplog):
     async def exercise():
         pool = ScriptedPool()
-        dispatcher = EmbeddingDispatcher("synthetic-unused", object())
+        dispatcher = EmbeddingDispatcher(
+            "postgresql://synthetic@database.invalid/unused", object()
+        )
         dispatcher._pool = pool
         one = SimpleNamespace(run_one=AsyncMock(side_effect=error))
 
@@ -142,7 +148,9 @@ def test_startup_connection_failure_is_closed_and_safe(caplog):
     async def exercise():
         pool = ScriptedPool()
         pool.wait.side_effect = PoolTimeout("synthetic-private")
-        dispatcher = EmbeddingDispatcher("synthetic-unused", object())
+        dispatcher = EmbeddingDispatcher(
+            "postgresql://synthetic@database.invalid/unused", object()
+        )
         with patch(MODULE + ".AsyncConnectionPool", return_value=pool) as factory:
             await dispatcher.start()
         assert dispatcher.status.state == "unavailable" and dispatcher._task is None
@@ -159,7 +167,9 @@ def test_shutdown_awaits_job_cancellation_before_pool_close_and_leaves_helper_to
     async def exercise():
         pool = ScriptedPool()
         helper = SimpleNamespace(close=AsyncMock())
-        dispatcher = EmbeddingDispatcher("synthetic-unused", helper)
+        dispatcher = EmbeddingDispatcher(
+            "postgresql://synthetic@database.invalid/unused", helper
+        )
         entered = asyncio.Event()
         cancelled = []
 
@@ -194,7 +204,9 @@ def test_shutdown_awaits_job_cancellation_before_pool_close_and_leaves_helper_to
 def test_unexpected_task_error_is_visible_and_cleanup_still_closes_pool(caplog):
     async def exercise():
         pool = ScriptedPool()
-        dispatcher = EmbeddingDispatcher("synthetic-unused", object())
+        dispatcher = EmbeddingDispatcher(
+            "postgresql://synthetic@database.invalid/unused", object()
+        )
         failed = asyncio.Event()
 
         async def job():

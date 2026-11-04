@@ -1,3 +1,37 @@
+### Shared-pool release and exact provisioning approval — 2026-11-04 12:24:22 UTC
+
+Suraj approved the reviewed41-file source receipt
+`aca72703c9c926ae29d388c29dc8547e82ce7b09726575d389c8c815aaf39c43`
+for commit/publication to existing PR32 and CI. All41files matched before recording
+this approval metadata. He separately approved saved provisioning plan
+`ea6be9edfbf3eae1845488d35baffb4eaab83e42ac76009c41cdd8fbeff3b01a`
+for account335523638354/Mumbai, at most24hours/USD2additional, conditional on
+separately approved PR integration. The plan creates the private proxy/credential
+copies/IAM/network objects, updates one DB security-group rule, and leaves app
+routing unchanged. No merge, apply, SQL or activation has been performed.
+
+### Shared database pool implementation and preserved fallback — 2026-11-04 11:58:53 UTC
+
+Suraj approved preserving the optimized direct implementation and continuing local
+shared-pool work. Fallback source is `6193ca7`; its exact Hybrid image builds and
+performs offline model inference. New proxy routing preserves source DSNs, roles,
+TLS and transactions, checks deadlines/stale connections, protects restore targets,
+and records proxy telemetry. EXP-05 now declares only baseline and 100% Lambda,
+three repetitions each; historical plans remain readable. NFR-03 remains 50rps.
+The [shared-pool plan](../evaluation/deployment-20261103/functional-audit/shared-pool-plan.md)
+records the full read-only Terraform plan (15 creates, one SG update, no destruction,
+routing disabled), credential-version binding, costs and rollback. No cloud apply,
+SQL, push, CI or merge. Initial focused checks: 84 app/auth tests, 30 tooling tests,
+27 Terraform mocks and backend-free validation passed. Final checks: the broad Python run had2457passes/180skips and14fixture failures;
+all failures resolved and77affected tests passed. Data331, web504/3skips, native
+Listings27/3skips and Conversations184 passed; format/contracts/boundaries/SQL/
+secret checks passed. Original failed aggregate is retained. The separate short
+ECS fallback profiles delivered7800/7800successful operations with no drops/timeouts;
+all22quality queries hit. Read-burst p95130.08ms; mean DB quota48.54%, versus
+65.25ms/23.64%in the earlier local run, so no identical-performance claim.
+[Final validation](../evaluation/deployment-20261103/functional-audit/shared-pool-validation.md)
+records exact results/limits. Managed-proxy performance still requires deployment.
+
 ### Precommit local capacity gate and independent audit — 2026-11-04 10:42:05 UTC
 
 Suraj authorises autonomous local work until immediately before commit; the
@@ -3085,7 +3119,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
-| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Local precommit capacity gate blocked: ECS burst succeeds; 100% Lambda local burst saturates PostgreSQL. Independent audit and final local checks complete. No commit/deployment. | Python 2429/180 skipped; data 331; web 504/3 skipped; native 27/3 skipped; integrated 26 groups; Terraform 23 mocks. Final secret/format/type checks pass after documented prose false positive. | Suraj authorised autonomous local work up to before commit; capacity changes wait for his decision. No automatic proxy, second DB, resize or weight change. | [PR32](https://github.com/exocrat/clip/pull/32); [capacity report](../evaluation/deployment-20261103/functional-audit/precommit-capacity-20261104.md); [audit](../evaluation/deployment-20261103/functional-audit/precommit-audit-20261104.md) | Review CPU remediation, then repeat affected capacity checks. Commit/CI/integration and exact SQL/resource/cloud approvals remain; live B/pilot/NFR evidence pending. | 2026-11-04 10:42:05 UTC |
+| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Direct fallback preserved at `6193ca7`; shared-pool source and exact provisioning plan ready for review. Local checks complete; no AWS change. | All14fixture failures resolved in77test rerun; data331, web504, native27, retirement184, Terraform27 pass. Short direct A profiles7800/7800successful; no drops/timeouts. | Suraj selected shared proxy and only100% pilot, authorized fallback commit/local work. Commit/push/CI and exact proxy provision plan approved; merge and activation remain gated. | [PR32](https://github.com/exocrat/clip/pull/32); [shared-pool plan](../evaluation/deployment-20261103/functional-audit/shared-pool-plan.md); [validation](../evaluation/deployment-20261103/functional-audit/shared-pool-validation.md) | Publish reviewed changes and complete CI; obtain exact-head merge approval, then apply approved provision plan. Actual proxy behavior, live website, pilot/NFRs pending. | 2026-11-04 12:21:09 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |

@@ -23,6 +23,11 @@ import app.domains.conversations.public as conversations_public
 import app.domains.conversations.routes as conversations_routes
 from app.domains.conversations.notifications.runtime import notification_runtime
 from app.core.database import PoolFactory, create_async_connection_pool
+from app.core.database_transport import (
+    uses_proxy,
+    connection_kwargs,
+    check_async_proxy_connection,
+)
 from app.domains.listings.routes import (
     read_only_router as listings_read_only_router,
     router as listings_router,
@@ -83,8 +88,19 @@ async def _marketplace_lifespan(
         else pool_factory
     )
     pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]] = selected_pool_factory(
-        conninfo=settings.database_url.get_secret_value(),
-        kwargs={"row_factory": dict_row},
+        conninfo=settings.routed_database(settings.database_url).get_secret_value(),
+        kwargs=connection_kwargs(
+            settings.routed_database(settings.database_url).get_secret_value(),
+            row_factory=dict_row,
+        ),
+        configure=check_async_proxy_connection,
+        check=(
+            AsyncConnectionPool.check_connection
+            if uses_proxy(
+                settings.routed_database(settings.database_url).get_secret_value()
+            )
+            else None
+        ),
         min_size=0 if read_only_listings else 1,
         max_size=listings_pool_max_size,
         timeout=5,
@@ -186,7 +202,9 @@ async def application_lifespan(
     dsn = settings.database_dsn or settings.database_url
     try:
         if dsn is not None and not read_only_listings:
-            pool = conversation_pool_factory(dsn.get_secret_value())
+            pool = conversation_pool_factory(
+                settings.routed_database(dsn).get_secret_value()
+            )
             await pool.open(wait=False)
             application.state.database_pool = pool
         async with _marketplace_lifespan(

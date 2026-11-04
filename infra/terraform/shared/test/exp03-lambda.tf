@@ -402,7 +402,7 @@ resource "aws_lambda_function" "exp03" {
     security_group_ids = [aws_security_group.exp03_lambda[0].id]
   }
   environment {
-    variables = {
+    variables = merge({
       CLIP_ENVIRONMENT                       = "test"
       CLIP_IDENTITY_PROVIDER                 = "microsoft"
       CLIP_EMAIL_PROVIDER                    = "disabled"
@@ -413,7 +413,7 @@ resource "aws_lambda_function" "exp03" {
       CLIP_HYBRID_WORKER_ENABLED             = "false"
       CLIP_STORAGE_PROVIDER                  = "disabled"
       CLIP_SERVE_WEB_APP                     = "false"
-    }
+    }, { for setting in local.database_proxy_environment : setting.name => setting.value })
   }
   depends_on = [aws_iam_role_policy.exp03_lambda, terraform_data.exp03_inputs]
   tags       = local.exp03_tags

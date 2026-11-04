@@ -1,5 +1,5 @@
 {
-  "format_version": 1,
+  "format_version": 2,
   "purpose": "clip-read-experiment-target",
   "run_id": null,
   "configuration": null,
@@ -22,11 +22,14 @@
     "lambda_target_group_arn": null,
     "database_instance_id": null,
     "database_name": null,
-    "database_parameter_arn": null
+    "database_parameter_arn": null,
+    "database_proxy": null
   },
   "routing": {
     "lambda_weight_percent": null,
-    "methods": ["GET"],
+    "methods": [
+      "GET"
+    ],
     "path_regexes": [
       "^/api/listings$",
       "^/api/listings/[0-9A-Fa-f-]{36}$"

@@ -502,6 +502,7 @@ def _verify_application_smoke(
         or conversation_secrets[0].get("valueFrom")
         != smoke["conversations_database_parameter_arn"]
         or environment.get("CLIP_NFR07_RESTORE_SMOKE_ENABLED") != "true"
+        or "CLIP_DATABASE_PROXY_ENDPOINT" in environment
         or environment.get("CLIP_NOTIFICATION_WORKER_ENABLED") != "false"
         or environment.get("CLIP_HYBRID_WORKER_ENABLED") != "false"
     ):

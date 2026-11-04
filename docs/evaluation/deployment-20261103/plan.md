@@ -19,10 +19,12 @@ expired: refresh account/resources/drift/billing, bind the final image digests,
 renew the concrete time/cost approval, and review the exact saved plan before
 any subsequent cloud apply. Do not replay the original creation steps.
 
-The current local batch ends before commit. Its
-[active order and stop conditions](functional-audit/lunch-batch-plan.md#current-authorised-order--2026-11-04)
-control preparation. Shared pooling, a second database and RDS resizing are
-unselected fallbacks. The approved1vCPU/task remains a planned allocation change;
+The direct-database fallback is preserved at `6193ca7`. The current
+[shared-pool plan](functional-audit/shared-pool-plan.md) supersedes the earlier
+local hold: shared RDS Proxy implementation is selected, with a concrete
+provisioning plan awaiting approval. A second database and RDS resizing remain
+unselected. The pilot now uses only ECS baseline and 100% Lambda, three
+repetitions each; older four-candidate descriptions below are historical. The approved1vCPU/task remains a planned allocation change;
 it is not part of the older image-only approval or evidence of an applied change.
 
 The normal running configuration is **two healthy ECS tasks on two hosts in

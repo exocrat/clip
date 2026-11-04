@@ -273,7 +273,9 @@ def prepare_hosted_test_identity_reads(
         keys = parse_authentication_keys(
             read_secure_parameter(parameter_client, references.authentication_keys)
         )
-        dsn = read_secure_parameter(parameter_client, references.database_url)
+        dsn = settings.routed_database(
+            read_secure_parameter(parameter_client, references.database_url)
+        )
         connect = connection_factory(dsn, settings.environment)
         validate_database(connect, keys)
         # Each Lambda execution environment is serial; one lease is sufficient.
@@ -311,7 +313,9 @@ def _prepare_identity(
             if settings.nfr07_restore_smoke_enabled
             else references.database_url
         )
-        dsn = read_secure_parameter(parameter_client, database_parameter)
+        dsn = settings.routed_database(
+            read_secure_parameter(parameter_client, database_parameter)
+        )
         connect = connection_factory(dsn, settings.environment)
         validate_database(connect, keys)
         sender = RefreshingEmailSender(

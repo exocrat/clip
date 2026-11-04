@@ -112,3 +112,43 @@ monotonic experiment timing are unaffected.
 - `scripts/evaluation/k6/real_run_coordinator.py` — Include the helper in staged import closure; its deployed environment never enables short mode.
 - `scripts/evaluation/capacity_local.py`, `capacity_local_worker.py` — Add the short release sequence, immutable source versus runtime timing profiles, and invocation-scope wiring; retain failed raw results and stop incomplete delivery.
 - `apps/api/app/domains/listings/hybrid_snapshot.py` — Final strict-type cleanup adds explicit clock/vector/index types and rejects missing Hybrid query text. Valid query arithmetic and ordering are unchanged.
+
+## Shared proxy follow-up after fallback commit 6193ca7
+
+- `apps/api/app/core/database_transport.py` — Resolve the explicit proxy host while preserving each role, password, database and TLS setting. Remove unsupported startup options only for proxy connections, disable automatic prepared statements, and verify bounded server deadlines without retaining a transaction.
+- `apps/api/app/core/config.py` — Validate the nonsecret endpoint override, provide the common DSN routing method and reject source-proxy inheritance during an isolated restore.
+- `apps/api/app/application.py` — Route Listings and Conversations through the common override; retain bounded pools and check stale proxy connections before checkout.
+- `apps/api/app/core/database.py` — Apply the same proxy connection rules to the Conversations pool used by chat and notifications.
+- `apps/api/app/domains/identity/runtime_configuration.py` — Route both full ECS Identity and read-only Lambda Identity through the same setting after reading their existing SSM source.
+- `apps/api/app/domains/identity/runtime_database.py` — Apply proxy compatibility, deadline checks and stale-client replacement to startup and pooled Identity connections without changing authentication queries.
+- `apps/api/app/domains/listings/search_runtime.py` — Route Hybrid retrieval through the same proxy and pass the selected DSN to its worker, retaining the release-before-scoring behavior.
+- `apps/api/app/domains/listings/embedding_dispatch.py` — Apply the same compatibility and checkout checks to the bounded embedding worker pool.
+- `infra/terraform/shared/test/database-proxy.tf` — Define opt-in private proxy, role-separated credential copies using ephemeral/write-only inputs, exact-secret IAM, private network rules and bounded backend settings. Provisioning and application routing are separate switches.
+- `infra/terraform/shared/test/network.tf` — Permit only the proxy security group to reach the existing database on port 5432 while retaining direct rules for rollback.
+- `infra/terraform/shared/test/service.tf` and `exp03-lambda.tf` — Put the same nonsecret endpoint override in ECS and Lambda only when explicitly activated.
+- `infra/terraform/shared/test/tests/database_proxy.tftest.hcl` — Verify disabled defaults, provisioning without activation, TLS/bounds and required Identity configuration using mocks.
+- `infra/terraform/shared/test/tests/exp03_lambda.tftest.hcl` — Supply synthetic ephemeral inputs required by the mock Terraform lifecycle; no live secrets or resources.
+- `scripts/evaluation/database_proxy_credentials.py` — Prepare read-only metadata bindings to exact source versions, then privately resolve matching existing credentials for ephemeral Terraform inputs. Reject changed sources, mismatched account or expired plans; never applies resources.
+- `scripts/evaluation/k6/real_target_preflight.py` — Bind new target-plan versions to one healthy proxy and its exact RDS target, require matching ECS/Lambda overrides and reject hidden proxy routing in direct plans. Continue accepting historical direct plans.
+- `scripts/evaluation/k6/cloudwatch_capture.py` — Preserve proxy connection, borrowing, pinning, setup-failure and capacity metrics alongside existing runtime/database evidence; retain missing data explicitly.
+- `scripts/evaluation/nfr07_restore_observer.py` — Refuse restore applications still pointing to the source proxy.
+- `scripts/evaluation/k6/exp05_pilot.py` — Generate the authorized six-run baseline/full-Lambda pilot and require every declared result; historical 15-run plans remain readable.
+- `scripts/evaluation/capacity_local.py` — Add an explicit ECS-only short fallback diagnostic, with truthful configuration metadata and no claim to emulate managed proxy capacity.
+- `data/evaluation/workloads/exp05-target-bindings.template.json` — Match the six current pilot target bindings.
+- `data/evaluation/workloads/real-target-plan.template.json` — Declare version 2 and an explicit optional proxy binding.
+- `apps/api/tests/test_database_transport.py` — Check role/TLS preservation, invalid overrides, restore isolation, bounded defaults and clean transaction state.
+- `tests/evaluation/test_database_proxy_credentials.py` — Verify read-only preparation, private handoff, version/digest drift rejection, redacted errors and non-overwriting private output.
+- `tests/evaluation/test_database_proxy_preflight.py` — Reject mismatched runtime endpoints, wrong/unhealthy databases, weakened proxy settings and incomplete pilot evidence.
+- `tests/evaluation/test_cloudwatch_capture.py` — Verify metrics use the selected proxy and aggregate connection counts across its nodes.
+
+The command index, k6 guide, canonical experiment task list, deployment plan,
+connection budget and shared-pool plan explain operation, evidence boundaries and
+rollback. No new API response, schema, ranking, authorization or workload-rate
+change is introduced by this follow-up. The current pilot candidate count changes
+by Suraj's explicit instruction; NFR thresholds remain unchanged.
+
+The final broad suite also required fixture updates: `test_database_lifespan.py`
+and `test_lambda_read_app.py` now expect the explicit configure/check callbacks
+while still asserting every existing pool bound; `domains/listings/test_embedding_dispatch.py`
+uses a syntactically valid unused DSN so it reaches the intended mocked startup,
+shutdown and cancellation failures. These tests still open no external connection.

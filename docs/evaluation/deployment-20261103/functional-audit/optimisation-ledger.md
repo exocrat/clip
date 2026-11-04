@@ -1,5 +1,10 @@
 # Functional repair and optimisation ledger
 
+Current follow-up: optimized direct behavior is preserved at `6193ca7`; the
+[shared-pool plan](shared-pool-plan.md) supersedes the earlier hold and four-weight
+pilot. Earlier evidence below remains historical; proxy source is uncommitted
+and no proxy or repaired image has been deployed.
+
 Current discussion checkpoint: 2026-11-04. This records the whole optimisation
 set, not just search arithmetic. Nothing below is a deployed capacity guarantee.
 The latest repair images have not been deployed; current search changes are

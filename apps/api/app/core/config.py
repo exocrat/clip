@@ -17,6 +17,8 @@ from pydantic import (
 )
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.core.database_transport import PROXY_HOST, route_database
+
 
 class ConfigurationError(RuntimeError):
     """Report invalid startup settings without echoing supplied values."""
@@ -92,6 +94,30 @@ class Settings(BaseSettings):
     serve_web_app: bool = False
     # SecretStr prevents accidental repr/log output of embedded credentials.
     database_url: SecretStr | None = None
+    # Non-secret override; source SSM DSNs remain unchanged for exact rollback.
+    database_proxy_endpoint: str | None = None
+
+    @field_validator("database_proxy_endpoint")
+    @classmethod
+    def validate_proxy_endpoint(cls, value: str | None) -> str | None:
+        """Permit only an explicit managed Mumbai proxy hostname, not a URL."""
+        if value is not None and not PROXY_HOST.fullmatch(value):
+            raise ValueError("must be an approved Mumbai RDS Proxy hostname")
+        return value
+
+    @model_validator(mode="after")
+    def proxy_preserves_restore_isolation(self) -> Self:
+        """The isolated restore always uses its own direct DSNs, never source proxy."""
+        if self.database_proxy_endpoint and self.nfr07_restore_smoke_enabled:
+            raise ValueError("restore smoke cannot use the source database proxy")
+        return self
+
+    def routed_database(self, dsn: SecretStr) -> SecretStr:
+        """Resolve the runtime endpoint without exposing or rewriting the secret."""
+        return SecretStr(
+            route_database(dsn.get_secret_value(), self.database_proxy_endpoint)
+        )
+
     # Hybrid is opt-in; explicit paths never download/discover a model or interpreter.
     hybrid_search_enabled: bool = False
     hybrid_worker_enabled: bool = False
