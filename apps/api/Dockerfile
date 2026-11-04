@@ -53,6 +53,10 @@ COPY --from=build --chown=10001:10001 /opt/venv /opt/venv
 COPY --chown=10001:10001 apps/api/app /app/apps/api/app
 COPY --from=web-build --chown=10001:10001 /workspace/apps/web/dist /app/web
 
+# Runtime storage is read-only and bytecode writes are disabled. Compile source
+# once here; checked hashes reject stale caches if a source file ever differs.
+RUN --network=none python -m compileall -q --invalidation-mode checked-hash /app/apps/api/app
+
 USER 10001:10001
 
 EXPOSE 8000

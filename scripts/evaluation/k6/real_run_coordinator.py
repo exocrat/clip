@@ -305,7 +305,7 @@ def validate_approval(plan: dict[str, Any], plan_bytes: bytes, approval: Any) ->
         raise ValueError("action_approval_expired_or_misordered")
 
 
-def validate_run_plan(plan: Any) -> dict[str, Any]:
+def validate_run_plan(plan: Any, *, completed_evidence: bool = False) -> dict[str, Any]:
     """Reject incomplete, unbounded, or locally inconsistent run declarations."""
     if not isinstance(plan, dict) or set(plan) != PLAN_KEYS:
         raise ValueError("invalid_run_plan_shape")
@@ -344,7 +344,13 @@ def validate_run_plan(plan: Any) -> dict[str, Any]:
     target = _repo_path(plan["target_plan_path"], "target_plan")
     profile = _repo_path(plan["profile_path"], "profile")
     binary = _repo_path(plan["k6_binary_path"], "k6_binary")
-    _new_evidence_path(plan["evidence_directory"])
+    if completed_evidence:
+        # Reporting validates an existing run. Execution retains the default
+        # requirement for a new directory so it cannot overwrite earlier raw data.
+        if not _repo_path(plan["evidence_directory"], "evidence_directory").is_dir():
+            raise ValueError("completed_evidence_directory_required")
+    else:
+        _new_evidence_path(plan["evidence_directory"])
     _repo_path("scripts/evaluation/k6", "module_root")
     modules = (
         COMPARISON_MODULES

@@ -1,3 +1,51 @@
+### Bytecode startup probe checked; Lambda-only rerun preparation — 2026-11-04 18:38:08 UTC
+
+Suraj requested quickly/safely checking further Lambda optimization, then deploy
+and rerun Lambda pilots only, with the human present; merge and NFRs remain held.
+Found absent app/helper bytecode in the exact current image. Local offline read-
+only one-core probe: helper median462→273ms over three alternating pairs, same
+query vector and retained artifact/model checks. Canonical API/Hybrid Dockerfiles
+now compile source/library caches at build time; immutable runtime still disables
+writes.35focused checks pass. This is local evidence, not AWS improvement.
+[Files, measurements and exact private receipts](../evaluation/deployment-20261103/functional-audit/startup-import-cleanup.md).
+Next: frozen source/images, exact Lambda-only image/routing/rollback plan, stable-
+network generator headroom amendment and separate bounded traffic approval.
+No AWS changes or new traffic in this preparation increment.
+
+### Local startup import cleanup checked — 2026-11-04 18:27:09 UTC
+
+Suraj requested an easy premature startup optimization. application.py now avoids
+unused full-app Conversations/Wanted/Saved/notification imports on Listing-only
+Lambda composition; full ECS initialization remains before serving. New fresh-
+process regression proves both import paths.23existing Lambda/real-Postgres/full-
+app/notification tests plus new import test pass; focused8follow-up pass, Black
+and whitespace pass. Initial restricted Docker setup failures retained as setup
+failures, corrected rerun passed. Five alternating fresh-process medians587→505ms
+(82ms/~14%import reduction), local imports only. Model/permission checks unchanged;
+no AWS benefit or warmed-concurrency fix claimed. Local/uncommitted; no image,
+deployment, rerun, NFR/formal traffic or merge. Hold after pilots remains.
+[Changed code, measurements and evidence](../evaluation/deployment-20261103/functional-audit/startup-import-cleanup.md).
+
+### Pilot finished; third Lambda repetition invalid; ECS restored — 2026-11-04 18:19:10 UTC
+
+Suraj approved reviewed-tooling execution before merge and deferred integration
+until experiment/optimization review; explicitly holds NFR/formal traffic after
+pilots. All three A runs6000/6000correct, zero failures/drops; p95355/326/234ms.
+B1:5996/6000,p95269ms; B2:5992/6000,p95236ms; B3:5793/5994,201HTTP502,7drops,
+p95509ms/p991553ms. B3fails scheduled delivery/accounting; do not freeze100%or
+select a winner. B1warm-up40failures retained; B2/B3warm-ups600/600. B2/B3reuse
+ten warm environments; each has zero new initialization reports. AWS throttles
+match39/8/201client502totals; invocation errors zero. Hotspot-disruption cause
+unconfirmed. B3client delays exceed recorded function duration and generator
+expanded100→104workers when drops occurred. RDS/pool/service safety limits held.
+Completed-directory verifier bug repaired locally; A1provenance verified against
+unchanged raw receipt, execution still refuses overwrite, tamper regression passes.
+Formatting/two focused tests pass. All six raw hashes verified. Public listener
+has ECS default only;2API/1pooltasks healthy. No NFR/formal run or merge occurred.
+[Full pilot table, diagnosis, limitations and exact evidence](../evaluation/deployment-20261103/functional-audit/pilot-results-20261104.md).
+Next: human review of stable-network/generator and concurrency options; no
+rerun or new traffic until approved. Local NFR01/02profiles prepared only.
+
 ### Pilot stopped before traffic; workload startup repair checked — 2026-11-04 17:19:16 UTC
 
 First A coordinator recorded k6exit107in0.20seconds with zero raw/workload samples.
@@ -3368,7 +3416,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | INT-01 | A coordinator; all domain slices | in progress | Tooling and bounded deployment proposal complete locally; normal A/B deployment uses two ECS tasks/two hosts by Suraj decision. Publishing through the authorized PR/check/merge batch; cloud work remains gated. | Full make check passed: Python 2401 passed/176 skipped; data 331; web 498 passed/3 skipped; contracts/types/boundaries, 35 DB safety cases, PostgreSQL migration checks, 184 Conversations operations and Gitleaks passed. Terraform mocks 23 passed. | Suraj authorized plan before commit/PR checks/merge; he remains the sole human reviewer by session direction. | [Deployment plan](../evaluation/deployment-20261103/plan.md); [capacity decision](../decisions/experiment-runtime-capacity.md); [NFR tools](../evaluation/predeployment-gap-tools.md) | Exact cloud release/plan approval, DNS/certificate/Microsoft registration, live smoke/site inspection, pilot, cost-score input freeze and formal measurements remain. No live acceptance claimed. | 2026-11-03 15:11:50 UTC |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
-| EXP-05 | C; Suraj operator/reviewer | in progress | Six-run100%pilot approved; initial launch stopped before workload, k6exit107. | Real-k6 offline inspection isolates/fixes browser URL and missing pilot cookie; focused checks pass. | No capacity measurements; repaired source/replacement run bindings pending review. | [Pilot checkpoint](../evaluation/deployment-20261103/functional-audit/pilot-20261104-plan.md) | Integrate tool repair and review bounded restart; preserve original zero-request failure. | 2026-11-04 17:19:16 UTC |
+| EXP-05 | C; Suraj operator/reviewer | in progress | Six real cloud pilots completed;3A/2Bpass, B3invalid due generator drops/delivery. | All raw hashes/provenance verified; Lambda throttles and cold/warm differences retained. | All-three B criterion unmet; weight selection and run amendment await review. | [Pilot results](../evaluation/deployment-20261103/functional-audit/pilot-results-20261104.md) | Human review; no NFR/formal traffic or automatic rerun. | 2026-11-04 18:19:10 UTC |
 | EXP-06 | C operator; B infra support | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-05 | — |
 | EXP-07 | A; C/D calculation review | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-06 | — |
 | EXP-08 | B; A cost review | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-07 | — |
