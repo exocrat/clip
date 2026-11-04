@@ -1,5 +1,5 @@
 {
-  "at": "2026-11-03T19:22:53.179912+00:00",
+  "at": "2026-11-04T14:41:53.937683+00:00",
   "max_connections": "78",
   "reserved": "3",
   "roles": [
@@ -16,7 +16,7 @@
     {
       "role": "clip_test_marketplace_app",
       "limit": 32,
-      "connections": 9
+      "connections": 6
     }
   ],
   "embedding_states": {
@@ -24,8 +24,23 @@
     "ready": 1000
   },
   "worker_privileges": {
-    "embedding_generations_UPDATE": false,
-    "embedding_chunks_INSERT": false
+    "embedding_generations_UPDATE": {
+      "state": false,
+      "lease_token": false,
+      "lease_until": false,
+      "attempts": false,
+      "failure_code": false,
+      "updated_at": false,
+      "title_count": false,
+      "description_count": false,
+      "retry_after": false
+    },
+    "embedding_chunks_INSERT": {
+      "generation_id": false,
+      "part_kind": false,
+      "ordinal": false,
+      "vector": false
+    }
   },
   "deployment_configuration": {
     "deploymentCircuitBreaker": {

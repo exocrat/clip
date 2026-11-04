@@ -1,5 +1,11 @@
 # Functional coverage and remaining acceptance
 
+The [2026-11-04 deployed checkpoint](cloud-pool-checkpoint-20261104.md) supersedes
+this table's original pending-repair state: two 16-check website passes, actual
+controlled ECS workflows and live indexing now pass. Lambda startup/parity,
+mailbox receipt, temporary-account live lifecycle and formal NFRs remain pending.
+The table below retains the original audit and its broader coverage obligations.
+
 This is a coverage ledger, not a claim that every defect has been found. All
 known failures are rechecked after repair. Raw experiment measurements have not
 started. Controlled fixture IDs stay in the private registry for later cleanup.
@@ -9,7 +15,7 @@ started. Controlled fixture IDs stay in the private registry for later cleanup.
 | FR01 regular identity | Human Microsoft login for two distinct regular test accounts; current sessions/Handles/keys verified; anonymous browse/photo401 | Post-repair sessions; expiry/logout/revocation have real disposable-DB regressions, not live clock alteration |
 | FR02 temporary lifecycle | Confirmed hosted recipient restriction prevents intended general email; SES account production access verified | Repaired real mailbox receipt, OTP activation/login/reset and temporary browser journey;14day expiry has controlled-time tests |
 | FR03 account-class permissions | Two regular accounts exercised; anonymous denial checked | Temporary account live journey; class matrix exercised by native/offline tests |
-| FR04 listing fields | Actual browser S3 upload/confirm and zero-price create; valid owner edit and stale revision409 | Post-repair full UI create/edit; complete field matrix from local regressions |
+| FR04 listing fields | Actual browser S3 upload/confirm and zero-price create; valid owner edit and stale revision 409 | Post-repair full UI create/edit; complete field matrix from local regressions |
 | FR05 ownership/availability | Nonowner edit/availability403; owner hides listing; peer detail404, owner200 | Post-repair repetition and browser controls |
 | FR06 browse | Available page1/page2, sampled filters/sorts; actual browser page rendered with11photo errors and14save warnings | Repaired desktop/narrow layouts, navigation, repeated page/image checks |
 | FR07 search | Keyword populated/empty samples, category/condition/price/negotiability/order checks; Hybrid200->503 after new listing->200 after hide | Worker grants, real indexing, edited source invalidation, real reviewed-query retrieval and NFR04; no ranking inference from200 |
@@ -19,7 +25,7 @@ started. Controlled fixture IDs stay in the private registry for later cleanup.
 | FR11 offers | Actual create/revise/withdraw and seller read | Seller selection/clear and visible controls; native state/authorization tests |
 | FR12 deliberate contacts | Fictional phone set, explicitly selected/reviewed, encrypted share displayed by peer; source restored | Post-repair recheck and local invalid/selected-field tests |
 | FR13 notifications | Preference read/toggle/restore; actual task still had recipient restriction flagfalse | Hosted general-delivery repair; real controlled inbox/notification/suppression evidence. The Microsoft test accounts may have no deliverable notification destination |
-| FR14 images | Real S3 upload, confirmation, full browser decode; hidden peer404/owner200; invalid type422; actual photo API503s reproduced | Batch links, retries/expiry, repeated rendered-page/body checks; local corruption/partial-upload/cleanup regressions |
+| FR14 images | Real S3 upload, confirmation, full browser decode; hidden peer 404 / owner 200; invalid type422; actual photo API503s reproduced | Batch links, retries/expiry, repeated rendered-page/body checks; local corruption/partial-upload/cleanup regressions |
 | FR15 unavailable/no transaction claims | Controlled listing and wanted marked unavailable; existing thread retained | Repaired selection/availability UI, final human inspection |
 | FR16 client E2EE | Actual opposite-direction submitted/displayed messages and encrypted contact share; API entry projection has no plaintext field | Post-repair persistence/reload checks; local tamper/key-change/loss tests; no private key extraction |
 | FR17 sensitive declaration | Existing implementation inspected; catalogue/price behavior covered in local suites | Post-repair boundary/reclassification tests and visible declaration check |
