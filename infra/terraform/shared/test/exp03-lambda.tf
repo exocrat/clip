@@ -416,6 +416,10 @@ resource "aws_lambda_function" "exp03" {
   }
   environment {
     variables = merge({
+      # Preserve startup progress beyond Lambda's initial ten-second window.
+      # The adapter still waits for readiness before serving; the invocation and
+      # experiment-client deadlines remain five seconds, including late startup.
+      AWS_LWA_ASYNC_INIT                     = "true"
       CLIP_ENVIRONMENT                       = "test"
       CLIP_IDENTITY_PROVIDER                 = "microsoft"
       CLIP_EMAIL_PROVIDER                    = "disabled"

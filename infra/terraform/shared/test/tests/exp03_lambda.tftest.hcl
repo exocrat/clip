@@ -120,6 +120,10 @@ run "b_routes_selected_reads_with_weighted_alb_targets" {
     api_task_memory_mib                        = 2048
   }
   assert {
+    condition     = aws_lambda_function.exp03[0].timeout == 5 && aws_lambda_function.exp03[0].environment[0].variables.AWS_LWA_ASYNC_INIT == "true"
+    error_message = "Continue cold initialization without relaxing the five-second invocation deadline."
+  }
+  assert {
     condition     = length(aws_lb_listener_rule.exp03_selected_reads) == 1 && length(aws_lb_listener_rule.exp03_selected_reads[0].action[0].forward[0].target_group) == 2
     error_message = "B must have one rule with exactly two weighted targets."
   }

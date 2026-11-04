@@ -151,11 +151,13 @@ resource "aws_ecs_task_definition" "pgbouncer" {
     readonlyRootFilesystem = true
     environment            = [{ name = "POOL_ENDPOINT", value = var.pgbouncer_private_ip }]
     portMappings           = [{ containerPort = 6432, hostPort = 6432, protocol = "tcp" }]
-    linuxParameters        = { capabilities = { drop = ["ALL"] }, tmpfs = [{ containerPath = "/run/clip-pool", size = 4, mountOptions = ["rw", "noexec", "nosuid", "nodev", "mode=0700", "uid=10001", "gid=10001"] }] }
-    ulimits                = [{ name = "nofile", softLimit = 1024, hardLimit = 1024 }]
-    secrets                = concat([for name, path in local.pgbouncer_sources : { name = name, valueFrom = "arn:aws:ssm:${local.region}:${local.account_id}:parameter${path}" }], [{ name = "POOL_TLS_BUNDLE", valueFrom = aws_ssm_parameter.pgbouncer_tls[0].arn }])
-    healthCheck            = { command = ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1',6432),2).close()"], interval = 15, timeout = 3, retries = 3, startPeriod = 10 }
-    logConfiguration       = { logDriver = "awslogs", options = { awslogs-group = aws_cloudwatch_log_group.pgbouncer[0].name, awslogs-region = local.region, awslogs-stream-prefix = "pool" } }
+    # ECS returns an empty add list. Preserve that representation so unrelated
+    # Lambda changes do not replace/restart the unchanged shared pool.
+    linuxParameters  = { capabilities = { add = [], drop = ["ALL"] }, tmpfs = [{ containerPath = "/run/clip-pool", size = 4, mountOptions = ["rw", "noexec", "nosuid", "nodev", "mode=0700", "uid=10001", "gid=10001"] }] }
+    ulimits          = [{ name = "nofile", softLimit = 1024, hardLimit = 1024 }]
+    secrets          = concat([for name, path in local.pgbouncer_sources : { name = name, valueFrom = "arn:aws:ssm:${local.region}:${local.account_id}:parameter${path}" }], [{ name = "POOL_TLS_BUNDLE", valueFrom = aws_ssm_parameter.pgbouncer_tls[0].arn }])
+    healthCheck      = { command = ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1',6432),2).close()"], interval = 15, timeout = 3, retries = 3, startPeriod = 10 }
+    logConfiguration = { logDriver = "awslogs", options = { awslogs-group = aws_cloudwatch_log_group.pgbouncer[0].name, awslogs-region = local.region, awslogs-stream-prefix = "pool" } }
   }])
   depends_on = [terraform_data.pgbouncer_inputs, aws_iam_role_policy.pgbouncer_execution]
   tags       = local.common_tags

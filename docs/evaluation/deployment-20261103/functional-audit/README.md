@@ -1,25 +1,24 @@
 # Live functional audit — in progress
 
-This is a diagnostic inventory, not an experiment, NFR pass or claim that all
-features work. Preserve user-created content. The user asked to find issues
-before starting repairs. The first controlled live pass is complete; coordinated
-repairs are implemented locally. Proposed embedding grants remain unapplied.
+This is a diagnostic inventory, not an experiment, NFR pass or claim that every
+feature works. The [current deployed checkpoint](cloud-pool-checkpoint-20261104.md)
+records the released ECS repairs, real two-account checks, Lambda startup failure
+and explicit rollback to ECS. The approved worker grants are now applied and
+all 1,003 listing embeddings are ready. Email/temporary-account delivery and real
+Lambda parity remain pending.
 
-The [latest precommit capacity report](precommit-capacity-20261104.md) gives
-exact A/B results and persistent evidence paths. The direct 100% Lambda diagnostic
-saturated the local database. Suraj selected a shared RDS Proxy for both paths;
-the [shared-pool plan](shared-pool-plan.md) records implementation, the saved
-provisioning plan, costs, rollback and experiment order. The [local validation report](shared-pool-validation.md) records completed checks
-and short ECS fallback results. No proxy has been created and the live website has not received
-these source repairs.
+The [PgBouncer plan](pgbouncer-plan.md) and [validation results](pgbouncer-validation.md)
+record the accepted replacement for the account-blocked RDS Proxy. Both API tasks
+now use the separate pool on the existing host. Earlier local reports remain
+historical diagnostics, including every failed capacity run.
 
 The [search optimisation checkpoint](search-optimisation/README.md) records the
 subsequent local first-time-search changes, exact comparisons, retained failed
 approaches and capacity limits. It also records the application-side numerical
 prototype and the subsequently implemented common application-side scorer/cache.
-The lunch changes are preserved in commit `6193ca7` and remain undeployed.
-An optimized ECS fallback image has been built from that exact source; the newer
-proxy changes are uncommitted and require their own release image.
+The lunch changes are preserved in fallback commit `6193ca7`. Their later
+shared-pool integration is deployed through accepted PR33. See the current
+checkpoint for exact image revisions and live evidence.
 
 The [complete optimisation ledger](optimisation-ledger.md) tracks connection,
 browser, search, caching and resource proposals together, including rejected
@@ -29,7 +28,10 @@ The [active lunch-batch plan](lunch-batch-plan.md) adds explicit application/too
 alignment now and immediately before deployment, the implemented balanced NFR-03
 schedule, current AWS access evidence and the precise local-versus-live repair state.
 
-## Findings and evidence
+## Initial findings and retained evidence
+
+The findings below describe the original reproduction, not the current deployed
+state. Use the linked current checkpoint for post-repair results.
 
 The [requirement coverage ledger](coverage.md) identifies tested, sampled and
 pending paths. The [connection budget](connection-budget.md) records the proposed

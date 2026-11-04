@@ -512,6 +512,30 @@ def _check_routing(
     }
 
 
+def verify_lambda_startup(function: dict[str, Any]) -> None:
+    """Refuse diagnostic overrides or startup/deadline drift before measurements.
+
+    Async initialization preserves work across the initial ten-second window;
+    it does not relax the five-second invocation or client request deadline.
+    Container startup must use the reviewed image command, never tracing code.
+    """
+    image = function.get("ImageConfigResponse", {})
+    overrides = image.get("ImageConfig", {})
+    if (
+        function.get("Timeout") != 5
+        or function.get("LastUpdateStatus") != "Successful"
+        or function.get("Environment", {})
+        .get("Variables", {})
+        .get("AWS_LWA_ASYNC_INIT")
+        != "true"
+        or image.get("Error")
+        or any(
+            overrides.get(key) for key in ("Command", "EntryPoint", "WorkingDirectory")
+        )
+    ):
+        raise ValueError("lambda_startup_configuration_mismatch")
+
+
 def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[str, Any]:
     """Read actual AWS topology and an unauthenticated HTTPS liveness endpoint."""
     validate_plan(plan)
@@ -603,6 +627,7 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
             or function.get("FunctionArn") != resources["lambda_function_arn"]
         ):
             raise ValueError("lambda_function_state_mismatch")
+        verify_lambda_startup(function)
         env = function.get("Environment", {}).get("Variables", {})
         lambda_environment = env
         if env.get("CLIP_LAMBDA_DATABASE_PARAMETER_ENABLED") != "true":
@@ -720,6 +745,7 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
         "lambda_database_parameter_permission_verified": plan["configuration"] == "B",
         "database_parameter_resolves_to_planned_instance": True,
         "lambda_image_verified": plan["configuration"] == "B",
+        "lambda_startup_configuration_verified": plan["configuration"] == "B",
         "database_available_private": True,
         "database_proxy_verified": resources.get("database_proxy") is not None,
         "https_liveness_verified": True,

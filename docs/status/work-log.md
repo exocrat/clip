@@ -1,3 +1,97 @@
+### Lambda startup traced; bounded async repair prepared — 2026-11-04 16:27:00 UTC
+
+Suraj approved the exact temporary diagnostic plan bad7664a... and requested a
+fix. Both direct reads ran with ECS public routing unchanged. The five-second
+attempt timed out during initialization; the30-second diagnostic completed
+startup in4990.03ms and returned20browse items, with100.67ms invocation duration.
+Identity preparation was about0.4s and Hybrid pool readiness22–30ms. Restored the
+original command/five-second timeout at16:16:59. No permanent timeout increase.
+
+Prepared AWS_LWA_ASYNC_INIT=true and a preflight rejecting diagnostic overrides,
+non-five-second timeout or unfinished configuration updates. The actual pinned
+adapter passed an isolated12-second delayed-start check with async enabled;
+without it the initial deadline failed. A never-ready app still hit the unchanged
+five-second invoke deadline. Initial fake-runtime metadata failures remain saved.
+Terraform now represents the pool's empty capability-add list exactly as ECS
+returns it, preventing needless restart while preserving drop-all capabilities.
+
+Focused Python45pass; Lambda/pool Terraform19pass. Broad evaluation431pass,
+11skip,6environment failures; all six resolved with pinned Node and one approved
+local-listener rerun. Single-file Black and diff checks pass. Full saved plan
+40afb20d2a4f2a0f68de8b9aac44e48b41ef10fe89864bc2c98bf49687f45eb5
+changes only Lambda startup/empty override normalization and selected-GET rule
+recreation. No image, pool/API restart, SQL, resize or permission change.
+[Detailed evidence and changed-file explanation](../evaluation/deployment-20261103/functional-audit/cloud-pool-checkpoint-20261104.md).
+Branch task/lambda-startup-repair starts from accepted main b4d7419. Source and
+changed-plan publication/integration/apply gates remain; live async startup,
+B parity, normal generator DNS and all measurements are pending.
+
+### Deployed ECS functional recheck and Lambda startup rollback — 2026-11-04 15:52:19 UTC
+
+Suraj authorised independent normal-application checks during dinner, continuing
+within existing deployment/smoke/controlled-fixture approvals. A became healthy
+at15:14; two16/16website checks passed, including full20-photo decode per account,
+three rendered Discover repeats per pass, zero Saved/photo warnings, Hybrid,
+Saved/Wanted and visibility restrictions. Controlled ECS workflow groups passed
+44/44,17/17explicit follow-up assertions,17/17cleanup,3/3contacts and15/15selection/
+Wanted-response checks. New listing/Wanted fixtures are unavailable again;
+selection, Saved state, phone and notification preference were restored.
+All1003listing embeddings are ready,900listings remain available. Both regular
+test accounts lack notification destinations, so inbox email delivery remains
+unverified. Visible chat delivered both ways at2545.58/1524.98ms; earlier hidden-
+tab display failures remain retained, and none is an NFR05 result.
+
+The approved conditional B apply succeeded at15:23, but the first Lambda read
+failed during initialization. Executed the approved manual routing rollback at
+15:25:42 by deleting only the new selected-read rule. Public traffic is ECS;
+Lambda/support resources remain for diagnosis and Terraform reconciliation is
+pending. A separate direct read also timed out. Component timings and local
+restricted-filesystem helper checks do not establish the Lambda cause. Prepared
+fixed-stage startup tracing under plan`bad7664ac52c193d8a178652c404db538c28388c2d10e60b8b4e8080c9f47b72`;
+its temporary command/timeout change awaits separate approval.
+
+Normal workstation DNS still fails the strict target check; AWS-side domain/ALB
+answers match. Browser diagnostics used the documented DNS override. Retained
+one API503 during the B apply/pool-restart window; correlation is not proof of
+cause. No formal parity, pilot, NFR or comparison measurement was started.
+[Full results, exact private receipts and limits](../evaluation/deployment-20261103/functional-audit/cloud-pool-checkpoint-20261104.md).
+Next: approved Lambda diagnosis/repair, normal generator DNS, real B parity and
+exact pilot preparation. No new app source, commit or push in this checkpoint.
+
+### PgBouncer cloud provisioning and approved activation — 2026-11-04 15:12:59 UTC
+
+Suraj approved PR33 exact head `e6e3cb54a1cc6637805afbf01416c56cddaf4933`
+after required CI passed; accepted main is `b4d7419f532d8be354720c87118f8ff13ab39270`.
+The approved pool plan `0ec5a8bf4864c795f6de5b42786c77c71fbb6d341260daf9437e5232a8ae88c5`
+created the separate existing-host pool and removed failed managed-proxy objects.
+Its command exited1 after the old unused DB ingress was removed to unblock the
+old group's deletion: Terraform then attempted to revoke the already-absent rule.
+The refreshed full plan shows no remaining network/old-proxy changes. Preserve
+that failed receipt rather than relabeling the command successful.
+
+Live verified-TLS checks passed for all three original roles, correct database,
+physical-backend reuse and five-second statement/one-second lock timeouts.
+The separately approved embedding-worker column grants were applied and all13
+checked. All1000 frozen listing IDs remain present; two additional audit listings
+are unavailable. Actual pooled settings have a separate fingerprint, avoiding
+the read-only admin inspector's temporary timeout override.
+
+Suraj approved A activation `c9cbb0f95cfc846aa0579cd1a2406a1aefe26111aba342890bbde3dc17475364`
+including bounded drain/rollback. Terraform applied successfully: API revision14,
+reviewed Hybrid image `21214318f0aed3d2233f16949e5e45e190f8c34b0aa8a2a7f482ffaca83c10e1`,
+1024CPU/2048MiB per task, shared pool enabled. Pool revision2 uses the same image;
+its replacement reflects AWS empty-field normalization. API startup remains under
+observation during the existing300-second ALB drain; no website acceptance yet.
+Suraj also approved conditional B plan `4f1af60ec9c2c6e404287eae79e95333bda82ec4a73e742800b1a4c0b78c9406`
+only after A website checks pass, up to200 smoke requests, USD1/120minutes within
+existing budget, with manual ECS routing rollback. B has not been applied.
+
+Private receipts: `/home/suraj/src/.clip-private/pgbouncer-20261104/` under
+`provision-v2/`, `activation-a/`, `activation-b/`, and `pool-live-smoke.json`.
+Six pilot profiles and three comparison profiles are prepared locally; live
+parity, complete run bindings, exact traffic approval and measurements remain
+pending. No formal pilot/NFR/comparison result is claimed.
+
 ### PgBouncer repeated checks and ten-slot AWS pilot — 2026-11-04 14:35:36 UTC
 
 Suraj selected ten unreserved Lambda slots to proceed while the console-requested
@@ -3171,7 +3265,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
-| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | PR32 merged360cd16; existing-host PgBouncer release under validation after managed-proxy Free Plan restriction. | Two isolated ECS read/mixed repetitions clean; browse/search A/B clean; local B10 throttles retained. | No account upgrade; ten unreserved AWS slots selected, pending quota increase monitored for drift. Exact release approvals pending. | [Pool plan](../evaluation/deployment-20261103/functional-audit/pgbouncer-plan.md); [validation](../evaluation/deployment-20261103/functional-audit/pgbouncer-validation.md) | Finish regression, approve source/merge/provisioning, activate reviewed images, verify website and run pilot. | 2026-11-04 14:35:36 UTC |
+| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | PR33 merged b4d7419; pool and API14 deployed; ECS website/workflows pass. B startup failed; approved manual rollback leaves public ECS routing. | Two16/16live website checks; controlled workflows and1003ready embeddings. Local B10 throttles and live startup failures retained. | Approved diagnostic restored; async-startup repair locally checked and exact two-action plan prepared; source/cloud approvals and normal generator DNS remain. | [Cloud checkpoint](../evaluation/deployment-20261103/functional-audit/cloud-pool-checkpoint-20261104.md); [pool plan](../evaluation/deployment-20261103/functional-audit/pgbouncer-plan.md) | Release approved async-startup repair, verify B parity/DNS and prepare exact pilot approval. | 2026-11-04 15:52:19 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
