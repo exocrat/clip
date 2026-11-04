@@ -1,12 +1,35 @@
 # Connection budget for the functional repair
 
-Current amendment: the [shared-pool plan](shared-pool-plan.md) keeps these client
-pool bounds but routes both architectures through one separately approved proxy.
-The table below describes client maxima and the direct fallback, not a promise
-of one physical database connection per client when proxy routing is active.
-Proxy backend allocation is bounded to 75% with 50% idle retention; actual
-available capacity, role limits, session pinning and admin headroom must be
-verified before traffic. Source credentials and roles remain unchanged.
+Current proposal: the [PgBouncer plan](pgbouncer-plan.md) supersedes the blocked
+managed RDS Proxy plan. Both architectures use one transaction pool with backend
+ceilings Identity8/Marketplace24/Conversations4, total36. The existing shared
+role limits10/32/4 and instance limit78 remain unchanged. Client connections do
+not each reserve a database backend. Verify actual use and drain old direct
+clients during activation; especially avoid overlapping all four Conversations
+backends with the old direct clients.
+
+Both runtimes keep bounded client pools when routed through PgBouncer. Lambda
+keeps at most one Identity, one Listing and one Hybrid client per environment;
+checkout detects stale sockets, and PgBouncer expires idle clients after300s.
+There are at most160 pool clients in total and36 database backends, even if AWS
+freezes extra idle environments. Suraj now selects ten **unreserved** Lambda
+slots for the first AWS pilot, after the actual regional quota was found to be
+ten. Ten active Lambda environments plus both ECS tasks have a nominal client
+maximum 60 (30 + 30). Old environments can temporarily add clients but cannot
+bypass the global cap. Exhaustion fails visibly, without direct fallback.
+Current authorization/expiry/revocation SQL is unchanged.
+
+The requested quota increase is pending. Before and during each B workload,
+verify the actual account and unreserved limits are exactly ten, our function
+has no reservation, and no other function exists. Stop and invalidate the run
+on drift or failed verification. A later approved quota increase requires a new
+reviewed concurrency binding; it must not silently alter a measured run. This
+change does not deploy or activate Lambda. Local checks used at most ten copies;
+no local concurrency-20 result is claimed.
+
+The following direct-mode analysis is retained for rollback. Its proposed
+Identity20/Marketplace40 increases are **not needed or authorized by the current
+pooled proposal**. Source credentials and restricted roles remain unchanged.
 
 Observed RDS maximum:78, including3 superuser-reserved. Current shared role
 limits are Identity10, Marketplace32 and Conversations4. These are shared by
@@ -26,7 +49,7 @@ async pool waits remain bounded, now with explicit finite waiting queues. Every
 session/account check still queries current state; pooling caches no authorization.
 The two-task normal configuration is the same for A and B.
 
-Lambda uses bounded null pools that close unused connections rather than retaining
+In direct mode Lambda uses bounded null pools that close unused connections rather than retaining
 them while AWS freezes an execution environment. Reserved concurrency alone is
 not a reliable bound on the number of dormant environments; persistent minimum
 connections would otherwise invalidate the budget. Lambda has no notification or
@@ -77,11 +100,11 @@ session renewal transaction still locks/updates the session and preserves logout
 revocation and expiry. Saved/Photo browser batching reduces how many such API
 requests Discover sends; direct S3 photo bodies do not use database connections.
 
-The two-environment local B diagnostic exhausted its serial request-processing
+The historical two-environment local B diagnostic exhausted its serial request-processing
 margin at the required selected-read rate. Low-rate trace shows fresh null-pool
 connection overhead, which is an intentional tradeoff against frozen Lambda
 connections accumulating beyond the budget. The subsequent local check uses four
-serial environments, while the AWS plan already reserves ten. Its disposable
+serial environments, while the AWS proposal at that time reserved ten. Its disposable
 role caps are Identity20/Marketplace40/Conversations4, matching the proposed full
 pilot budget; no live role or concurrency change follows from local success.
 Database connection caps are upper bounds, not throughput or memory guarantees.

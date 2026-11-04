@@ -7,6 +7,7 @@ Synthetic TLS trust is container-local and temporary, never baked into the image
 
 from datetime import UTC, datetime
 import hashlib
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -35,7 +36,7 @@ def test_public_regional_roots_match_pinned_manifest_and_are_current():
     records = manifest["certificates"]
     assert len(records) == 3
     assert sorted(p.name for p in CERTIFICATES.glob("*.crt")) == sorted(
-        row["file"] for row in records
+        [row["file"] for row in records] + ["clip-pgbouncer-20261104.crt"]
     )
     fingerprints = set()
     for row in records:
@@ -58,6 +59,25 @@ def test_public_regional_roots_match_pinned_manifest_and_are_current():
         assert fingerprint == row["certificate_sha256"]
         fingerprints.add(fingerprint)
     assert len(fingerprints) == 3
+
+
+def test_private_pool_ca_is_pinned_and_narrowly_constrained():
+    """The additional trust anchor may certify only the reviewed pool identity."""
+    data = (CERTIFICATES / "clip-pgbouncer-20261104.crt").read_bytes()
+    assert (
+        hashlib.sha256(data).hexdigest()
+        == "933a1c326a76ad60749aafc3f14ae8bc42312387e53aaff994fca8db9a2c1504"
+    )
+    cert = x509.load_pem_x509_certificate(data)
+    cert.verify_directly_issued_by(cert)
+    assert cert.extensions.get_extension_for_class(x509.BasicConstraints).value.ca
+    constraints = cert.extensions.get_extension_for_class(x509.NameConstraints)
+    assert constraints.critical
+    assert set(constraints.value.permitted_subtrees) == {
+        x509.IPAddress(ipaddress.ip_network("10.64.1.83/32")),
+        x509.DNSName("clip-pool.invalid"),
+    }
+    assert cert.not_valid_before_utc <= datetime.now(UTC) < cert.not_valid_after_utc
 
 
 @pytest.fixture(scope="module")

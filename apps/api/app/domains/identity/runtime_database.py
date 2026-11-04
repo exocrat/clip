@@ -158,8 +158,9 @@ class _InvocationConnection:
     """One exclusive connection shared by this invocation's separate transactions.
 
     A borrower never shares an active transaction with another thread. Cleanup
-    waits for an in-flight borrower, then returns the lease to the null pool,
-    which physically closes it before the HTTP response can complete.
+    waits for an in-flight borrower, then returns the lease before the HTTP
+    response completes. Direct null pools close it; shared-pool clients may
+    retain the socket, with no active database transaction.
     """
 
     def __init__(self, pool: ConnectionPool):
@@ -217,11 +218,15 @@ class IdentityConnectionPool:
             raise ConfigurationError("Invalid Identity pool bound")
         self._lock = Lock()
         self._opened = False
-        self._retain_idle = retain_idle
+        # A frozen client to the transaction pool does not own an idle RDS
+        # backend. The pool caps backend totals and expires idle clients itself.
+        # Direct Lambda connections retain the original null-pool behavior.
+        self._invocation_allowed = not retain_idle
+        self._retain_idle = retain_idle or uses_proxy(dsn.get_secret_value())
         self._request_lease: ContextVar[_InvocationConnection | None] = ContextVar(
             "clip_identity_request_connection", default=None
         )
-        pool_type = ConnectionPool if retain_idle else NullConnectionPool
+        pool_type = ConnectionPool if self._retain_idle else NullConnectionPool
         self._pool: ConnectionPool = pool_type(
             conninfo=dsn.get_secret_value(),
             kwargs=connection_kwargs(
@@ -270,9 +275,10 @@ class IdentityConnectionPool:
         Context propagates into both supported thread helpers. Every Identity
         operation retains its original SQL/transaction. Cleanup is completed
         through cancellation; the HTTP integration holds the terminal body until
-        this scope exits, so Lambda cannot freeze an idle retained connection.
+        this scope exits. Direct connections close; proxy connections return to
+        their bounded client pool with no active database transaction.
         """
-        if self._retain_idle:
+        if not self._invocation_allowed:
             raise ConfigurationError("Invocation cleanup requires a null pool")
         if self._request_lease.get() is not None:
             raise ConfigurationError("Nested Identity invocation scope")

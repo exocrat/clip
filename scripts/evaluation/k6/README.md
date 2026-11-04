@@ -606,3 +606,39 @@ Historical schema1 four-candidate reports remain readable. No rate, duration,
 correctness floor or drop rule is weakened by this matrix change. The comparison
 burst remains50rps until a separately approved profile revision; NFR-03 always
 retains its PRD50rps/five-minute requirement.
+
+### Shared PgBouncer target
+
+Use `data/evaluation/workloads/real-target-pgbouncer-plan.template.json` for
+format3. Both A and B must bind the same private endpoint, separate ECS pool
+service/task/image and existing host. The preflight rejects host, image,
+credential-reference, health or runtime-override drift. Formats1/2 remain readable
+for preserved direct/managed-proxy evidence. NFR-07 still rejects the source pool.
+
+CloudWatch capture adds the pool service's CPU/memory and immutable
+`pgbouncer-counters.json` from `/clip/test/pgbouncer`. Missing/delayed/unavailable
+counter intervals remain visible; collecting evidence does not accept a run.
+No managed RDS Proxy metrics are attributed to PgBouncer.
+
+The local capacity diagnostic supports `--pgbouncer --lambda-environments 10`.
+It runs the actual pool binary/config over isolated Unix sockets; separate native
+checks verify real TLS. Local concurrency exhaustion is an explicit429, with no
+fallback. The local dispatcher is not proof of ALB/Lambda behavior or latency.
+Native checks require the two locally built pool images and explicit opt-in:
+
+```bash
+docker --context default build -f infra/pgbouncer/Dockerfile -t clip-pgbouncer:local-20261104 .
+docker --context default build -f infra/pgbouncer/Dockerfile -t clip-pgbouncer:local-20261104-observed .
+CLIP_NATIVE_PGBOUNCER_TESTS=1 .venv/bin/python -m pytest tests/evaluation/test_pgbouncer.py tests/evaluation/test_pgbouncer_tls.py -q
+```
+
+These commands build/test locally and do not publish, deploy or run cloud load.
+
+For identical sequential ECS diagnostics, `capacity_local.py` accepts
+`--ecs-fallback-only --pgbouncer --only-profile exp-05 --only-profile nfr-03
+--repetitions 2`. This uses the selected pooled transport, retains separate run
+IDs/raw outputs and reconciles controlled writes after each run. Run capacity
+checks without concurrent builds/regression suites. Twenty local Lambda copies
+exceed the current 8-GiB host's safe headroom; the proposed AWS concurrency-20
+pilot requires release approval and a quota increase (the read-only AWS check
+on 2026-11-04 returned only ten regional concurrent executions).

@@ -1,3 +1,55 @@
+### PgBouncer repeated checks and ten-slot AWS pilot — 2026-11-04 14:35:36 UTC
+
+Suraj selected ten unreserved Lambda slots to proceed while the console-requested
+regional increase to 1,000 is pending. Read-only AWS inventory showed ten total,
+ten unreserved and no functions. The new runner checks the exact quota and one
+function before/during B, stopping on drift or read failure; no reservation is
+silently inferred. Local ten-environment B burst retained54/3000throttles; no
+concurrency20 local result is claimed on the8-GiB host.
+
+Two isolated ECS repetitions each completed3000/3000correct read operations and
+3000/3000correct integrated operations at50/s, zero drops/errors; burst p95
+102.98/78.46ms. Both controlled-write reconciliations completed. Local NFR01/02
+A/B checks were clean. The earlier severe A failure remains unexplained and
+preserved; later clean repetitions do not erase it. Native pool/TLS/telemetry
+checks passed38; new concurrency/CA checks passed12/3skipped; Terraform original
+30 and updated Lambda16 passed after correcting new mock task-size inputs.
+The public CA is separately hash/name-constraint checked, not presented as an
+Amazon RDS root. Full regression:2494passed/186skipped, one old certificate
+inventory assertion failed and was corrected; affected rerun23passed/3skipped.
+CI parity/contracts/boundaries/types/format/Gitleaks passed.
+
+[Current results and exact paths](../evaluation/deployment-20261103/functional-audit/pgbouncer-validation.md).
+Refreshed provisioning plan`0ec5a8bf4864c795f6de5b42786c77c71fbb6d341260daf9437e5232a8ae88c5`
+creates the existing-host pool and cleans the failed managed-proxy support
+objects, without changing app routing. Separate source/merge/cloud release
+approvals remain pending; neither new images nor pool nor Lambda are deployed.
+
+### Self-hosted pool pivot after AWS account restriction — 2026-11-04 13:16:16 UTC
+
+PR32 merged at `360cd1659ee78c973b5422334f20ee1755b2c81f` after exact-head
+approval and passing CI (Python2473/180skipped, web504/3skipped, data331,
+Conversations184). The approved RDS Proxy apply failed at12:38UTC with
+`FreeTierRestrictionError`: the account's Free Plan does not permit this feature.
+Twelve supporting Terraform objects and one DB security-group update remain;
+no proxy was created and app routing/images/SQL/sizes are unchanged. The private
+apply receipt is `/home/suraj/src/.clip-private/proxy-20261104/apply-receipt.json`.
+Do not replay the old plan or upgrade the account: Suraj explicitly declined that.
+
+Suraj authorised an autonomous, tested PgBouncer replacement using an existing
+host and retaining optimized fallback`6193ca7` and the100%-only pilot. New branch
+`task/pgbouncer-shared-pool` starts from accepted main. The proposed separate
+service uses existing host`i-08e368391d905310e`/`10.64.1.83`,512CPU/256MiB,
+privateTLS and three restricted-role pools totaling36backends. API-task loss
+leaves the pool running; host-loss HA is not claimed or tested by NFR-06.
+Native reuse/permissions/rollback/queue/reconnect checks passed; verified TLS on
+both legs and plaintext/wrong-host/untrusted-cert rejection passed. One existing
+mock lacked its real connection's port attribute; fixture corrected. First short
+capacity run failed(2968correct/2977issued,24drops,9HTTPerrors); it remains
+preserved. Pool-level instrumentation and a diagnostic rerun are in progress.
+No new cloud action, commit, push or merge is authorized by these local results.
+See [PgBouncer plan](../evaluation/deployment-20261103/functional-audit/pgbouncer-plan.md).
+
 ### Shared-pool release and exact provisioning approval — 2026-11-04 12:24:22 UTC
 
 Suraj approved the reviewed41-file source receipt
@@ -3119,7 +3171,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
-| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Direct fallback preserved at `6193ca7`; shared-pool source and exact provisioning plan ready for review. Local checks complete; no AWS change. | All14fixture failures resolved in77test rerun; data331, web504, native27, retirement184, Terraform27 pass. Short direct A profiles7800/7800successful; no drops/timeouts. | Suraj selected shared proxy and only100% pilot, authorized fallback commit/local work. Commit/push/CI and exact proxy provision plan approved; merge and activation remain gated. | [PR32](https://github.com/exocrat/clip/pull/32); [shared-pool plan](../evaluation/deployment-20261103/functional-audit/shared-pool-plan.md); [validation](../evaluation/deployment-20261103/functional-audit/shared-pool-validation.md) | Publish reviewed changes and complete CI; obtain exact-head merge approval, then apply approved provision plan. Actual proxy behavior, live website, pilot/NFRs pending. | 2026-11-04 12:21:09 UTC |
+| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | PR32 merged360cd16; existing-host PgBouncer release under validation after managed-proxy Free Plan restriction. | Two isolated ECS read/mixed repetitions clean; browse/search A/B clean; local B10 throttles retained. | No account upgrade; ten unreserved AWS slots selected, pending quota increase monitored for drift. Exact release approvals pending. | [Pool plan](../evaluation/deployment-20261103/functional-audit/pgbouncer-plan.md); [validation](../evaluation/deployment-20261103/functional-audit/pgbouncer-validation.md) | Finish regression, approve source/merge/provisioning, activate reviewed images, verify website and run pilot. | 2026-11-04 14:35:36 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |

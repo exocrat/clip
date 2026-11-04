@@ -100,9 +100,9 @@ class Settings(BaseSettings):
     @field_validator("database_proxy_endpoint")
     @classmethod
     def validate_proxy_endpoint(cls, value: str | None) -> str | None:
-        """Permit only an explicit managed Mumbai proxy hostname, not a URL."""
+        """Permit a managed Mumbai proxy or private workload-subnet pool IP."""
         if value is not None and not PROXY_HOST.fullmatch(value):
-            raise ValueError("must be an approved Mumbai RDS Proxy hostname")
+            raise ValueError("must be an approved private database pool endpoint")
         return value
 
     @model_validator(mode="after")

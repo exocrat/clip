@@ -24,3 +24,12 @@ obtain shared-owner review. Never add a server/intermediate certificate, synthet
 fixture root or a private key. An upstream CA change is a source review, not an
 automatic refresh or deployment. Fresh live RDS verification remains separately
 gated; local trust-store tests do not establish a deployed image's configuration.
+
+The separately pinned `clip-pgbouncer-20261104.crt` is the public CA for the
+approved existing-host pool proposal. It is not part of the Amazon RDS bundle
+or its manifest. Its critical name constraints permit only `10.64.1.83/32` and
+reserved DNS name `clip-pool.invalid`. The certificate-integrity test pins its
+bytes and constraints separately. Private CA/leaf keys remain outside the
+repository and images; runtime leaf material is injected through SSM. Rotate
+this temporary trust anchor and leaf before their expiry using a reviewed image
+and parameter update. See the PgBouncer deployment plan for exact dates/hashes.

@@ -66,7 +66,14 @@ the real transaction semantics; measure pinning/reuse instead of assuming that
 every backend can always be shared. Local doubles cannot reproduce managed
 RDS Proxy capacity, TLS overhead, failover or execution-environment freezing.
 
-## Exact provisioning stage — approved, not applied
+## Historical provisioning stage — approved, partially applied and blocked
+
+**Current outcome:** PR32 merged360cd16. Apply on2026-11-04 at12:38UTC failed
+with `FreeTierRestrictionError` because RDS Proxy is unavailable under the
+account Free Plan. Twelve supporting objects plus the DB SG change remain; the
+proxy itself was not created. Applications, SQL and resource sizes are unchanged.
+Suraj declined an account upgrade and selected the [PgBouncer replacement](pgbouncer-plan.md).
+The historical saved plan below must not be replayed against changed state.
 
 Suraj approved this exact saved plan on 2026-11-04 12:24:22 UTC, with a USD2 additional
 allowance and at most24hours, conditional on separately approved PR integration.

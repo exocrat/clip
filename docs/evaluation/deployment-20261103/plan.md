@@ -20,9 +20,14 @@ renew the concrete time/cost approval, and review the exact saved plan before
 any subsequent cloud apply. Do not replay the original creation steps.
 
 The direct-database fallback is preserved at `6193ca7`. The current
-[shared-pool plan](functional-audit/shared-pool-plan.md) supersedes the earlier
-local hold: shared RDS Proxy implementation is selected, with a concrete
-provisioning plan awaiting approval. A second database and RDS resizing remain
+[PgBouncer plan](functional-audit/pgbouncer-plan.md) supersedes the earlier
+managed RDS Proxy proposal: its approved creation failed because this AWS Free
+Plan account does not permit that feature. A private pool on an existing ECS
+host is now under local validation; a replacement provisioning plan includes
+cleanup of the partially created proxy support resources. The AWS pilot is
+being prepared with ten unreserved Lambda slots, pending release approval.
+The account currently permits ten; its pending increase must not change a run.
+A second database and RDS resizing remain
 unselected. The pilot now uses only ECS baseline and 100% Lambda, three
 repetitions each; older four-candidate descriptions below are historical. The approved1vCPU/task remains a planned allocation change;
 it is not part of the older image-only approval or evidence of an applied change.

@@ -102,5 +102,5 @@ def test_async_proxy_connection_requires_timeouts_and_rolls_back(row):
 
 
 def test_direct_connections_do_not_add_a_validation_query():
-    conn = SimpleNamespace(info=SimpleNamespace(host="source.example"))
+    conn = SimpleNamespace(info=SimpleNamespace(host="source.example", port=5432))
     check_proxy_connection(conn)

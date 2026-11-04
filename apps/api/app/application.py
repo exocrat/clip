@@ -82,9 +82,15 @@ async def _marketplace_lifespan(
     # Lambda freezes idle execution environments: retaining their DB connections
     # would make reserved concurrency an insufficient bound on total connections.
     # Null pools retain the concurrency/queue bounds and close unused leases.
+    # Through the shared transaction pool, bounded idle clients do not retain
+    # RDS backends; reuse them and validate stale sockets at checkout instead.
     selected_pool_factory = (
         AsyncNullConnectionPool
-        if read_only_listings and pool_factory is AsyncConnectionPool
+        if read_only_listings
+        and pool_factory is AsyncConnectionPool
+        and not uses_proxy(
+            settings.routed_database(settings.database_url).get_secret_value()
+        )
         else pool_factory
     )
     pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]] = selected_pool_factory(
@@ -129,7 +135,10 @@ async def _marketplace_lifespan(
             settings,
             pool_max_size=hybrid_pool_max_size,
             enable_worker=hybrid_worker_enabled,
-            retain_idle_connections=not read_only_listings,
+            retain_idle_connections=not read_only_listings
+            or uses_proxy(
+                settings.routed_database(settings.database_url).get_secret_value()
+            ),
         ) as search:
             application.state.search_runtime = search
             application.state.wanted_store = (

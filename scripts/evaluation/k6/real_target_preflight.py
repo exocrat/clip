@@ -19,6 +19,12 @@ import re
 import socket
 import ssl
 from typing import Any, cast
+
+from scripts.evaluation.k6.pgbouncer_preflight import validate_pool, verify_pool
+from scripts.evaluation.k6.lambda_concurrency import (
+    validate_binding,
+    verify as verify_concurrency,
+)
 from urllib.error import HTTPError, URLError
 from urllib.request import (
     HTTPSHandler,
@@ -123,7 +129,7 @@ def _verify_database_proxy(
             and environment.get("CLIP_DATABASE_PROXY_ENDPOINT") != expected
         ):
             raise ValueError("runtime_database_proxy_mismatch")
-    if proxy is None:
+    if proxy is None or proxy.get("kind") == "pgbouncer":
         return
     rows = rds.describe_db_proxies(DBProxyName=proxy["name"]).get("DBProxies", [])
     if len(rows) != 1 or any(
@@ -177,7 +183,7 @@ def validate_plan(plan: Any) -> dict[str, Any]:
     _exact_object(plan, PLAN_KEYS, "invalid_plan_shape")
     if (
         type(plan["format_version"]) is not int
-        or plan["format_version"] not in (1, 2)
+        or plan["format_version"] not in (1, 2, 3)
         or plan["purpose"] != "clip-read-experiment-target"
         or plan["execution_permitted"] is not False
         or plan["nfr_accepted"] is not False
@@ -206,11 +212,16 @@ def validate_plan(plan: Any) -> dict[str, Any]:
         raise ValueError("https_origin_required")
     resources = _exact_object(
         plan["resources"],
-        RESOURCE_KEYS | ({"database_proxy"} if plan["format_version"] == 2 else set()),
+        RESOURCE_KEYS
+        | ({"database_proxy"} if plan["format_version"] in (2, 3) else set())
+        | ({"lambda_concurrency"} if plan["format_version"] == 3 else set()),
         "invalid_resource_shape",
     )
     proxy = resources.get("database_proxy")
-    if proxy is not None:
+    if plan["format_version"] == 3:
+        validate_pool(proxy, plan["account_id"], plan["region"])
+        validate_binding(resources["lambda_concurrency"], plan["configuration"])
+    elif proxy is not None:
         _exact_object(
             proxy, {"arn", "name", "endpoint"}, "invalid_database_proxy_shape"
         )
@@ -604,9 +615,9 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
         ).get("ImageUri")
         if image_uri != plan["revisions"]["lambda_image_uri"]:
             raise ValueError("lambda_immutable_image_mismatch")
-        concurrency = function.get("ReservedConcurrentExecutions")
-        if type(concurrency) is not int or concurrency < 1:
-            raise ValueError("lambda_concurrency_unbounded")
+        verify_concurrency(
+            lam, resources["lambda_function_arn"], resources.get("lambda_concurrency")
+        )
         role_name = _role_name(function.get("Role", ""))
         iam = session.client("iam")
         can_read_parameter = False
@@ -645,6 +656,8 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
         raise ValueError("database_state_mismatch")
     if rds[0].get("DBInstanceArn", "").split(":")[4] != plan["account_id"]:
         raise ValueError("database_account_mismatch")
+    if plan["format_version"] == 3:
+        verify_pool(session, resources["database_proxy"], resources["ecs_cluster_arn"])
     _verify_database_proxy(
         rds_client,
         resources.get("database_proxy"),
@@ -671,7 +684,6 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
         or dsn.hostname != endpoint.get("Address")
         or (dsn.port or 5432) != endpoint.get("Port")
         or database_name != resources["database_name"]
-        or (rds[0].get("DBName") and database_name != rds[0]["DBName"])
     ):
         raise ValueError("database_parameter_target_mismatch")
     origin = plan["api_origin"]

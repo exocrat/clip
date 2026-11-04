@@ -27,6 +27,7 @@ mock_provider "aws" {
 }
 
 variables {
+  pgbouncer_tls_bundle = "synthetic-tls-only"
   # Terraform's mock apply needs ephemeral inputs explicitly bound in both phases.
   database_proxy_passwords                  = { identity = "synthetic-only", marketplace = "synthetic-only", conversations = "synthetic-only" }
   nfr07_restored_database_url               = "postgresql://restore-pending.invalid/restore_pending"
@@ -308,4 +309,45 @@ run "restore_smoke_refuses_weighted_source" {
     nfr07_smoke_certificate_arn                = "arn:aws:acm:ap-south-1:335523638354:certificate/00000000-0000-0000-0000-000000000000"
   }
   expect_failures = [terraform_data.nfr07_guard]
+}
+
+run "unreserved_pilot_uses_shared_pool_and_no_reservation" {
+  command = plan
+  variables {
+    exp03_enabled                              = true
+    exp03_selected_reads_lambda_weight_percent = 100
+    exp03_lambda_reserved_concurrency          = null
+    exp03_lambda_unreserved_account_limit      = 10
+    api_service_enabled                        = true
+    identity_runtime_enabled                   = true
+    identity_test_recipients                   = ["synthetic@example.invalid"]
+    hybrid_runtime_enabled                     = true
+    api_task_cpu                               = 1024
+    api_task_memory_mib                        = 2048
+    pgbouncer_enabled                          = true
+    pgbouncer_routing_enabled                  = true
+    pgbouncer_private_ip                       = "10.64.1.83"
+    pgbouncer_host_instance_id                 = "i-0123456789abcdef0"
+    pgbouncer_image_uri                        = "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  }
+  assert {
+    condition     = aws_lambda_function.exp03[0].reserved_concurrent_executions == -1 && length(local.pgbouncer_environment) == 1
+    error_message = "The ten-slot unreserved pilot must remove the reservation and use the shared database pool."
+  }
+}
+run "unreserved_without_shared_pool_is_rejected" {
+  command = plan
+  variables {
+    exp03_enabled                              = true
+    exp03_selected_reads_lambda_weight_percent = 100
+    exp03_lambda_reserved_concurrency          = null
+    exp03_lambda_unreserved_account_limit      = 10
+    api_service_enabled                        = true
+    identity_runtime_enabled                   = true
+    identity_test_recipients                   = ["synthetic@example.invalid"]
+    hybrid_runtime_enabled                     = true
+    api_task_cpu                               = 1024
+    api_task_memory_mib                        = 2048
+  }
+  expect_failures = [terraform_data.exp03_inputs]
 }

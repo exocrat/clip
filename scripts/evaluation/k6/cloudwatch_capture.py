@@ -205,7 +205,16 @@ def build_queries(plan: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
     }
 
     proxy = resources.get("database_proxy")
-    if proxy is not None:
+    if proxy is not None and proxy.get("kind") == "pgbouncer":
+        pool_dims = [
+            {"Name": "ClusterName", "Value": cluster_name},
+            {"Name": "ServiceName", "Value": proxy["service_arn"].rsplit("/", 1)[-1]},
+        ]
+        groups["proxy"] = [
+            _query("pool_cpu", "AWS/ECS", "CPUUtilization", pool_dims, "Average"),
+            _query("pool_memory", "AWS/ECS", "MemoryUtilization", pool_dims, "Average"),
+        ]
+    elif proxy is not None:
         proxy_dims = [{"Name": "ProxyName", "Value": proxy["name"]}]
         groups["proxy"] = [
             _query("proxy_" + str(index), "AWS/RDS", metric, proxy_dims, stat)
@@ -419,6 +428,7 @@ def capture(
     target_plan_sha256: str,
     *,
     now: datetime | None = None,
+    logs: Any = None,
 ) -> dict[str, Any]:
     """Collect and write three immutable component files; never accept a run."""
     plan = validate_plan(plan)
@@ -433,6 +443,13 @@ def capture(
         or caller.get("Arn") != plan["expected_caller_arn"]
     ):
         raise ValueError("aws_caller_target_mismatch")
+    pool_counters = None
+    if plan["format_version"] == 3:
+        if logs is None:
+            raise ValueError("pgbouncer_log_client_required")
+        from scripts.evaluation.k6.pgbouncer_capture import collect
+
+        pool_counters = collect(logs, query_start, query_end)
     groups = build_queries(plan)
     raw: dict[str, list[dict[str, Any]]] = {
         group: _collect_group(cloudwatch, queries, query_start, query_end)
@@ -482,6 +499,24 @@ def capture(
             "series_count": len(series),
             "series_with_data": sum(bool(item["timestamps"]) for item in series),
         }
+    if pool_counters is not None:
+        pool_counters.update(
+            target_plan_sha256=target_plan_sha256,
+            run_id=run_id,
+            configuration=plan["configuration"],
+            requested_run_window_utc=window,
+        )
+        encoded = (json.dumps(pool_counters, sort_keys=True) + "\n").encode()
+        if len(encoded) > MAX_OUTPUT_BYTES:
+            raise ValueError("pool_counter_artifact_too_large")
+        path = output_dir / "pgbouncer-counters.json"
+        with path.open("xb") as stream:
+            stream.write(encoded)
+        artifacts["pgbouncer_counters"] = {
+            "reference": path.as_posix(),
+            "sha256": hashlib.sha256(encoded).hexdigest(),
+            "state": pool_counters["state"],
+        }
     return {
         "run_id": run_id,
         "configuration": plan["configuration"],
@@ -524,6 +559,7 @@ def main() -> int:
             session.client("cloudwatch"),
             args.output_dir,
             hashlib.sha256(plan_bytes).hexdigest(),
+            logs=session.client("logs") if plan["format_version"] == 3 else None,
         )
     except (OSError, ValueError, KeyError, TypeError) as exc:
         parser.exit(2, f"CloudWatch capture failed: {type(exc).__name__}\n")
