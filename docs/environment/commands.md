@@ -120,26 +120,6 @@ migration count, avoiding a stale count when main adds migrations.
 verification command. See [local setup and checks](README.md#checks-and-data-tooling)
 for coverage and skipped-check limits. It makes no cloud changes.
 
-## PD-11 boundary checks
-
-`make check` includes the repository's executable architecture and contract
-checks. See the [shared boundary rules](../conventions/shared-conventions-and-cross-domain-contract-rules.md)
-and the relevant test README for exact focused commands. A focused pass does not
-replace the full check or owner review.
-
-## Identity provider offline checks — ID-01 Step 2
-
-From the repository root, after `uv sync --locked`:
-
-```bash
-uv run --locked pytest apps/api/tests/domains/identity/test_email.py apps/api/tests/core/test_provider_settings.py apps/api/tests/test_config.py -q -W error
-```
-
-These checks use controlled clients and synthetic recipients. They create no
-AWS client, send, listener or database. Passing them does not establish provider
-delivery, real sign-in or ID-READY. See the
-[Identity setup record](identity-provider-setup.md) for real gates.
-
 ## Explicit real local Identity bootstrap — ID-01 Step12 preparation
 
 This is operator preparation only. Running it needs separate review and
