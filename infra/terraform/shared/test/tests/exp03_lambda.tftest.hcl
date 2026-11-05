@@ -280,6 +280,11 @@ run "restore_smoke_stopped_and_isolated" {
     nfr07_smoke_hostname          = "restore.clip-iisc.site"
     nfr07_smoke_certificate_arn   = "arn:aws:acm:ap-south-1:335523638354:certificate/00000000-0000-0000-0000-000000000000"
     exp03_budget_cap_usd          = 25
+    pgbouncer_enabled             = true
+    pgbouncer_routing_enabled     = true
+    pgbouncer_private_ip          = "10.64.1.83"
+    pgbouncer_host_instance_id    = "i-00000000000000001"
+    pgbouncer_image_uri           = "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:0000000000000000000000000000000000000000000000000000000000000000"
   }
   assert {
     condition     = aws_ecs_service.nfr07_smoke[0].desired_count == 0 && aws_ecs_service.api[0].desired_count == var.api_service_desired_count
@@ -292,6 +297,10 @@ run "restore_smoke_stopped_and_isolated" {
   assert {
     condition     = alltrue([for item in jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].environment : item.value == "false" if contains(["CLIP_NOTIFICATION_WORKER_ENABLED", "CLIP_HYBRID_WORKER_ENABLED", "CLIP_HYBRID_SEARCH_ENABLED"], item.name)])
     error_message = "Restore smoke must disable asynchronous database writers."
+  }
+  assert {
+    condition     = contains([for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT") && !contains([for item in jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT")
+    error_message = "Source pool routing must remain enabled while restored smoke cannot inherit it."
   }
 }
 
@@ -354,4 +363,91 @@ run "unreserved_without_shared_pool_is_rejected" {
     api_task_memory_mib                        = 2048
   }
   expect_failures = [terraform_data.exp03_inputs]
+}
+
+run "approved_higher_memory_is_configurable" {
+  command = plan
+  variables {
+    exp03_lambda_memory_mb = 3008
+  }
+  assert {
+    condition     = var.exp03_lambda_memory_mb == 3008
+    error_message = "The observed account-permitted 3008 MiB setting must remain configurable."
+  }
+}
+
+run "memory_above_approved_ceiling_is_rejected" {
+  command = plan
+  variables {
+    exp03_lambda_memory_mb = 4097
+  }
+  expect_failures = [var.exp03_lambda_memory_mb]
+}
+
+
+run "reviewed_short_ecs_draining" {
+  command = plan
+  variables {
+    exp03_enabled                          = true
+    exp03_ecs_deregistration_delay_seconds = 30
+    api_service_enabled                    = true
+    identity_runtime_enabled               = true
+    identity_test_recipients               = ["synthetic@example.invalid"]
+    hybrid_runtime_enabled                 = true
+    api_task_cpu                           = 512
+    api_task_memory_mib                    = 2048
+  }
+  assert {
+    condition     = tonumber(aws_lb_target_group.exp03_ecs[0].deregistration_delay) == 30
+    error_message = "Both deployment configurations must retain the exact reviewed ECS draining interval."
+  }
+}
+
+
+run "restore_preserves_idle_lambda_without_selected_rule" {
+  command = apply
+  variables {
+    exp03_selected_reads_lambda_weight_percent = 0
+    exp03_selected_rule_enabled                = false
+    exp03_enabled                              = true
+    api_service_enabled                        = true
+    api_service_desired_count                  = 2
+    ecs_host_max_size                          = 2
+    identity_runtime_enabled                   = true
+    conversations_runtime_enabled              = true
+    hybrid_runtime_enabled                     = true
+    api_task_cpu                               = 512
+    api_task_memory_mib                        = 2048
+    identity_test_recipients                   = ["synthetic@example.invalid"]
+    nfr07_smoke_enabled                        = true
+    nfr07_smoke_hostname                       = "restore.clip-iisc.site"
+    nfr07_smoke_certificate_arn                = "arn:aws:acm:ap-south-1:335523638354:certificate/00000000-0000-0000-0000-000000000000"
+    exp03_budget_cap_usd                       = 25
+    pgbouncer_enabled                          = true
+    pgbouncer_routing_enabled                  = true
+    pgbouncer_private_ip                       = "10.64.1.83"
+    pgbouncer_host_instance_id                 = "i-00000000000000001"
+    pgbouncer_image_uri                        = "335523638354.dkr.ecr.ap-south-1.amazonaws.com/clip-shared-test-api@sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  }
+  assert {
+    condition     = aws_ecs_service.nfr07_smoke[0].desired_count == 0 && aws_ecs_service.api[0].desired_count == var.api_service_desired_count
+    error_message = "Preprovisioning restore smoke must start no extra task and preserve source capacity."
+  }
+  assert {
+    condition     = aws_ecs_task_definition.nfr07_smoke[0].memory == "1024" && aws_ecs_task_definition.nfr07_smoke[0].cpu == "256" && jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].portMappings[0].hostPort == 18001 && alltrue([for secret in jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].secrets : secret.valueFrom == (secret.name == "CLIP_DATABASE_URL" ? aws_ssm_parameter.nfr07_database[0].arn : aws_ssm_parameter.nfr07_conversations_database[0].arn) if contains(["CLIP_DATABASE_URL", "CLIP_DATABASE_DSN"], secret.name)])
+    error_message = "Restore smoke must use a separate port and isolated database secret."
+  }
+  assert {
+    condition     = alltrue([for item in jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].environment : item.value == "false" if contains(["CLIP_NOTIFICATION_WORKER_ENABLED", "CLIP_HYBRID_WORKER_ENABLED", "CLIP_HYBRID_SEARCH_ENABLED"], item.name)])
+    error_message = "Restore smoke must disable asynchronous database writers."
+  }
+  assert {
+    condition     = contains([for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT") && !contains([for item in jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT")
+    error_message = "Source pool routing must remain enabled while restored smoke cannot inherit it."
+  }
+  assert {
+    condition     = length(aws_lambda_function.exp03) == 1 && length(aws_lb_listener_rule.exp03_selected_reads) == 0 && aws_ecs_service.nfr07_smoke[0].desired_count == 0
+    error_message = "Restore provisioning must preserve idle Lambda without changing A routing or starting smoke."
+  }
+
 }

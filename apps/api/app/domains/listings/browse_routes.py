@@ -16,6 +16,7 @@ from app.contracts.domain_types import (
     PageResult,
 )
 from app.core.auth import CallerContext, require_caller
+from app.core.logging import request_stage
 from app.core.errors import (
     ERRORS,
     PublicError,
@@ -91,7 +92,8 @@ async def query_available_listings(
     query: Annotated[BrowseQuery, Query()],
 ) -> PageResult[ListingSummary]:
     """Return fresh available results; never permit cached availability inference."""
-    page = await service.query_available_listings(caller, query)
+    with request_stage("listings.search" if query.q is not None else "listings.browse"):
+        page = await service.query_available_listings(caller, query)
     # Both eligibility and availability can change between requests. Keep these
     # signed-in results out of shared caches and stale browser response storage.
     response.headers["Cache-Control"] = "private, no-store"

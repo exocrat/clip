@@ -1,3 +1,5 @@
+import { responseCorrelation } from './request_correlation.js';
+import { createHash } from 'node:crypto';
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
@@ -21,6 +23,7 @@ function prepare({ throws = false, negative = false, timeout = false, parity = f
   const item = parity ? { request: { kind: 'search' }, expected: null } : { request: { kind: 'browse' }, expected: {} };
   const profile = { sequence_starts: { low: 0 }, cases: [item], capacity: { preAllocatedVUs: 1, maxVUs: 1 }, timeout_seconds: 5 };
   const context = {
+    responseCorrelation, sha256: value => createHash('sha256').update(value).digest('hex'),
     __ENV: { CLIP_COMPARISON_LOCAL_LOAD: 'true', CLIP_COMPARISON_LOCAL_COOKIE: 'synthetic', CLIP_COMPARISON_LOCAL_PROFILE: 'fixture', CLIP_COMPARISON_LOCAL_CONDITION: 'low', ...(parity ? {CLIP_COMPARISON_LOCAL_PARITY_DRAFT:'true',CLIP_COMPARISON_LOCAL_PARITY_FILE:'parity'} : {}) },
     open: path => JSON.stringify(path==='parity'?[]:profile), Counter: Metric, Trend: Metric,
     localApiTarget: () => 'http://127.0.0.1', comparisonPath: () => '/synthetic',

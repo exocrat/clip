@@ -240,8 +240,8 @@ def test_empty_ready_page_and_one_result_statement_not_separate_coverage_read():
             )
         assert page.items == () and page.has_next is False
         assert (
-            connection.execute.await_count == 3
-        )  # two local bounds plus one result SELECT
+            connection.execute.await_count == 2
+        )  # combined transaction-local bounds plus one result SELECT
         sql, _ = connection.execute.await_args.args
         assert "AS ready" in sql and "'listing_id'" in sql
 

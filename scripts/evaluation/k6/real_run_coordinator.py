@@ -76,7 +76,7 @@ NFR_MODULES = {
 # Included even in deployed bundles so import closure is complete; the helper
 # rejects its short-window opt-in whenever a real runner is selected.
 NFR_MODULES = {
-    kind: (*modules, "local_capacity_window.js")
+    kind: (*modules, "local_capacity_window.js", "request_correlation.js")
     for kind, modules in NFR_MODULES.items()
 }
 PLAN_KEYS = {
@@ -305,7 +305,7 @@ def validate_approval(plan: dict[str, Any], plan_bytes: bytes, approval: Any) ->
         raise ValueError("action_approval_expired_or_misordered")
 
 
-def validate_run_plan(plan: Any) -> dict[str, Any]:
+def validate_run_plan(plan: Any, *, completed_evidence: bool = False) -> dict[str, Any]:
     """Reject incomplete, unbounded, or locally inconsistent run declarations."""
     if not isinstance(plan, dict) or set(plan) != PLAN_KEYS:
         raise ValueError("invalid_run_plan_shape")
@@ -344,7 +344,13 @@ def validate_run_plan(plan: Any) -> dict[str, Any]:
     target = _repo_path(plan["target_plan_path"], "target_plan")
     profile = _repo_path(plan["profile_path"], "profile")
     binary = _repo_path(plan["k6_binary_path"], "k6_binary")
-    _new_evidence_path(plan["evidence_directory"])
+    if completed_evidence:
+        # Reporting validates an existing run. Execution retains the default
+        # requirement for a new directory so it cannot overwrite earlier raw data.
+        if not _repo_path(plan["evidence_directory"], "evidence_directory").is_dir():
+            raise ValueError("completed_evidence_directory_required")
+    else:
+        _new_evidence_path(plan["evidence_directory"])
     _repo_path("scripts/evaluation/k6", "module_root")
     modules = (
         COMPARISON_MODULES
@@ -780,13 +786,16 @@ def _prepare_child_env(
                 "CLIP_EXP05_REAL_PROFILE": str(profile_path),
                 "CLIP_EXP05_REAL_RUN_ID": plan["run_id"],
                 "CLIP_EXP05_REAL_CONFIGURATION": plan["configuration"],
+                "CLIP_REAL_RUN_SESSION_COOKIE": cookie,
                 "CLIP_EXP05_LOCAL_LOAD": "false",
             }
         )
     return env
 
 
-def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
+def execute(
+    plan_path: Path, approval_path: Path, fresh_runtime_path: Path | None = None
+) -> dict[str, Any]:
     """Validate, inspect, authenticate, then execute and retain one raw k6 run."""
     plan_path = _input_path(plan_path, "run_plan")
     approval_path = _input_path(approval_path, "action_approval")
@@ -799,6 +808,21 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
     if _sha(target_bytes) != plan["target_plan_sha256"]:
         raise ValueError("target_plan_hash_mismatch")
     target = validate_target_plan(json.loads(target_bytes))
+    fresh_bytes = None
+    if plan["workload_kind"] != "exp05-pilot":
+        # Historical receipts remain reportable; new formal execution requires
+        # the human-approved fresh-start preparation for this exact run/target.
+        from scripts.evaluation.performance_campaign import verify_fresh_receipt
+
+        if fresh_runtime_path is None:
+            raise ValueError("fresh_runtime_receipt_required")
+        fresh_bytes = _read_bounded(
+            _input_path(fresh_runtime_path, "fresh_runtime"), 100_000
+        )
+        fresh = json.loads(fresh_bytes)
+        verify_fresh_receipt(fresh, target, datetime.now(timezone.utc))
+        if fresh["target_plan_sha256"] != plan["target_plan_sha256"]:
+            raise ValueError("fresh_runtime_target_mismatch")
     if (
         target["run_id"] != plan["run_id"]
         or target["configuration"] != plan["configuration"]
@@ -841,7 +865,36 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
         if not staged_profile.exists():
             raise ValueError("staged_profile_missing")
         inspect_target(target)
-        from scripts.evaluation.k6.lambda_concurrency import run_guard
+        if fresh_bytes is not None:
+            from data.generators.reference_login import sdk_profile_session
+
+            session = cast(Any, sdk_profile_session)(
+                profile_name=target["aws_profile"], region_name=target["region"]
+            )
+            resources = target["resources"]
+            ecs = session.client("ecs")
+            actual = ecs.list_tasks(
+                cluster=resources["ecs_cluster_arn"],
+                serviceName=resources["ecs_service_arn"].rsplit("/", 1)[-1],
+                desiredStatus="RUNNING",
+            )
+            if actual.get("nextToken") or set(actual["taskArns"]) != {
+                row["task_arn"] for row in fresh["new_ecs_tasks"]
+            }:
+                raise ValueError("fresh_runtime_tasks_changed")
+            if target["configuration"] == "B":
+                config = session.client("lambda").get_function_configuration(
+                    FunctionName=resources["lambda_function_arn"]
+                )
+                if (
+                    config["RevisionId"] != fresh["lambda_revision"]
+                    or config.get("Environment", {})
+                    .get("Variables", {})
+                    .get("CLIP_EVALUATION_RESET_ID")
+                    != plan["run_id"]
+                ):
+                    raise ValueError("fresh_runtime_lambda_changed")
+        from scripts.evaluation.k6.lambda_concurrency import run_guard, failure_code
 
         concurrency_guard = run_guard(target)
         if concurrency_guard:
@@ -876,6 +929,7 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
         timed_out = False
         oversized = False
         concurrency_guard_failed = False
+        concurrency_guard_failure = None
         next_concurrency_check = time.monotonic() + 5
         while process.poll() is None:
             if time.monotonic() - begin > plan["maximum_duration_seconds"]:
@@ -887,8 +941,9 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
             if concurrency_guard and time.monotonic() >= next_concurrency_check:
                 try:
                     concurrency_guard()
-                except Exception:
+                except Exception as error:
                     concurrency_guard_failed = True
+                    concurrency_guard_failure = failure_code(error)
                 next_concurrency_check = time.monotonic() + 5
             if timed_out or oversized or concurrency_guard_failed:
                 os.killpg(process.pid, signal.SIGTERM)
@@ -904,8 +959,10 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
         if concurrency_guard:
             try:
                 concurrency_guard()
-            except Exception:
+            except Exception as error:
                 concurrency_guard_failed = True
+                if concurrency_guard_failure is None:
+                    concurrency_guard_failure = failure_code(error)
         child_env.clear()
         del session_value
         raw_hash, raw_size, output_exceeded = _hash_output(
@@ -923,6 +980,9 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
             "revisions": target["revisions"],
             "run_plan_sha256": _sha(plan_bytes),
             "profile_sha256": _sha(profile_bytes),
+            "fresh_runtime_receipt_sha256": (
+                _sha(fresh_bytes) if fresh_bytes is not None else None
+            ),
             "k6_binary_sha256": plan["k6_binary_sha256"],
             "raw_sha256": raw_hash,
             "raw_bytes": raw_size,
@@ -933,6 +993,10 @@ def execute(plan_path: Path, approval_path: Path) -> dict[str, Any]:
             "timed_out": timed_out,
             "raw_limit_exceeded": oversized,
             "concurrency_guard_failed": concurrency_guard_failed,
+            "concurrency_guard_failure_code": concurrency_guard_failure,
+            "concurrency_guard_observations": (
+                concurrency_guard.diagnostics() if concurrency_guard else None
+            ),
             "execution_state": (
                 "completed"
                 if return_code == 0
@@ -974,6 +1038,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--approval", type=Path, required=True)
+    parser.add_argument("--fresh-runtime-receipt", type=Path)
     parser.add_argument(
         "--execute", action="store_true", help="execute the explicitly approved run"
     )
@@ -981,7 +1046,7 @@ def main() -> int:
     try:
         if not args.execute:
             raise ValueError("explicit_execute_flag_required")
-        result = execute(args.plan, args.approval)
+        result = execute(args.plan, args.approval, args.fresh_runtime_receipt)
         print(json.dumps(result, sort_keys=True))
         return 0
     except Exception as error:

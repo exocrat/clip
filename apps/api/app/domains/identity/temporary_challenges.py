@@ -21,6 +21,7 @@ from psycopg.pq import TransactionStatus
 from app.core.errors import ERRORS, PublicError
 from app.core.identifiers import new_id
 from app.core.timestamps import as_utc
+from app.core.sql_bounds import IDENTITY_BOUNDS_SQL
 from app.domains.identity.temporary_crypto import TemporaryKeys, normalize_login
 from app.domains.identity.temporary_delivery import OtpDelivery, prepare_challenge
 from app.domains.identity.temporary_policy import (
@@ -101,8 +102,7 @@ class PostgresTemporaryChallenges:
         deployment needs a reviewed migration rather than guessing old keys.
         A key/version replacement cannot silently reset enrollment/rate guards.
         """
-        connection.execute("SET LOCAL lock_timeout = '3s'")
-        connection.execute("SET LOCAL statement_timeout = '5s'")
+        connection.execute(IDENTITY_BOUNDS_SQL)
         row = connection.execute(
             "SELECT key_version, lookup_fingerprint, verifier_fingerprint, encryption_fingerprint "
             "FROM identity.otp_key_binding WHERE singleton"

@@ -62,11 +62,41 @@ result.
    recheck any part affected by later changes. A human reviews labels, results and
    applicable action gates; scripts do not supply human approval.
 
-The 60-second warm-up, timeout and one measured repetition per applicable
-architecture below are proposals, not PRD defaults. Each performance window is
-at least five minutes after warm-up. Record warm and cold evidence separately
-where relevant; the [architecture comparison](../ecs-only-vs-ecs-lambda-task-list.md)
-has its own three paired repetitions and cold-observation procedure.
+### Approved repetition and fresh-start amendment — 2026-11-04
+
+Suraj approved three performance repetitions for NFR-01/02/03 on **each**
+architecture, and three NFR-05 display windows per applicable configuration.
+Each performance repetition keeps 60 seconds of warm-up and at least 300 seconds
+of measurement. Coverage comes first: one round of all applicable NFR checks,
+then the remaining performance repetitions, then the main comparison's three
+paired cycles (A/B, B/A, A/B; low, normal and burst in each cycle).
+NFR-04 uses the complete reviewed query set on the required paths; NFR-06 starts
+with one separately approved task-loss test per configuration; NFR-07 uses one
+separately approved isolated restore where the unchanged shared database permits
+reuse. NFR-08 remains a continuous project ledger. Do not repeat deterministic
+quality or destructive checks merely to fill the performance repetition count.
+
+Before each formal comparison/NFR-01/02/03 run, prepare fresh API tasks; for B also
+recycle Lambda environments through a separately approved inert configuration
+marker. Keep hosts, database, shared pool, data and their caches unchanged.
+Record task creation/readiness separately from client latency. Record actual
+Lambda initialization reports and safe request-ID correlations; an absent init
+report does not prove a warm request, and slow responses do not prove cold starts.
+Keep startup observations, warm-up and sustained results separate. Do not average
+per-run percentiles and label the result a pooled percentile.
+
+`scripts/evaluation/performance_campaign.py` freezes this coverage-first order.
+`fresh_runtime.py` requires its own exact expiring action approval and preserves
+partial reset observations. The real-run coordinator now requires a recent,
+run/target-bound reset receipt and verifies the actual new ECS task IDs/Lambda
+revision before formal traffic. Historical receipts remain reportable. The
+Lambda-only pilot reruns observe initialization/reuse but do **not** force resets;
+all NFR/formal traffic remains held until those pilot results are reviewed.
+
+Operational caveat: the existing ECS target group's 300-second drain can extend
+formal reset transitions; the observer allows 900 seconds. Any drain-setting
+change requires a separate exact cloud plan. Deployment draining must not be
+silently treated as measured NFR-06 task-loss recovery behavior.
 
 ### Which architecture needs each check
 
@@ -112,7 +142,7 @@ supplies the real-target runner. Existing `nfr-01/manifest.template.json` and
    IDs through `GET /listings`; ensure image bodies are not downloaded. Cycle a
    fixed set of approved first-page, later-page and category-filter cases from
    the final dataset. Each started iteration sends one HTTP request.
-2. Run one approved phase on A and one on B at 20 requests/s: 1,200 warm-up and
+2. Run three separately recorded approved phases on A and three on B at 20 requests/s: 1,200 warm-up and
    6,000 measured scheduled requests per configuration. Check
    each status, listing availability, filter, page, IDs/order and response shape
    against the reviewed cases. Use the common timeout, drain and evidence rules.
@@ -132,7 +162,7 @@ reviewed search queries, actual indexed search, final Hybrid model and coverage.
 1. Preflight the real public search route with frozen representative direct-word,
    related-word and meaning-based cases; check final NEXT-03 filters and ordering.
    Use the intended Hybrid product behavior, not an invented keyword-only path.
-2. Run one approved phase on A and one on B at 10 requests/s: 600 warm-up and
+2. Run three separately recorded approved phases on A and three on B at 10 requests/s: 600 warm-up and
    3,000 measured scheduled requests per configuration. Record successful HTTP
    response completion and latency, plus query/database timing and
    connection/saturation signals. Do not score relevance in this latency NFR;
@@ -163,7 +193,7 @@ approved run plan. Run this test outside frozen A/B comparison windows.
    write use a unique deterministic operation ID and synthetic title/description;
    verify the created ID and returned fields. A request that times out may still
    have created a row; track its operation ID for reconciliation, not blind retry.
-2. Run one phase on A and one on B at 50 requests/s: 3,000 warm-up and 15,000
+2. Run three separately recorded phases on A and three on B at 50 requests/s: 3,000 warm-up and 15,000
    measured scheduled operations per configuration, including 30 and 150
    wanted-request create attempts respectively. All ordinary expected 429s are
    failures; exclude only a separately identified intentionally abusive request,

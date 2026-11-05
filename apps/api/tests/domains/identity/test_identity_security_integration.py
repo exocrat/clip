@@ -193,7 +193,7 @@ def test_http_contact_source_survives_reset_without_login_or_lifetime_change(
         rendered = [
             json.loads(SafeJsonFormatter().format(record)) for record in records
         ]
-        assert {row["status"] for row in rendered} >= {
+        assert {row["status"] for row in rendered if "status" in row} >= {
             200,
             201,
             202,
@@ -210,6 +210,7 @@ def test_http_contact_source_survives_reset_without_login_or_lifetime_change(
                 "severity",
                 "event",
                 "request_id",
+                "stage",
                 "method",
                 "route",
                 "status",

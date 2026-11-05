@@ -12,11 +12,22 @@ RUN --network=none /opt/semantic/python/bin/python3.13 -c "import sys; assert sy
     && uv venv /opt/semantic/venv --python /opt/semantic/python/bin/python3.13 --no-python-downloads \
     && uv pip sync /tmp/helper.txt --python /opt/semantic/venv/bin/python --require-hashes --only-binary :all: --no-index --find-links /wheels --offline --link-mode copy
 
+# The helper runs with -B in a read-only image. Cache compilation at build time
+# without changing pinned libraries, source validation or inference settings.
+RUN --network=none /opt/semantic/venv/bin/python -m compileall -q --invalidation-mode checked-hash /opt/semantic/venv/lib/python3.13/site-packages
+
 FROM ${API_IMAGE} AS runtime
 COPY --from=semantic-build --chown=10001:10001 /opt/semantic /opt/semantic
 COPY --from=semantic-model --chown=10001:10001 onnx/model.onnx /opt/semantic/model/onnx/model.onnx
 COPY --from=semantic-model --chown=10001:10001 tokenizer.json /opt/semantic/model/tokenizer.json
 COPY --chown=10001:10001 scripts/search_pipeline.py /app/scripts/search_pipeline.py
+
+# These three shared helper sources execute under the separately pinned3.13
+# interpreter, so they need its cache tags as well as the API's3.14 tags.
+RUN --network=none /opt/semantic/venv/bin/python -m compileall -q --invalidation-mode checked-hash \
+    /app/apps/api/app/domains/listings/embedding_helper.py \
+    /app/apps/api/app/domains/listings/embedding_protocol.py \
+    /app/apps/api/app/domains/listings/embedding_types.py
 
 ENV CLIP_HYBRID_SEARCH_ENABLED=true \
     CLIP_HYBRID_WORKER_ENABLED=true \

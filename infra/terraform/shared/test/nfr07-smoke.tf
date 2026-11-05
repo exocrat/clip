@@ -45,7 +45,8 @@ locals {
   # Reuse the reviewed application image/configuration, replace every database
   # secret and disable Hybrid/notification writers. The 1-GiB basic smoke task
   # can share a 4-GiB host with a 2-GiB source task, preserving two source tasks.
-  # Port 18001 cannot collide with API.
+  # Port 18001 cannot collide with API. Strip the shared-pool endpoint: all
+  # smoke domains must connect directly to the isolated restored database.
   nfr07_source_container = local.nfr07_active ? jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0] : null
 }
 resource "aws_ssm_parameter" "nfr07_database" {
@@ -85,7 +86,7 @@ resource "aws_ecs_task_definition" "nfr07_smoke" {
     portMappings = [{ containerPort = 8000, hostPort = 18001, protocol = "tcp" }]
     environment = concat([
       for item in local.nfr07_source_container.environment : item
-      if !contains(["CLIP_NOTIFICATION_WORKER_ENABLED", "CLIP_HYBRID_WORKER_ENABLED", "CLIP_IDENTITY_BROWSER_ORIGINS", "CLIP_NFR07_RESTORE_SMOKE_ENABLED", "CLIP_HYBRID_SEARCH_ENABLED"], item.name)
+      if !contains(["CLIP_NOTIFICATION_WORKER_ENABLED", "CLIP_HYBRID_WORKER_ENABLED", "CLIP_IDENTITY_BROWSER_ORIGINS", "CLIP_NFR07_RESTORE_SMOKE_ENABLED", "CLIP_HYBRID_SEARCH_ENABLED", "CLIP_DATABASE_PROXY_ENDPOINT"], item.name)
       ], [
       { name = "CLIP_NFR07_RESTORE_SMOKE_ENABLED", value = "true" },
       { name = "CLIP_HYBRID_SEARCH_ENABLED", value = "false" },
@@ -202,7 +203,7 @@ resource "terraform_data" "nfr07_guard" {
   count = var.nfr07_smoke_enabled || var.nfr07_smoke_running ? 1 : 0
   lifecycle {
     precondition {
-      condition     = var.nfr07_smoke_enabled && local.exp03_active && var.exp03_selected_reads_lambda_weight_percent == null
+      condition     = var.nfr07_smoke_enabled && local.exp03_active && (var.exp03_selected_reads_lambda_weight_percent == null || (var.exp03_selected_reads_lambda_weight_percent == 0 && !var.exp03_selected_rule_enabled))
       error_message = "NFR-07 smoke requires explicitly enabled ECS-only EXP-03 infrastructure; remove the isolated smoke resources before switching to weighted B."
     }
   }

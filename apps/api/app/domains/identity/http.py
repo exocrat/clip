@@ -21,7 +21,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.core.errors import ERRORS, PublicError, error_response, install_error_handlers
-from app.core.logging import RequestLoggingMiddleware
+from app.core.logging import RequestLoggingMiddleware, request_stage
 from app.core.runtime_bindings import runtime_claims, runtime_scope
 from app.domains.identity.capabilities import Capability
 from app.domains.identity.microsoft import MicrosoftTokenValidator
@@ -237,7 +237,10 @@ class IdentityBrowserMiddleware:
         failure = None
         if token:
             try:
-                identity = await run_in_threadpool(self.sessions.authenticate, token)
+                with request_stage("identity.authenticate"):
+                    identity = await run_in_threadpool(
+                        self.sessions.authenticate, token
+                    )
                 scope["clip.caller"] = identity.caller
                 scope["clip.session"] = identity
             except PublicError as error:

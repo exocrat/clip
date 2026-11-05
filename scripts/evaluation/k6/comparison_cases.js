@@ -8,9 +8,14 @@ export function localApiTarget(target) {
 
 /** Accept a deployed API root only when it is bound to the planned HTTPS origin. */
 export function approvedApiTarget(target, origin) {
-  let parsedOrigin;
-  try { parsedOrigin = new URL(origin); } catch (_) { throw Error('approved_https_target_required'); }
-  if (parsedOrigin.protocol !== 'https:' || parsedOrigin.username || parsedOrigin.password || parsedOrigin.pathname !== '/' || parsedOrigin.search || parsedOrigin.hash || !parsedOrigin.hostname || target !== `${parsedOrigin.origin}/api`) throw Error('approved_https_target_required');
+  // k6 does not expose the browser URL global. Accept only a literal HTTPS DNS
+  // origin, already verified by the Python target preflight, and its /api mount.
+  // Reject credentials, paths, alternate ports and ambiguous URL spellings.
+  const match = typeof origin === 'string' && /^https:\/\/([A-Za-z0-9.-]+)(?::443)?$/.exec(origin);
+  const hostname = match && match[1];
+  if (!hostname || hostname.length > 253 || hostname.split('.').some(label =>
+    label.length > 63 || !/^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/.test(label)) ||
+    target !== `${origin}/api`) throw Error('approved_https_target_required');
   return target;
 }
 

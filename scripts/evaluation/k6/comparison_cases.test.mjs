@@ -1,7 +1,20 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
-import { comparisonPath } from './comparison_cases.js';
+import { approvedApiTarget, comparisonPath } from './comparison_cases.js';
+
+test('approved HTTPS targets work without a browser URL global and reject unsafe origins', () => {
+  const original = globalThis.URL;
+  try {
+    globalThis.URL = undefined;
+    assert.equal(approvedApiTarget('https://clip-iisc.site/api', 'https://clip-iisc.site'), 'https://clip-iisc.site/api');
+    assert.equal(approvedApiTarget('https://clip-iisc.site:443/api', 'https://clip-iisc.site:443'), 'https://clip-iisc.site:443/api');
+    for (const origin of ['http://clip-iisc.site', 'https://user@clip-iisc.site', 'https://clip-iisc.site/path', 'https://clip-iisc.site?x', 'https://clip-iisc.site#x', 'https://clip-iisc.site:8443', 'https://clip-iisc.site\\@other.site', 'https://-bad.site', 'https://bad..site', 'https://clip-iisc.site\n']) {
+      assert.throws(() => approvedApiTarget(`${origin}/api`, origin));
+    }
+    assert.throws(() => approvedApiTarget('https://other.site/api', 'https://clip-iisc.site'));
+  } finally { globalThis.URL = original; }
+});
 
 test('comparison requests use generated public GET operations and query names', () => {
   const spec = JSON.parse(readFileSync(new URL('../../../contracts/generated/openapi.json', import.meta.url)));

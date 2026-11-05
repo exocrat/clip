@@ -62,7 +62,7 @@ def test_nfr02_counts_timeouts_in_the_issued_request_denominator():
     assert report["nfr_accepted"] is False
 
 
-def _nfr03_inputs(*, short=False):
+def _nfr03_inputs(*, short=False, listing=False):
     cases = {"synthetic": True}
     case_hash = hashlib.sha256(
         json.dumps(
@@ -95,6 +95,8 @@ def _nfr03_inputs(*, short=False):
             },
         )
     ]
+    if listing:
+        profile["version"] = 2
     operations = []
     for phase, phase_total in (
         ("nfr_warmup", 50 * profile["warmup_seconds"]),
@@ -114,10 +116,17 @@ def _nfr03_inputs(*, short=False):
             ("conversations", 10),
             ("saved", 9),
             ("wanted_create", 1),
+            *(([("listing_create", 0)]) if listing else []),
         ):
-            count = phase_total * percent // 100
+            count = (
+                (phase_total + 2999) // 3000
+                if route == "listing_create"
+                else phase_total * percent // 100
+            )
+            if listing and route == "browse":
+                count -= (phase_total + 2999) // 3000
             route_tags = {**identity, "route": route}
-            if route == "wanted_create":
+            if route in {"wanted_create", "listing_create"}:
                 for _ in range(count):
                     operation_id = str(uuid4())
                     request_id = str(uuid4())
@@ -149,7 +158,7 @@ def _nfr03_inputs(*, short=False):
                         ),
                     )
                 )
-            if route != "wanted_create":
+            if route not in {"wanted_create", "listing_create"}:
                 latency_tags = {**route_tags, "outcome": "correct"}
                 points.extend(
                     _point("clip_nfr03_elapsed_ms", 100, latency_tags)
@@ -250,3 +259,43 @@ def test_short_local_window_cannot_be_reported_with_formal_defaults():
     incomplete = summarize_nfr01_02([], profile, local_short=True)
     assert incomplete["delivery_complete"] is False
     assert incomplete["threshold_met_in_preview"] is False
+
+
+def test_nfr03_listing_revision_counts_both_write_types_and_retains_legacy_mix():
+    """New writes replace browse slots; the same50rps and both write totals apply."""
+    points, profile = _nfr03_inputs(listing=True)
+    report = summarize_nfr03(points, profile)
+    assert report["accounting_complete"] and report["delivery_complete"]
+    assert report["threshold_met_in_preview"]
+    assert (
+        report["phases"]["nfr_measured"]["routes"]["listing_create"]["scheduled"] == 5
+    )
+    assert report["phases"]["nfr_measured"]["routes"]["browse"]["scheduled"] == 4495
+    assert report["write_reconciliation"]["expected_total_including_warmup"] == 186
+    assert (
+        report["write_reconciliation"]["expected_listing_creations_including_warmup"]
+        == 6
+    )
+
+
+def test_nfr03_listing_revision_rejects_missing_sale_listing_reconciliation():
+    """A timed-out write cannot be silently lost from created-row accounting."""
+    points, profile = _nfr03_inputs(listing=True)
+    listing_operations = {
+        p["data"]["tags"]["operation_id"]
+        for p in points
+        if p.get("metric") == "clip_nfr03_issued"
+        and p["data"]["tags"].get("route") == "listing_create"
+    }
+    incomplete = [
+        p
+        for p in points
+        if not (
+            p.get("metric") == "clip_nfr03_reconciled_rows"
+            and p["data"]["tags"].get("operation_id") in listing_operations
+        )
+    ]
+    report = summarize_nfr03(incomplete, profile)
+    assert report["accounting_complete"] and not report["write_reconciliation_complete"]
+    assert not report["threshold_met_in_preview"]
+    assert len(report["write_reconciliation"]["missing_reconciled_operation_ids"]) == 6

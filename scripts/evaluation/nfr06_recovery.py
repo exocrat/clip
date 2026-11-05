@@ -12,10 +12,12 @@ from pathlib import Path
 import re
 import ssl
 import time
-from typing import Any, Callable
+from typing import Any, Callable, cast
 from urllib.parse import urlsplit
 from urllib.error import HTTPError, URLError
 from urllib.request import HTTPSHandler, ProxyHandler, Request, build_opener
+
+from scripts.evaluation.observer_journal import record as _record_observation
 
 from scripts.evaluation.k6.real_target_preflight import (
     check_session_identity,
@@ -239,6 +241,9 @@ def _write_exclusive(path: Path, document: dict[str, Any]) -> None:
 
 
 def _describe_capacity(ecs: Any, elbv2: Any, plan: dict[str, Any]) -> dict[str, Any]:
+    """Count serving capacity only when healthy targets belong to these API tasks."""
+    from scripts.evaluation.fresh_runtime import _targets_match
+
     service_result = ecs.describe_services(
         cluster=plan["cluster_arn"], services=[plan["service_arn"]]
     )
@@ -248,7 +253,7 @@ def _describe_capacity(ecs: Any, elbv2: Any, plan: dict[str, Any]) -> dict[str, 
     service = services[0]
     tasks_result = ecs.list_tasks(
         cluster=plan["cluster_arn"],
-        serviceName=plan["service_arn"],
+        serviceName=plan["service_arn"].rsplit("/", 1)[-1],
         desiredStatus="RUNNING",
         maxResults=100,
     )
@@ -276,19 +281,29 @@ def _describe_capacity(ecs: Any, elbv2: Any, plan: dict[str, Any]) -> dict[str, 
     healthy_targets = [
         row for row in targets if row.get("TargetHealth", {}).get("State") == "healthy"
     ]
+    # In bridge mode the ALB registers EC2 instance IDs and host ports. An old
+    # target or a different service must not establish recovery of this task set.
+    targets_match = len(healthy_tasks) == plan["desired_count"] and _targets_match(
+        ecs,
+        {"ecs_cluster_arn": plan["cluster_arn"]},
+        healthy_tasks,
+        healthy_targets,
+    )
     return {
         "desired_count": service.get("desiredCount"),
         "running_count": service.get("runningCount"),
         "pending_count": service.get("pendingCount"),
         "healthy_ecs_tasks": len(healthy_tasks),
         "healthy_alb_targets": len(healthy_targets),
+        "healthy_targets_match_api_tasks": targets_match,
         "task_arns": [task.get("taskArn") for task in healthy_tasks],
         "service_stable": service.get("desiredCount") == plan["desired_count"]
         and service.get("runningCount") == plan["desired_count"]
         and service.get("pendingCount", 0) == 0,
-        "serving_capacity_restored": len(healthy_tasks) >= plan["desired_count"]
-        and len(healthy_targets) >= plan["desired_count"]
-        and service.get("runningCount") == plan["desired_count"],
+        "serving_capacity_restored": targets_match
+        and service.get("desiredCount") == plan["desired_count"]
+        and service.get("runningCount") == plan["desired_count"]
+        and service.get("pendingCount", 0) == 0,
     }
 
 
@@ -334,36 +349,54 @@ def _load_window(
     *,
     stop_at_deadline: bool = False,
     recovery_probe: Callable[[], dict[str, Any]] | None = None,
+    deadline_ns: int | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    """Issue one read each second, retaining slow overlapping requests and drops.
+
+    Six bounded slots accommodate the five-second timeout without serializing
+    subsequent samples behind a slow response. No HTTP request is retried.
+    Recovery uses the absolute deadline that started before the stop API call.
+    """
     opener = build_opener(
         ProxyHandler({}), HTTPSHandler(context=ssl.create_default_context())
     )
     events: list[dict[str, Any]] = []
-    executor = ThreadPoolExecutor(max_workers=1)
-    future = None
-    future_row: dict[str, Any] | None = None
+    executor = ThreadPoolExecutor(max_workers=6)
+    pending: dict[Any, dict[str, Any]] = {}
     started = time.monotonic_ns()
     recovery = None
-    next_health_check = 0
+    if deadline_ns is None:
+        deadline_ns = started + 240_000_000_000
+
+    def finish(future: Any, row: dict[str, Any]) -> None:
+        try:
+            status, outcome, ended = future.result(timeout=6)
+        except Exception:
+            status, outcome, ended = None, "timeout", time.monotonic_ns()
+        if (
+            row["issued_monotonic_ns"] is not None
+            and ended - row["issued_monotonic_ns"] > 5_000_000_000
+        ):
+            outcome = "timeout"
+        row.update(completed_monotonic_ns=ended, status=status, outcome=outcome)
+        _record_observation(plan, {"event": "request_outcome", **row})
+
     try:
         for index in range(seconds):
             scheduled = started + index * 1_000_000_000
             wait_ns = scheduled - time.monotonic_ns()
             if wait_ns > 0:
                 time.sleep(wait_ns / 1_000_000_000)
-            if future is not None and future.done():
-                status, outcome, ended = future.result()
-                if future_row is None:
-                    raise ValueError("load_request_accounting_lost")
-                future_row.update(
-                    {
-                        "completed_monotonic_ns": ended,
-                        "status": status,
-                        "outcome": outcome,
-                    }
-                )
-                future = None
-                future_row = None
+            if (
+                stop_at_deadline
+                and recovery is None
+                and time.monotonic_ns() >= deadline_ns
+            ):
+                break
+            for future, previous in list(pending.items()):
+                if future.done():
+                    finish(future, previous)
+                    del pending[future]
             route = "listing_read" if index % 2 == 0 else "ecs_read"
             path = (
                 plan["listing_read_path"]
@@ -380,50 +413,35 @@ def _load_window(
                 "status": None,
                 "outcome": None,
             }
-            if future is None:
+            if len(pending) < 6:
                 row["issued_monotonic_ns"] = time.monotonic_ns()
-                future_row = row
 
                 def call(p: str = path) -> tuple[int | None, str, int]:
                     status, outcome = _request(opener, plan["target_origin"], p, cookie)
                     return status, outcome, time.monotonic_ns()
 
-                future = executor.submit(call)
+                pending[executor.submit(call)] = row
             else:
                 row["outcome"] = "generator_drop"
+                _record_observation(plan, {"event": "request_outcome", **row})
             events.append(row)
-            if recovery_probe and index >= next_health_check:
+            if recovery_probe:
                 state = recovery_probe()
-                if state["serving_capacity_restored"] and recovery is None:
-                    recovery = {
-                        "elapsed_monotonic_ns": time.monotonic_ns(),
+                observed = time.monotonic_ns()
+                _record_observation(
+                    plan,
+                    {
+                        "event": "capacity_observation",
+                        "observed_monotonic_ns": observed,
                         "state": state,
-                    }
-                next_health_check = index + 1
-                if stop_at_deadline and index + 1 >= 240 and recovery is None:
+                    },
+                )
+                if state["serving_capacity_restored"] and recovery is None:
+                    recovery = {"elapsed_monotonic_ns": observed, "state": state}
+                if stop_at_deadline and recovery is None and observed >= deadline_ns:
                     break
-        if future is not None:
-            try:
-                status, outcome, ended = future.result(timeout=6)
-                if future_row is None:
-                    raise ValueError("load_request_accounting_lost")
-                future_row.update(
-                    {
-                        "completed_monotonic_ns": ended,
-                        "status": status,
-                        "outcome": outcome,
-                    }
-                )
-            except Exception:
-                if future_row is None:
-                    raise ValueError("load_request_accounting_lost") from None
-                future_row.update(
-                    {
-                        "completed_monotonic_ns": time.monotonic_ns(),
-                        "status": None,
-                        "outcome": "timeout",
-                    }
-                )
+        for future, row in pending.items():
+            finish(future, row)
     finally:
         executor.shutdown(wait=False, cancel_futures=True)
     return events, recovery
@@ -441,7 +459,7 @@ def run(
         raise ValueError("aws_profile_mismatch")
     cookie = os.environ.get("CLIP_NFR06_SESSION_COOKIE", "")
     check_session_identity(target, cookie)
-    session = sdk_profile_session(
+    session = cast(Any, sdk_profile_session)(
         profile_name=target["aws_profile"], region_name=plan["region"]
     )
     sts = session.client("sts")
@@ -469,6 +487,15 @@ def run(
         raise ValueError("baseline_capacity_changed_before_stop")
     stop_started_ns = time.monotonic_ns()
     stop_started_utc = _utc()
+    _record_observation(
+        plan,
+        {
+            "event": "stop_requested",
+            "at_utc": stop_started_utc,
+            "monotonic_ns": stop_started_ns,
+            "task_arn": plan["task_arn"],
+        },
+    )
     stopped = ecs.stop_task(
         cluster=plan["cluster_arn"],
         task=plan["task_arn"],
@@ -478,13 +505,24 @@ def run(
     stop_state = stopped.get("task", {})
     if stop_state.get("taskArn") != plan["task_arn"]:
         raise ValueError("ecs_stop_response_mismatch")
+
+    def replacement_capacity() -> dict[str, Any]:
+        """Exclude stale AWS listings of the stopped task from recovery evidence."""
+        state = _describe_capacity(ecs, elbv2, plan)
+        state["stopped_task_absent"] = plan["task_arn"] not in state["task_arns"]
+        state["serving_capacity_restored"] = (
+            state["serving_capacity_restored"] and state["stopped_task_absent"]
+        )
+        return state
+
     recovery_events, recovery = _load_window(
         plan,
         cookie,
         "recovery",
         300,
         stop_at_deadline=True,
-        recovery_probe=lambda: _describe_capacity(ecs, elbv2, plan),
+        deadline_ns=stop_started_ns + 240_000_000_000,
+        recovery_probe=replacement_capacity,
     )
     restored = recovery is not None
     recovery_elapsed_ms = (

@@ -14,7 +14,7 @@ import json
 import math
 import re
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 from scripts.evaluation.k6.real_target_preflight import validate_plan
 
@@ -80,7 +80,10 @@ def build_queries(plan: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
     """Build fixed metric queries from the exact target ARNs in a validated plan."""
     resources = plan["resources"]
     load_balancer = _resource_name(resources["load_balancer_arn"], "loadbalancer/")
-    ecs_target_group = _resource_name(resources["ecs_target_group_arn"], "targetgroup/")
+    # CloudWatch retains the targetgroup/ prefix, unlike the LB ARN prefix.
+    ecs_target_group = "targetgroup/" + _resource_name(
+        resources["ecs_target_group_arn"], "targetgroup/"
+    )
     cluster_parts = _resource_name(resources["ecs_cluster_arn"], "cluster/").split("/")
     service_parts = _resource_name(resources["ecs_service_arn"], "service/").split("/")
     if len(cluster_parts) != 1 or len(service_parts) not in {1, 2}:
@@ -236,7 +239,9 @@ def build_queries(plan: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
         if not isinstance(lambda_arn, str) or not isinstance(lambda_target_arn, str):
             raise ValueError("configuration_b_lambda_resources_missing")
         lambda_name = _resource_name(lambda_arn, "function:").split(":", 1)[0]
-        lambda_target_group = _resource_name(lambda_target_arn, "targetgroup/")
+        lambda_target_group = "targetgroup/" + _resource_name(
+            lambda_target_arn, "targetgroup/"
+        )
         lambda_dims = [{"Name": "FunctionName", "Value": lambda_name}]
         lambda_tg_dims = alb_dims + [
             {"Name": "TargetGroup", "Value": lambda_target_group}
@@ -549,7 +554,7 @@ def main() -> int:
             raise ValueError("output_directory_must_be_relative")
         from data.generators.reference_login import sdk_profile_session
 
-        session = sdk_profile_session(
+        session = cast(Any, sdk_profile_session)(
             profile_name=plan["aws_profile"], region_name=plan["region"]
         )
         result = capture(

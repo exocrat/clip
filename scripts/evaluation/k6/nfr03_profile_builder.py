@@ -7,6 +7,7 @@ authorize execution, account creation, deletion or a live target.
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
@@ -37,7 +38,7 @@ def build_profile(
         raise ValueError("invalid_vu_capacity")
     if (
         not isinstance(fixture, dict)
-        or set(fixture)
+        or set(fixture) - {"listing_creation"}
         != {
             "dataset_fingerprint",
             "wanted_request_id",
@@ -66,6 +67,43 @@ def build_profile(
         r"[a-z][a-z0-9_]{1,39}", fixture["category_code"]
     ):
         raise ValueError("invalid_fixture_binding")
+    listing_creation = fixture.get("listing_creation")
+    if listing_creation is not None:
+        if not isinstance(listing_creation, dict) or set(listing_creation) != {
+            "image_upload_ids",
+            "available_from",
+            "condition_code",
+            "asking_price_paise",
+        }:
+            raise ValueError("invalid_listing_creation_fixture")
+        uploads = listing_creation["image_upload_ids"]
+        try:
+            if (
+                not isinstance(uploads, list)
+                or len(uploads) != 6
+                or len(set(uploads)) != 6
+            ):
+                raise ValueError
+            for upload in uploads:
+                UUID(upload)
+            starts = datetime.fromisoformat(
+                listing_creation["available_from"].replace("Z", "+00:00")
+            )
+            if starts.tzinfo is None or starts <= datetime.now(timezone.utc):
+                raise ValueError
+        except ValueError, TypeError, AttributeError:
+            raise ValueError("invalid_listing_creation_fixture") from None
+        price = listing_creation["asking_price_paise"]
+        if (
+            type(price) is not int
+            or not 0 <= price <= 1_000_000_000
+            or price % 100
+            or not isinstance(listing_creation["condition_code"], str)
+            or not re.fullmatch(
+                r"[a-z][a-z0-9_]{1,39}", listing_creation["condition_code"]
+            )
+        ):
+            raise ValueError("invalid_listing_creation_fixture")
     corpus = build_corpus()
     browse = [case for case in corpus["cases"] if case["request"]["kind"] == "browse"]
     search = [case for case in corpus["cases"] if case["request"]["kind"] == "search"]
@@ -85,13 +123,17 @@ def build_profile(
         "saved_listing_ids": fixture["saved_listing_ids"],
         "category_code": fixture["category_code"],
     }
+    if listing_creation is not None:
+        # Scheduled availability preserves the frozen discoverable corpus while
+        # exercising the complete create transaction with pre-confirmed images.
+        cases["listing_creation"] = listing_creation
     digest = hashlib.sha256(
         json.dumps(
             cases, sort_keys=True, separators=(",", ":"), ensure_ascii=False
         ).encode()
     ).hexdigest()
     return {
-        "version": 1,
+        "version": 2 if listing_creation is not None else 1,
         "purpose": "nfr-local-preparation",
         "nfr_id": "nfr-03",
         "configuration": configuration,

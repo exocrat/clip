@@ -57,12 +57,12 @@ variable "exp03_lambda_image_uri" {
 }
 
 variable "exp03_lambda_memory_mb" {
-  description = "Reviewed Lambda memory setting, no more than the experiment design limit."
+  description = "Reviewed Lambda memory setting through the human-approved 4096-MiB trial ceiling; actual account quotas also apply."
   type        = number
   default     = null
   validation {
-    condition     = var.exp03_lambda_memory_mb == null ? true : var.exp03_lambda_memory_mb >= 128 && var.exp03_lambda_memory_mb <= 2048 && floor(var.exp03_lambda_memory_mb) == var.exp03_lambda_memory_mb
-    error_message = "Choose an integer from 128 through 2048 MiB."
+    condition     = var.exp03_lambda_memory_mb == null ? true : var.exp03_lambda_memory_mb >= 128 && var.exp03_lambda_memory_mb <= 4096 && floor(var.exp03_lambda_memory_mb) == var.exp03_lambda_memory_mb
+    error_message = "Choose an integer from 128 through the approved 4096-MiB ceiling."
   }
 }
 
@@ -106,6 +106,14 @@ variable "exp03_max_runtime_minutes" {
   }
 }
 
+# Keep the idle Lambda/TG resources while a separately reviewed A-only restore
+# smoke is active. Disabling this rule is valid only for an ECS-only route.
+variable "exp03_selected_rule_enabled" {
+  type        = bool
+  default     = true
+  description = "Whether to install selected-read forwarding; false preserves idle Lambda resources for A-only restore checks."
+}
+
 variable "exp03_selected_reads_lambda_weight_percent" {
   description = "Lambda's fixed ALB traffic weight for selected Listing GETs; null keeps configuration A on ECS."
   type        = number
@@ -141,6 +149,7 @@ resource "terraform_data" "exp03_inputs" {
         var.exp03_certificate_arn != null,
         var.exp03_budget_cap_usd != null,
         var.exp03_max_runtime_minutes != null,
+        var.exp03_selected_rule_enabled || var.exp03_selected_reads_lambda_weight_percent == null || var.exp03_selected_reads_lambda_weight_percent == 0,
         var.exp03_selected_reads_lambda_weight_percent == null || var.exp03_lambda_image_uri != null,
         var.exp03_selected_reads_lambda_weight_percent == null || var.exp03_lambda_memory_mb != null,
         var.exp03_selected_reads_lambda_weight_percent == null || (
@@ -263,13 +272,26 @@ resource "aws_lb" "exp03" {
   depends_on         = [aws_route_table_association.exp03_public_secondary]
 }
 
+# Preparation/recovery timing is explicit and identical across A and B. Keep the
+# historical default; the selected deployment supplies its approved value.
+variable "exp03_ecs_deregistration_delay_seconds" {
+  type        = number
+  default     = 300
+  description = "Reviewed ECS target draining interval; preserve the selected value in deployment inputs."
+  validation {
+    condition     = contains([30, 300], var.exp03_ecs_deregistration_delay_seconds)
+    error_message = "Choose the reviewed 30-second interval or historical 300-second interval."
+  }
+}
+
 resource "aws_lb_target_group" "exp03_ecs" {
-  count       = local.exp03_active ? 1 : 0
-  name        = "${local.exp03_name}-ecs"
-  port        = 18000
-  protocol    = "HTTP"
-  target_type = "instance"
-  vpc_id      = aws_vpc.shared[0].id
+  count                = local.exp03_active ? 1 : 0
+  name                 = "${local.exp03_name}-ecs"
+  port                 = 18000
+  protocol             = "HTTP"
+  deregistration_delay = var.exp03_ecs_deregistration_delay_seconds
+  target_type          = "instance"
+  vpc_id               = aws_vpc.shared[0].id
   health_check {
     path                = "/health"
     matcher             = "200"
@@ -320,7 +342,7 @@ resource "aws_lb_listener" "exp03_https" {
 }
 
 resource "aws_lb_listener_rule" "exp03_selected_reads" {
-  count        = local.exp03_active && var.exp03_selected_reads_lambda_weight_percent != null ? 1 : 0
+  count        = local.exp03_active && var.exp03_selected_reads_lambda_weight_percent != null && var.exp03_selected_rule_enabled ? 1 : 0
   listener_arn = aws_lb_listener.exp03_https[0].arn
   priority     = 10
 
@@ -431,6 +453,11 @@ resource "aws_lambda_function" "exp03" {
       CLIP_STORAGE_PROVIDER                  = "disabled"
       CLIP_SERVE_WEB_APP                     = "false"
     }, { for setting in concat(local.database_proxy_environment, local.pgbouncer_environment) : setting.name => setting.value })
+  }
+  lifecycle {
+    # The separately approved fresh-runtime observer owns this inert marker.
+    # Retain it during unrelated restore provisioning; all functional env stays managed.
+    ignore_changes = [environment[0].variables["CLIP_EVALUATION_RESET_ID"]]
   }
   depends_on = [aws_iam_role_policy.exp03_lambda, terraform_data.exp03_inputs]
   tags       = local.exp03_tags

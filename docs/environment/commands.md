@@ -33,6 +33,7 @@ own their detailed commands and limits.
 | Search/Listings focused checks and isolated preview | [Search test guide](../../apps/api/tests/domains/search/README.md), [API guide](../../apps/api/README.md), and the browser procedure below |
 | Schema-shaped search data | [Data generator guide](../../data/README.md#se-01-isolated-schema-shaped-corpus); these are not the final NEXT-06 dataset commands |
 | Offline hash-bound comparison/NFR-01–03 run plans, shared target/session preflight and explicitly approved execution | [k6 tool guide](../../scripts/evaluation/k6/README.md#shared-real-run-planning-and-execution); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
+| Fresh-runtime preparation, correlation and coverage-first repetition policy | [Runtime measurement amendment](../evaluation/runtime-measurements.md) |
 | NFR-04/05 retrieval and chat capture | [NFR measurement procedures](../evaluation/nfr/measurement-design.md) and the NFR-04/05 run manifests and action-approval templates under `docs/evaluation/nfr/` |
 | Load-runner local pilot and EXP-02 input preparation | [k6 tool guide](../../scripts/evaluation/k6/README.md); [offline case and telemetry preparation](../evaluation/comparison-preparation-inputs.md) |
 | NFR measures and final-run requirements | [NFR measurement design](../evaluation/nfr/measurement-design.md) and the approved [ECS/Lambda experiment design](../evaluation/ecs-only-vs-ecs-lambda-task-list.md) |

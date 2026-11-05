@@ -41,5 +41,16 @@
   "resource_and_cost_caps": null,
   "stop_conditions": null,
   "cleanup_and_retention": null,
-  "nfr_accepted": false
+  "nfr_accepted": false,
+  "repetitions_run_order_warm_cold_policy": {
+    "repetitions_per_applicable_configuration": 3,
+    "warmup_seconds": 60,
+    "minimum_measured_seconds": 300,
+    "coverage_round_before_remaining_repetitions": true,
+    "fresh_api_tasks": false,
+    "fresh_lambda_environments_in_B": false,
+    "database_pool_and_host_caches_unchanged": true,
+    "phase_results_separate": true,
+    "exact_cloud_and_traffic_approval_still_required": true
+  }
 }

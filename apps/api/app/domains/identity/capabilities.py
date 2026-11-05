@@ -20,6 +20,8 @@ from app.core.auth import CallerContext
 from app.core.errors import ERRORS, PublicError
 from app.core.identifiers import format_id
 from app.core.timestamps import as_utc
+from app.core.sql_bounds import IDENTITY_BOUNDS_SQL
+from app.core.logging import request_stage
 from app.domains.identity.temporary_challenges import Database
 
 
@@ -84,8 +86,7 @@ class PostgresCapabilities:
                 if connection.info.transaction_status != TransactionStatus.IDLE:
                     raise PublicError(ERRORS[503])
                 with connection.transaction():
-                    connection.execute("SET LOCAL lock_timeout = '3s'")
-                    connection.execute("SET LOCAL statement_timeout = '5s'")
+                    connection.execute(IDENTITY_BOUNDS_SQL)
                     row = connection.execute(
                         "SELECT account_class,status,created_at,activated_at,expires_at,profile_removed_at "
                         "FROM identity.users WHERE id=%s",
@@ -152,7 +153,8 @@ class PostgresCapabilities:
         self._identifier(user_id)
         if required_class not in (None, "regular", "temporary"):
             raise PublicError(ERRORS[422])
-        row, now = await asyncio.to_thread(self._snapshot, user_id)
+        with request_stage("identity.eligibility"):
+            row, now = await asyncio.to_thread(self._snapshot, user_id)
         eligible = (
             self._active(row, now)
             and row is not None

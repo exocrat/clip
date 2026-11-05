@@ -1,3 +1,5 @@
+import { sha256 } from 'k6/crypto';
+import { responseCorrelation } from './request_correlation.js';
 // EXP-02 scheduled workload. The separate real-target path is only an internal
 // handoff; this script does not authorize a deployed run or an NFR result.
 import http from 'k6/http';
@@ -67,6 +69,7 @@ export default function () {
   const item = caseForIteration(cases, sequenceStart, iteration);
   const index = (sequenceStart + iteration) % cases.length;
   const tags = { phase, kind: item.request.kind, case_index: String(index), ...(realMode ? { run_id: __ENV.CLIP_REAL_RUN_ID, configuration: __ENV.CLIP_REAL_RUN_CONFIGURATION } : {}) };
+  tags.sample_index = String(execution.scenario.iterationInTest);
   issued.add(1, tags);
   let outcome = 'transport_error';
   let duration;
@@ -87,6 +90,7 @@ export default function () {
       duration = monotonic.stop();
       timerStarted = false;
     }
+    Object.assign(tags, responseCorrelation(response, value => sha256(value, 'hex')));
     outcome = preliminaryOutcome(response);
     if (outcome === 'requires_correctness_check') {
       outcome = 'incorrect';

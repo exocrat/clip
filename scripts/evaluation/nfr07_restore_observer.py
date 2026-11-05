@@ -11,7 +11,7 @@ import stat
 from pathlib import Path
 import re
 import time
-from typing import Any
+from typing import Any, cast
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit, parse_qs
 from urllib.request import (
@@ -21,6 +21,8 @@ from urllib.request import (
     Request,
     build_opener,
 )
+
+from scripts.evaluation.observer_journal import record as _record_observation
 
 AWS_ID = re.compile(r"^[0-9]{12}$")
 IDENTIFIER = re.compile(r"^[a-z][a-z0-9-]{0,62}$")
@@ -91,7 +93,7 @@ def validate_plan(plan: Any) -> dict[str, Any]:
     ):
         raise ValueError("unsafe_restore_settings")
     if not isinstance(plan.get("db_instance_class"), str) or not re.fullmatch(
-        r"db\.[a-z0-9-]+", plan["db_instance_class"]
+        r"db\.[a-z0-9-]+\.[a-z0-9-]+", plan["db_instance_class"]
     ):
         raise ValueError("invalid_db_instance_class")
     if not isinstance(plan.get("database_name"), str) or not re.fullmatch(
@@ -126,6 +128,8 @@ def validate_plan(plan: Any) -> dict[str, Any]:
     source_path = plan.get("source_target_plan_path")
     if not isinstance(source_path, str) or not source_path.strip():
         raise ValueError("source_target_plan_path_required")
+    if Path(source_path).is_absolute() or ".." in Path(source_path).parts:
+        raise ValueError("source_target_plan_must_be_repository_relative")
     smoke = plan.get("application_smoke_plan")
     if not isinstance(smoke, dict) or set(smoke) != {
         "https_origin",
@@ -202,7 +206,129 @@ def validate_plan(plan: Any) -> dict[str, Any]:
         for key in ("expected_user_id", "wanted_request_id")
     ):
         raise ValueError("application_smoke_fixture_ids_required")
+    credentials_source = plan.get("credentials_source", "secretsmanager")
+    if credentials_source not in {"secretsmanager", "ssm_parameter"}:
+        raise ValueError("restore_credentials_source_invalid")
+    if (
+        credentials_source == "ssm_parameter"
+        and plan["secret_arn"]
+        != f"arn:aws:ssm:{plan['region']}:{plan['account_id']}:parameter/clip/test/database-master-password"
+    ):
+        raise ValueError("restore_password_parameter_mismatch")
+    _validate_integrity_transport_spec(plan)
     return plan
+
+
+def _restore_credentials(
+    plan: dict[str, Any], session: Any, instance: dict[str, Any]
+) -> tuple[str, str]:
+    """Read approved credentials without creating a new secret or logging values."""
+    if plan.get("credentials_source", "secretsmanager") == "ssm_parameter":
+        expected = f"arn:aws:ssm:{plan['region']}:{plan['account_id']}:parameter/clip/test/database-master-password"
+        if plan["secret_arn"] != expected:
+            raise ValueError("restore_password_parameter_mismatch")
+        item = session.client("ssm").get_parameter(Name=expected, WithDecryption=True)[
+            "Parameter"
+        ]
+        if item.get("ARN") != expected or item.get("Type") != "SecureString":
+            raise ValueError("restore_password_parameter_mismatch")
+        username, password = instance.get("MasterUsername"), item.get("Value")
+    elif plan.get("credentials_source", "secretsmanager") == "secretsmanager":
+        secret = session.client("secretsmanager").get_secret_value(
+            SecretId=plan["secret_arn"]
+        )
+        document = json.loads(secret.get("SecretString", "{}"))
+        username, password = document.get("username"), document.get("password")
+    else:
+        raise ValueError("restore_credentials_source_invalid")
+    if (
+        not isinstance(username, str)
+        or not username
+        or not isinstance(password, str)
+        or not password
+    ):
+        raise ValueError("restore_secret_invalid")
+    return username, password
+
+
+def _validate_integrity_transport_spec(plan: dict[str, Any]) -> None:
+    """Refuse malformed forwarding inputs before any timed restore action."""
+    transport = plan.get("integrity_transport")
+    if transport is None:
+        return
+    if (
+        not isinstance(transport, dict)
+        or set(transport)
+        != {"kind", "hostaddr", "port", "receipt_path", "forward_instance_id"}
+        or transport["kind"] != "ssm_loopback"
+        or transport["hostaddr"] != "127.0.0.1"
+        or type(transport["port"]) is not int
+        or not 1024 <= transport["port"] <= 65535
+        or not isinstance(transport["receipt_path"], str)
+        or not Path(transport["receipt_path"]).is_absolute()
+        or not re.fullmatch(
+            r"i-[0-9a-f]{8,17}", transport.get("forward_instance_id", "")
+        )
+    ):
+        raise ValueError("restore_integrity_transport_invalid")
+
+
+def _integrity_transport_options(
+    plan: dict[str, Any], instance: dict[str, Any], ssm: Any
+) -> dict[str, Any]:
+    """Verify an owned SSM tunnel to this exact restored instance before SQL.
+
+    The separately approved operator owns the forwarding process and receipt.
+    SQL retains verify-full with the real restored RDS hostname; only its TCP
+    address/port use loopback. A stale/source-DB tunnel can never qualify.
+    """
+    transport = plan.get("integrity_transport")
+    if transport is None:
+        return {}
+    _validate_integrity_transport_spec(plan)
+    descriptor = os.open(
+        transport["receipt_path"], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK
+    )
+    try:
+        info = os.fstat(descriptor)
+        if (
+            not stat.S_ISREG(info.st_mode)
+            or info.st_uid != os.getuid()
+            or info.st_mode & 0o077
+            or info.st_size > 16000
+        ):
+            raise ValueError("unsafe_integrity_transport_receipt")
+        receipt = json.loads(os.read(descriptor, 16001))
+    finally:
+        os.close(descriptor)
+    endpoint = instance.get("Endpoint") or {}
+    if (
+        not isinstance(receipt, dict)
+        or receipt.get("target_db_instance_id") != plan["target_db_instance_id"]
+        or instance.get("DBInstanceIdentifier") != plan["target_db_instance_id"]
+        or not instance.get("DbiResourceId")
+        or receipt.get("target_dbi_resource_id") != instance["DbiResourceId"]
+        or receipt.get("remote_host") != endpoint.get("Address")
+        or receipt.get("remote_port") != endpoint.get("Port")
+        or receipt.get("local_host") != transport["hostaddr"]
+        or receipt.get("local_port") != transport["port"]
+        or receipt.get("forward_instance_id") != transport["forward_instance_id"]
+        or not isinstance(receipt.get("session_id"), str)
+        or not re.fullmatch(r"[A-Za-z0-9_-]{8,160}", receipt["session_id"])
+    ):
+        raise ValueError("integrity_tunnel_restored_target_mismatch")
+    sessions = ssm.describe_sessions(
+        State="Active", Filters=[{"key": "SessionId", "value": receipt["session_id"]}]
+    ).get("Sessions", [])
+    if (
+        len(sessions) != 1
+        or sessions[0].get("SessionId") != receipt["session_id"]
+        or sessions[0].get("Target") != transport["forward_instance_id"]
+        or sessions[0].get("DocumentName")
+        != "AWS-StartPortForwardingSessionToRemoteHost"
+    ):
+        raise ValueError("integrity_tunnel_session_not_active")
+    return {"hostaddr": transport["hostaddr"], "port": transport["port"]}
 
 
 def validate_restore_approval(
@@ -697,6 +823,38 @@ def _verify_application_smoke(
     }
 
 
+def describe_optional_instance(rds: Any, identifier: str) -> dict[str, Any] | None:
+    """Read one target, handling the SDK's modeled missing-instance exception.
+
+    The wire error is DBInstanceNotFound; botocore exposes the exception class
+    as DBInstanceNotFoundFault. Other permission/provider errors must propagate.
+    This read never creates or deletes a database.
+    """
+    try:
+        rows = (
+            rds.describe_db_instances(DBInstanceIdentifier=identifier).get(
+                "DBInstances"
+            )
+            or []
+        )
+    except rds.exceptions.DBInstanceNotFoundFault:
+        return None
+    if len(rows) > 1:
+        raise ValueError("restore_instance_lookup_ambiguous")
+    return cast(dict[str, Any], rows[0]) if rows else None
+
+
+def failure_code(error: Exception) -> str:
+    """Retain an actionable code without provider prose, SQL or credentials."""
+    code: Any = str(error) if isinstance(error, ValueError) else None
+    response = getattr(error, "response", None)
+    if isinstance(response, dict) and isinstance(response.get("Error"), dict):
+        code = response["Error"].get("Code")
+    if isinstance(code, str) and re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{0,100}", code):
+        return code
+    return type(error).__name__
+
+
 def run(
     plan: dict[str, Any], approval: dict[str, Any], *, profile_name: str | None = None
 ) -> dict[str, Any]:
@@ -714,7 +872,9 @@ def run(
     if profile_name is not None and profile_name != source["aws_profile"]:
         raise ValueError("aws_profile_mismatch")
     profile_name = source["aws_profile"]
-    session = sdk_profile_session(profile_name=profile_name, region_name=plan["region"])
+    session = cast(Any, sdk_profile_session)(
+        profile_name=profile_name, region_name=plan["region"]
+    )
     sts = session.client("sts")
     identity = sts.get_caller_identity()
     if identity.get("Account") != plan["account_id"]:
@@ -763,19 +923,14 @@ def run(
         != plan["snapshot_arn"]
     ):
         raise ValueError("snapshot_is_not_latest_available_managed_backup")
-    try:
-        existing = (
-            rds.describe_db_instances(
-                DBInstanceIdentifier=plan["target_db_instance_id"]
-            ).get("DBInstances")
-            or []
-        )
-    except rds.exceptions.DBInstanceNotFound:
-        existing = []
-    if existing:
+    if describe_optional_instance(rds, plan["target_db_instance_id"]) is not None:
         raise ValueError("isolated_restore_target_already_exists")
     started_ns = time.monotonic_ns()
     started_utc = _utc()
+    _record_observation(
+        plan,
+        {"event": "restore_request_attempted", "at_utc": started_utc},
+    )
     rds.restore_db_instance_from_db_snapshot(
         DBInstanceIdentifier=plan["target_db_instance_id"],
         DBSnapshotIdentifier=plan["snapshot_arn"],
@@ -794,6 +949,7 @@ def run(
     events = [
         {"event": "restore_requested", "at_utc": started_utc, "elapsed_monotonic_ms": 0}
     ]
+    _record_observation(plan, events[-1])
     deadline = started_ns + plan["restore_timeout_seconds"] * 1_000_000_000
     instance = None
     while time.monotonic_ns() < deadline:
@@ -814,6 +970,7 @@ def run(
                 "elapsed_monotonic_ms": (time.monotonic_ns() - started_ns) / 1_000_000,
             }
         )
+        _record_observation(plan, events[-1])
         if instance.get("DBInstanceStatus") == "available":
             break
         time.sleep(min(15, max(1, (deadline - time.monotonic_ns()) / 1_000_000_000)))
@@ -833,35 +990,45 @@ def run(
     endpoint = instance.get("Endpoint") or {}
     if not endpoint.get("Address") or type(endpoint.get("Port")) is not int:
         raise ValueError("restore_endpoint_unavailable")
-    secrets = session.client("secretsmanager")
-    secret = secrets.get_secret_value(SecretId=plan["secret_arn"])
-    secret_document = json.loads(secret.get("SecretString", "{}"))
-    username, password = secret_document.get("username"), secret_document.get(
-        "password"
-    )
-    if (
-        not isinstance(username, str)
-        or not username
-        or not isinstance(password, str)
-        or not password
-    ):
-        raise ValueError("restore_secret_invalid")
+    username, password = _restore_credentials(plan, session, instance)
     ca_path = Path(plan["rds_ca_bundle_path"]).resolve(strict=True)
     ca_hash = hashlib.sha256(ca_path.read_bytes()).hexdigest()
     if ca_hash != plan["rds_ca_bundle_sha256"]:
         raise ValueError("rds_ca_bundle_hash_mismatch")
-    with psycopg.connect(
-        host=endpoint["Address"],
-        port=endpoint["Port"],
-        dbname=plan["database_name"],
-        user=username,
-        password=password,
-        sslmode="verify-full",
-        sslrootcert=str(ca_path),
-        connect_timeout=10,
-        options="-c default_transaction_read_only=on",
-    ) as connection:
+    transport_options: dict[str, Any] = {}
+    while time.monotonic_ns() < deadline:
+        try:
+            transport_options = _integrity_transport_options(
+                plan, instance, session.client("ssm")
+            )
+            break
+        except FileNotFoundError:
+            time.sleep(2)
+    else:
+        raise ValueError("restore_integrity_transport_deadline_exceeded")
+    connection_options: dict[str, Any] = {
+        "host": endpoint["Address"],
+        "port": endpoint["Port"],
+        "dbname": plan["database_name"],
+        "user": username,
+        "password": password,
+        "sslmode": "verify-full",
+        "sslrootcert": str(ca_path),
+        "connect_timeout": 10,
+        "options": "-c default_transaction_read_only=on -c statement_timeout=5000",
+        **transport_options,
+    }
+    with psycopg.connect(**connection_options) as connection:
         checks = _integrity_checks(connection, plan["expected_migration_head"])
+    _record_observation(
+        plan,
+        {
+            "event": "integrity_checks_finished",
+            "at_utc": _utc(),
+            "elapsed_monotonic_ms": (time.monotonic_ns() - started_ns) / 1_000_000,
+            "checks": checks,
+        },
+    )
     # Provision the stopped smoke service before the run. An approved operator
     # publishes the restored endpoint and starts it during this bounded wait;
     # the original restore timer includes parameter publication and app startup.
@@ -877,10 +1044,34 @@ def run(
                 _read_isolated_session(plan["smoke_session_file"]),
             )
             break
-        except ValueError, FileNotFoundError:
+        except (ValueError, FileNotFoundError) as error:
+            code = (
+                str(error)
+                if isinstance(error, ValueError)
+                and re.fullmatch(r"[a-z_]{1,80}", str(error))
+                else "isolated_smoke_or_session_pending"
+            )
+            _record_observation(
+                plan,
+                {
+                    "event": "application_smoke_pending",
+                    "at_utc": _utc(),
+                    "elapsed_monotonic_ms": (time.monotonic_ns() - started_ns)
+                    / 1_000_000,
+                    "reason": code,
+                },
+            )
             time.sleep(5)
     else:
         raise ValueError("application_smoke_restore_deadline_exceeded")
+    _record_observation(
+        plan,
+        {
+            "event": "application_smoke_verified",
+            "at_utc": _utc(),
+            "elapsed_monotonic_ms": (time.monotonic_ns() - started_ns) / 1_000_000,
+        },
+    )
     completed_ns = time.monotonic_ns()
     completed_utc = _utc()
     elapsed_ms = (completed_ns - started_ns) / 1_000_000
@@ -960,7 +1151,7 @@ def main() -> int:
             and output["application_smoke_verified"]
             else 1
         )
-    except Exception:
+    except Exception as error:
         if plan is not None and approval is not None and not args.output.exists():
             failure = {
                 "format_version": 1,
@@ -973,6 +1164,7 @@ def main() -> int:
                 "approval_id": approval["approval_id"],
                 "run_outcome": "failed_or_incomplete",
                 "failure_type": "input_provider_restore_or_integrity_error",
+                "failure_code": failure_code(error),
                 "restore_action_may_have_started": True,
                 "nfr07_accepted": False,
                 "application_smoke_verified": False,

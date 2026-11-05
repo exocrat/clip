@@ -4,6 +4,7 @@
  * Only sanitized event metadata is written; message text is hashed in memory.
  * A reviewed run manifest and a bound concurrent read workload are required.
  */
+import { validateIdentityReceipt } from './nfr05_preflight.mjs';
 import { createHash, randomUUID } from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { createReadStream } from 'node:fs';
@@ -79,6 +80,13 @@ class CdpPage {
     });
     await this.send('Runtime.enable');
     await this.send('Page.enable');
+    // Model two active conversation clients on one operator's desktop. Keep
+    // this setting on the observer's own connection for the entire run:
+    // preparation's short-lived CDP connection loses emulation when it closes.
+    // This never generates delivery events; real submit/decrypted-DOM events
+    // below remain the only timing boundaries. Closing this session resets it.
+    await this.send('Page.setWebLifecycleState', { state: 'active' });
+    await this.send('Emulation.setFocusEmulationEnabled', { enabled: true });
     await this.send('Runtime.addBinding', { name: '__clipNfr05Emit' });
   }
 
@@ -181,6 +189,7 @@ async function runBackground(k6Path, profilePath, origin, session, runId, eviden
       CLIP_NFR05_BG_EXECUTION: 'approved-runner',
       CLIP_NFR05_BG_TARGET_ORIGIN: origin,
       CLIP_NFR05_BG_PROFILE: profilePath,
+      CLIP_NFR05_BG_RUN_ID: runId,
       CLIP_NFR05_BG_SESSION_COOKIE: session,
     },
     stdio: 'ignore',
@@ -276,7 +285,7 @@ function verifyDeployedIdentity(targetPlanPath, expectedUserId, sessionEnv) {
   });
   if (result.error || result.status !== 0) fail('nfr05_live_target_or_session_preflight_failed');
   const receipt = JSON.parse(result.stdout);
-  if (receipt.live_target_checked !== true || receipt.session_identity?.session_identity_verified !== true || receipt.session_identity?.regular_account_verified !== true) fail('nfr05_live_target_or_session_preflight_incomplete');
+  validateIdentityReceipt(receipt);
 }
 
 async function main() {
@@ -344,11 +353,14 @@ async function main() {
     findPage(recipientEndpoint, args['recipient-target'], origin.origin, conversationId),
   ]);
   if (senderUrl === recipientUrl) fail('two_distinct_browser_sessions_required');
+  if (manifest.browser_activity_mode !== 'cdp_emulated_active_conversations') fail('active_browser_mode_not_approved');
 
   const rows = Array.from({ length: SAMPLE_COUNT }, (_, index) => ({ index, correlation: '', submittedNs: null, displayedNs: null, submitFailureNs: null }));
   const correlationIndex = new Map();
   const listeners = new Map();
-  const record = (_role, event, correlation, timestamp) => {
+  const record = (role, event, correlation, timestamp) => {
+    // Sender rendering is not delivery. Only the recipient can finish timing.
+    if (!((role === 'sender' && event === 'submitted') || (role === 'recipient' && event === 'displayed'))) return;
     const index = correlationIndex.get(correlation);
     if (index === undefined) return;
     const row = rows[index];
@@ -362,7 +374,9 @@ async function main() {
   try {
     await Promise.all([sender.connect(), recipient.connect()]);
     await Promise.all([sender.evaluate(observerScript), recipient.evaluate(observerScript)]);
-    const ready = await sender.evaluate(`(() => { const form = document.querySelector('section[aria-label="Private conversation"] form.conversation-thread__composer'); const input = form?.querySelector('textarea#conversation-message-draft'); const button = form?.querySelector('button[type="submit"]'); return Boolean(form && input && button && !input.disabled && !button.disabled && document.visibilityState === 'visible'); })()`);
+    // An empty draft correctly disables Send. Check editability now, then
+    // wait for the real UI to enable Send after each controlled draft is set.
+    const ready = await sender.evaluate(`(() => { const form = document.querySelector('section[aria-label="Private conversation"] form.conversation-thread__composer'); const input = form?.querySelector('textarea#conversation-message-draft'); const button = form?.querySelector('button[type="submit"]'); return Boolean(form && input && button && !input.disabled && document.visibilityState === 'visible'); })()`);
     const recipientReady = await recipient.evaluate(`Boolean(document.querySelector('ol[aria-label="Messages"]') && document.visibilityState === 'visible')`);
     if (ready !== true || recipientReady !== true) fail('conversation_ui_not_ready');
 
@@ -377,7 +391,7 @@ async function main() {
       const correlation = createHash('sha256').update(messageText).digest('hex');
       row.correlation = correlation;
       correlationIndex.set(correlation, row.index);
-      const script = `(() => { const form = document.querySelector('section[aria-label="Private conversation"] form.conversation-thread__composer'); const input = form?.querySelector('textarea#conversation-message-draft'); const button = form?.querySelector('button[type="submit"]'); if (!form || !input || !button || input.disabled || button.disabled) return false; const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set; setter.call(input, ${JSON.stringify(messageText)}); input.dispatchEvent(new Event('input', { bubbles: true })); form.requestSubmit(); return true; })()`;
+      const script = `(async () => { const form = document.querySelector('section[aria-label="Private conversation"] form.conversation-thread__composer'); const input = form?.querySelector('textarea#conversation-message-draft'); const button = form?.querySelector('button[type="submit"]'); if (!form || !input || !button || input.disabled) return false; const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set; setter.call(input, ${JSON.stringify(messageText)}); input.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(resolve => requestAnimationFrame(resolve)); if (button.disabled || input.disabled) return false; form.requestSubmit(); return true; })()`;
       try {
         const submitted = await sender.evaluate(script);
         if (submitted !== true) row.submitFailureNs = nsNumber(process.hrtime.bigint());

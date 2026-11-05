@@ -1,3 +1,4 @@
+import { responseCorrelation } from './request_correlation.js';
 // NFR-03 workload. Direct/local preparation stays loopback-only; a reviewed
 // coordinator must validate every gate before using its separate real mode.
 import http from 'k6/http';
@@ -10,8 +11,8 @@ import monotonic from 'k6/x/clipmonotonic';
 import { approvedApiTarget, comparisonPath, localApiTarget } from './comparison_cases.js';
 import { correctResponse, validSearchResponse } from './comparison_checks.js';
 import { preliminaryOutcome } from './comparison_outcomes.js';
-import { nfr03Order, nfr03CaseIndex } from './nfr03_schedule.js';
-import { validWantedItem, validWantedPage } from './nfr03_checks.js';
+import { nfr03Order, nfr03CaseIndex, nfr03Kind } from './nfr03_schedule.js';
+import { validWantedItem, validWantedPage, validListingCreate } from './nfr03_checks.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const MAX_RECONCILIATION_PAGES = 10;
@@ -38,10 +39,14 @@ const rawProfile = open(realMode ? __ENV.CLIP_NFR03_REAL_PROFILE : __ENV.CLIP_NF
 if (rawProfile.length > 5_000_000) throw Error('profile_too_large');
 const profile = JSON.parse(rawProfile);
 const PROFILE_KEYS = ['version','purpose','nfr_id','configuration','run_id','dataset_fingerprint','fixture_binding_sha256','case_bundle_sha256','rate_rps','warmup_seconds','measured_seconds','drain_seconds','timeout_seconds','retries','capacity','cases','execution_permitted','nfr_accepted'];
-const CASES_KEYS = ['browse','search','detail','wanted_request_id','conversation_id','saved_listing_ids','category_code'];
-if (!exact(profile, PROFILE_KEYS) || profile.version !== 1 || profile.purpose !== 'nfr-local-preparation' || profile.nfr_id !== 'nfr-03' || !['A','B'].includes(profile.configuration) || profile.execution_permitted !== false || profile.nfr_accepted !== false || profile.rate_rps !== 50 || profile.warmup_seconds !== 60 || profile.measured_seconds !== 300 || profile.drain_seconds !== 5 || profile.timeout_seconds !== 5 || profile.retries !== 0 || !exact(profile.cases, CASES_KEYS) || sha256(canonicalJson(profile.cases), 'hex') !== profile.case_bundle_sha256) throw Error('invalid_nfr03_profile');
+const CASES_KEYS = ['browse','search','detail','wanted_request_id','conversation_id','saved_listing_ids','category_code', ...(profile.version === 2 ? ['listing_creation'] : [])];
+if (!exact(profile, PROFILE_KEYS) || ![1, 2].includes(profile.version) || profile.purpose !== 'nfr-local-preparation' || profile.nfr_id !== 'nfr-03' || !['A','B'].includes(profile.configuration) || profile.execution_permitted !== false || profile.nfr_accepted !== false || profile.rate_rps !== 50 || profile.warmup_seconds !== 60 || profile.measured_seconds !== 300 || profile.drain_seconds !== 5 || profile.timeout_seconds !== 5 || profile.retries !== 0 || !exact(profile.cases, CASES_KEYS) || sha256(canonicalJson(profile.cases), 'hex') !== profile.case_bundle_sha256) throw Error('invalid_nfr03_profile');
 for (const key of ['wanted_request_id','conversation_id']) if (!UUID.test(profile.cases[key])) throw Error('invalid_fixture_id');
 if (!Array.isArray(profile.cases.saved_listing_ids) || profile.cases.saved_listing_ids.length < 5 || !profile.cases.saved_listing_ids.every(id => UUID.test(id)) || new Set(profile.cases.saved_listing_ids).size !== profile.cases.saved_listing_ids.length) throw Error('invalid_saved_fixture_ids');
+if (profile.version === 2) {
+  const c = profile.cases.listing_creation;
+  if (!exact(c, ['image_upload_ids','available_from','condition_code','asking_price_paise']) || !Array.isArray(c.image_upload_ids) || c.image_upload_ids.length !== 6 || new Set(c.image_upload_ids).size !== 6 || !c.image_upload_ids.every(id => UUID.test(id)) || !Number.isFinite(Date.parse(c.available_from)) || Date.parse(c.available_from) <= Date.now() || typeof c.condition_code !== 'string' || !Number.isSafeInteger(c.asking_price_paise) || c.asking_price_paise < 0 || c.asking_price_paise > 1000000000 || c.asking_price_paise % 100) throw Error('invalid_listing_creation_fixture');
+}
 const capacity = profile.capacity;
 if (!exact(capacity, ['preAllocatedVUs','maxVUs']) || !Number.isSafeInteger(capacity.preAllocatedVUs) || !Number.isSafeInteger(capacity.maxVUs) || capacity.preAllocatedVUs < 1 || capacity.maxVUs < capacity.preAllocatedVUs) throw Error('capacity_required');
 if (!Array.isArray(profile.cases.browse) || profile.cases.browse.length !== 5 || !Array.isArray(profile.cases.search) || profile.cases.search.length !== 3 || !Array.isArray(profile.cases.detail) || profile.cases.detail.length !== 2) throw Error('invalid_frozen_case_mix');
@@ -89,6 +94,16 @@ function validCreate(body, title, description) {
   return body && typeof body === 'object' && UUID.test(body.request_id) && body.title === title && body.description === description && body.category_code === profile.cases.category_code && body.state === 'open' && Number.isSafeInteger(body.revision) && body.revision >= 1;
 }
 
+/** One pre-confirmed image is consumed per actual listing create. Uploading
+ * image bytes is unmeasured preparation; POST/listings is the measured operation.
+ * Unique commands permit reconciliation without retrying timed-out writes.
+ */
+function listingCommand(phaseName, iteration, operationId) {
+  const c = profile.cases.listing_creation;
+  const slot = (phaseName === 'nfr_warmup' ? 0 : 1) + Math.floor(iteration / 3000);
+  return {title: `NFR03L ${profile.run_id} ${operationId}`, description: `Synthetic sale listing operation ${operationId}; no personal data.`, category_code: profile.cases.category_code, condition_code: c.condition_code, asking_price_paise: c.asking_price_paise, original_price_paise: null, negotiable: false, pickup_area: 'Synthetic NFR03 pickup', available_from: c.available_from, available_until: null, proof_available: null, image_upload_ids: [c.image_upload_ids[slot]], operation_id: operationId};
+}
+
 /** Check the designated fixture before writes can move it off page one. */
 export function setup() {
   const response = http.get(`${target}/wanted-requests/${profile.cases.wanted_request_id}`, {
@@ -109,13 +124,20 @@ export default function () {
     boundarySkipped.add(1, { phase: execution.scenario.name });
     return;
   }
-  const kind = routeOrder[iteration % routeOrder.length];
-  const caseIndex = nfr03CaseIndex(kind, iteration);
+  const kind = nfr03Kind(iteration, profile.version === 2);
+  const caseIndex = kind === 'listing_create' ? 0 : nfr03CaseIndex(kind, iteration);
   let path, method = 'GET', payload, expectedCheck;
   let operationId;
   if (kind === 'browse') { path = `${target}${browsePaths[caseIndex]}`; expectedCheck = body => correctResponse(200, body, profile.cases.browse[caseIndex].request, profile.cases.browse[caseIndex].expected); }
   else if (kind === 'search') { path = `${target}${searchPaths[caseIndex]}`; expectedCheck = body => validSearchResponse(200, body, profile.cases.search[caseIndex].request); }
   else if (kind === 'detail') { path = `${target}${detailPaths[caseIndex]}`; expectedCheck = body => correctResponse(200, body, profile.cases.detail[caseIndex].request, profile.cases.detail[caseIndex].expected); }
+  else if (kind === 'listing_create') {
+    method = 'POST';
+    operationId = uuid4(`${profile.run_id}|${profile.configuration}|${phaseName}|${iteration}`);
+    const command = listingCommand(phaseName, iteration, operationId);
+    payload = JSON.stringify(command); path = `${target}/listings`;
+    expectedCheck = body => validListingCreate(body, command);
+  }
   else if (kind === 'wanted') { path = `${target}/wanted-requests?page=1&page_size=20`; expectedCheck = validWanted; }
   else if (kind === 'conversations') { path = `${target}/conversations?page=1&page_size=20`; expectedCheck = validConversations; }
   else if (kind === 'saved') { path = `${target}/me/saved-listings?page=1&page_size=20`; expectedCheck = validSaved; }
@@ -129,6 +151,7 @@ export default function () {
     expectedCheck = body => validCreate(body, title, description);
   }
   const tags = { nfr_id: 'nfr-03', configuration: profile.configuration, run_id: profile.run_id, phase: phaseName, route: kind, ...(operationId ? { operation_id: operationId } : {}) };
+  tags.sample_index = String(execution.scenario.iterationInTest);
   issued.add(1, tags);
   let outcome = 'transport_error';
   let duration;
@@ -139,15 +162,16 @@ export default function () {
     try {
       response = http.request(method, path, payload, { headers: { Accept: 'application/json', Cookie: cookie, ...(payload ? { 'Content-Type': 'application/json', 'Origin': origin, 'X-CLIP-Request': '1', 'X-CSRF-Token': csrf } : {}) }, redirects: 0, timeout: '5s', tags });
     } finally { duration = monotonic.stop(); timerStarted = false; }
+    Object.assign(tags, responseCorrelation(response, value => sha256(value, 'hex')));
     outcome = preliminaryOutcome(response);
-    if (kind === 'wanted_create' && response.status === 201 && response.error_code === 0) outcome = 'requires_correctness_check';
+    if (['wanted_create','listing_create'].includes(kind) && response.status === 201 && response.error_code === 0) outcome = 'requires_correctness_check';
     if (outcome === 'requires_correctness_check') {
       outcome = 'incorrect';
       try {
         const body = response.json();
         if (expectedCheck(body)) {
           outcome = 'correct';
-          if (kind === 'wanted_create') createdRows.add(1, { ...tags, created_request_id: body.request_id });
+          if (['wanted_create','listing_create'].includes(kind)) createdRows.add(1, { ...tags, created_request_id: kind === 'listing_create' ? body.listing_id : body.request_id });
         }
       } catch (_) { /* Preserve fixed failure only. */ }
     }
@@ -158,55 +182,48 @@ export default function () {
   }
 }
 
-/** Reconcile every scheduled write by its unique synthetic title after measurement. */
+/** Reconcile both write types through owner pages, never by repeating POST.
+ * Created IDs are retained even when the measured request timed out. All GETs
+ * below are explicitly outside the measured request denominator.
+ */
 export function teardown() {
-  const expectedByTitle = new Map();
+  const expectedByTitle = {wanted_create: new Map(), listing_create: new Map()};
   for (const [phaseName, scenario] of Object.entries(phases)) {
-    const iterations = plannedArrivalCount(scenario);
-    for (let iteration = 0; iteration < iterations; iteration += 1) {
-      if (routeOrder[iteration % routeOrder.length] !== 'wanted_create') continue;
-      const operationId = uuid4(`${profile.run_id}|${profile.configuration}|${phaseName}|${iteration}`);
-      expectedByTitle.set(`NFR03 ${profile.run_id} ${operationId}`, operationId);
+    for (let iteration = 0; iteration < plannedArrivalCount(scenario); iteration += 1) {
+      const kind = nfr03Kind(iteration, profile.version === 2);
+      if (!['wanted_create','listing_create'].includes(kind)) continue;
+      const id = uuid4(`${profile.run_id}|${profile.configuration}|${phaseName}|${iteration}`);
+      const title = `${kind === 'listing_create' ? 'NFR03L' : 'NFR03'} ${profile.run_id} ${id}`;
+      expectedByTitle[kind].set(title, {id, command: kind === 'listing_create' ? listingCommand(phaseName, iteration, id) : null});
     }
   }
-  const found = new Set();
-  const tags = { nfr_id: 'nfr-03', configuration: profile.configuration, run_id: profile.run_id };
-  let complete = false;
-  try {
-    for (let page = 1; page <= MAX_RECONCILIATION_PAGES; page += 1) {
-      const response = http.get(`${target}/me/wanted-requests?page=${page}&page_size=100`, {
-        headers: { Accept: 'application/json', Cookie: cookie },
-        redirects: 0,
-        timeout: '5s',
-        tags: { ...tags, phase: 'nfr_reconciliation', route: 'wanted_reconcile' },
-      });
-      if (response.status !== 200 || response.error_code !== 0) break;
-      const body = response.json();
-      if (!pageOk(body, 100, page)) break;
-      let malformed = false;
-      for (const item of body.items) {
-        if (!item || typeof item.title !== 'string' || typeof item.request_id !== 'string') continue;
-        const operationId = expectedByTitle.get(item.title);
-        if (!operationId) continue;
-        if (!UUID.test(item.request_id) || found.has(operationId)) {
-          malformed = true;
-          break;
+  const tags = {nfr_id:'nfr-03',configuration:profile.configuration,run_id:profile.run_id};
+  const allFound = new Set(); let complete = true;
+  for (const [kind, expected] of Object.entries(expectedByTitle)) {
+    if (!expected.size) continue;
+    const path = kind === 'listing_create' ? '/me/listings' : '/me/wanted-requests';
+    let foundCount = 0;
+    try {
+      for (let page = 1; page <= MAX_RECONCILIATION_PAGES; page += 1) {
+        const response = http.get(`${target}${path}?page=${page}&page_size=100`, {headers:{Accept:'application/json',Cookie:cookie},redirects:0,timeout:'5s',tags:{...tags,phase:'nfr_reconciliation',route:kind === 'listing_create' ? 'listing_reconcile' : 'wanted_reconcile'}});
+        if (response.status !== 200 || response.error_code !== 0) break;
+        const body=response.json(); if (!pageOk(body,100,page)) break;
+        for (const item of body.items) {
+          const command = expected.get(item?.title); if (!command) continue;
+          const rowId = kind === 'listing_create' ? item.listing_id : item.request_id;
+          if (!UUID.test(rowId) || allFound.has(command.id)) throw Error('invalid_reconciled_row');
+          if (kind === 'listing_create') {
+            // Owner-only metadata is allowed here; recheck its public content.
+            const publicBody = {...item}; for (const key of ['owner_id','revision','selected_buyer_id']) delete publicBody[key];
+            if (!validListingCreate(publicBody,command.command)) throw Error('reconciled_listing_mismatch');
+          }
+          allFound.add(command.id);foundCount++;
+          reconciledRows.add(1,{...tags,operation_id:command.id,created_request_id:rowId,write_kind:kind});
         }
-        found.add(operationId);
-        reconciledRows.add(1, { ...tags, operation_id: operationId, created_request_id: item.request_id });
+        if(foundCount===expected.size || !body.has_next)break;
       }
-      if (malformed) break;
-      if (found.size === expectedByTitle.size) {
-        complete = true;
-        break;
-      }
-      if (!body.has_next) {
-        complete = found.size === expectedByTitle.size;
-        break;
-      }
-    }
-  } catch (_) {
-    complete = false;
+    } catch (_) { complete=false; }
+    if(foundCount!==expected.size)complete=false;
   }
-  reconciliationStatus.add(1, { ...tags, status: complete ? 'complete' : 'incomplete' });
+  reconciliationStatus.add(1,{...tags,status:complete?'complete':'incomplete'});
 }

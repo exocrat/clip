@@ -1,10 +1,63 @@
 # Deployed shared-pool functional checks — 2026-11-04
 
-Checkpoint: 15:52 UTC. The public website is serving through ECS. Its known
-photo, Saved, Wanted and Hybrid failures did not recur in the checks below.
-Lambda activation failed its startup smoke and its selected-read rule was
-removed under the approved rollback. No pilot, formal comparison or NFR pass
-is claimed. The Lambda startup cause is not yet established.
+Current checkpoint: 16:50 UTC. PR34's approved startup repair is deployed.
+Selected Listing GETs now route 100% to Lambda; other routes remain on ECS.
+Both normal-HTTPS response parity and the bounded browser smoke passed.
+The first browser request took 5.147 seconds: correct content, but above the
+formal five-second client deadline. No pilot, formal comparison or NFR pass
+is claimed. Earlier startup failures and the rollback below remain evidence.
+
+## Approved repair deployed and checked at 16:50 UTC
+
+Suraj approved exact PR34 head `db8e19c755584f24502c118970438ad9797df78d`
+and repair plan `40afb20d2a4f2a0f68de8b9aac44e48b41ef10fe89864bc2c98bf49687f45eb5`.
+Required CI run `41867966011` passed; accepted main is
+`8d3e159dab5a11cd59ce0955d8f523bfedb6a309`. After Suraj refreshed expired AWS
+access, the exact saved plan applied successfully at 16:45:10 UTC. API task14
+and pool task3 were unchanged; no image, SQL, resource size or permissions changed.
+Lambda remains 2048 MiB / five seconds with async initialization enabled.
+
+The browser smoke issued 17 explicit requests and passed every functional
+assertion: ten reviewed reads, three concurrent Hybrid reads, hidden404,
+anonymous401, Saved200 and Wanted200. All 13 selected successful read responses
+matched the ECS reference hashes. Its first browse took **5147.45 ms** under a
+15-second diagnostic timeout. This is **not** a five-second performance pass;
+the same delay would exceed the formal client's deadline. Remaining sequential
+successful reads took 116.11–667.97 ms; concurrent searches took 189.08–378.13 ms.
+
+After the hotspot switch, normal domain DNS matched the actual ALB. The strict
+normal-HTTPS preflight and capture passed independently for A and B: all ten
+case responses were correct and equal, including filtering, later pages,
+Hybrid ordering and detail identity; anonymous401 and hidden404 were preserved.
+A's ten case timings were 260.78–608.38 ms; B's were 271.37–454.27 ms. These are
+small functional samples, not load or NFR measurements. B's smoke plus normal
+capture used 31 of the approved 50 explicit application requests.
+
+Read-only telemetry through 16:49:51 UTC retained 27 sanitized Lambda REPORTs,
+with invocation durations 2.75–539.89 ms and one explicit initialization of
+4574.25 ms. ALB rules show selected GETs only, Lambda100/ECS0, no stickiness;
+other routes retain the ECS default. Both API tasks and the pool are running
+with zero pending tasks. This establishes aggregate backend evidence; it does
+not correlate each client request to a REPORT or prove every report is delivered.
+An absent Init Duration is not proof that a request was warm.
+
+No rollback was needed after this repair. No pilot or formal traffic was issued.
+The next gate is a concrete pilot plan with current bindings, monitoring, stop
+conditions and cost/runtime approval. Existing B smoke approval ends at17:23 UTC;
+it does not authorize extending the window or starting measurements.
+
+## Open improvement directions — user confirmed before pilot
+
+Keep the current 2048-MiB Lambda and reviewed images for the pilot. If startup
+or capacity measurements justify further work, profile unnecessary application
+imports and search-model/helper initialization first. Consider deferring work
+only where readiness, first-search correctness and both-path behavior remain
+explicitly tested; moving delay to the first search is not eliminating it.
+Higher Lambda memory also increases CPU allocation, but serial initialization
+may not benefit proportionally. Any proposed memory change requires account
+quota verification, measured benefit, revised cost/run bindings and separate
+approval. No memory change or new optimization is authorized by recording these
+options. Retain cold observations and any measured-window failures.
 
 ## Deployment and retained failure
 
@@ -152,12 +205,13 @@ The new listing's embedding completed in one attempt with no failure code.
   not all be attributed to cancellation or classified as server failures.
   Status/header events and transport failures can overlap; this is not a valid
   formal success denominator. The bounded smoke assertions above are separate.
-- Normal workstation DNS still differs from the actual ALB. AWS-side lookup
-  matches the public domain and ALB. The dedicated browsers use their documented
-  DNS override with normal domain TLS verification. Normal-target preflight
-  correctly refused the mismatched answer; no formal parity capture exists.
-- B startup/parity, stable normal generator DNS, complete run bindings, exact
-  traffic approval and all formal measurements remain pending. The short local
+- The earlier workstation DNS mismatch and refused captures remain retained.
+  The hotspot resolved the mismatch, and both normal-HTTPS captures now pass.
+  The dedicated browser smoke still uses its documented DNS override; do not
+  confuse it with the separate normal-HTTPS captures.
+- B startup and representative response parity now pass, with the first slow
+  browser request retained above. Complete pilot run bindings, exact traffic
+  approval and all formal measurements remain pending. Short functional/local
   capacity checks do not accept deployed NFRs.
 - Quiet database snapshots used three/four application backends, not proof of
   peak capacity. Original role limits and the 36-backend pool budget remain.
@@ -190,11 +244,16 @@ must remain outside Git; credentials/message bodies are not part of these report
 - `lambda-first-smoke-log-summary.json`, `lambda-direct-read-diagnostic.json`,
   `cloud-startup-timing-03.json`, `cloud-helper-startup-timing.json`,
   `lambda-local-restricted-helper.json`, `lambda-startup-diagnostic-plan.json`.
+- `lambda-startup-repair/apply-receipt.json`, `browser-smoke-b.json`,
+  `startup-parity-a-capture.json`, `startup-parity-b-capture.json`,
+  `normal-https-parity-comparison.json`, `hotspot-dns.json`, and
+  `post-smoke-telemetry.json` (all in `lambda-startup-repair/`).
 - `lambda-startup-diagnostic-receipt.json`, `adapter-async-init-local.json`,
   `adapter-async-init-local-v2.json`, `lambda-startup-repair/provision.tfplan`,
   `lambda-startup-repair/provision-plan.json`.
 
 The dinner checkpoint changed documentation and private diagnostic scripts;
-the subsequent startup correction adds the configuration/preflight changes above.
-No commit, push or unapproved deployment has been performed. The existing pool
-24-hour / USD2 and B120-minute / USD1 bounds still apply.
+the subsequent startup correction was approved, published, merged as PR34 and
+applied under the exact plan above. The existing pool24-hour / USD2 and
+B120-minute / USD1 bounds still apply. This latest result checkpoint is local
+metadata; it introduces no further runtime changes.

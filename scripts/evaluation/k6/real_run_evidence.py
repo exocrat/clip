@@ -50,7 +50,7 @@ def verify_execution(
     receipt_bytes = _read_bounded(receipt_path, 100_000)
     receipt = json.loads(receipt_bytes)
     plan_bytes = _read_bounded(run_plan_path, 200_000)
-    plan = validate_run_plan(json.loads(plan_bytes))
+    plan = validate_run_plan(json.loads(plan_bytes), completed_evidence=True)
     raw_hash, raw_size = _digest_file(raw_path, plan["maximum_raw_bytes"])
     profile_hash, _ = _digest_file(profile_path, 5_000_000)
     if (

@@ -1,3 +1,4 @@
+import { responseCorrelation } from './request_correlation.js';
 // Candidate-weight pilot: 60-second 10-read/s warm-up, then 120 seconds at 50 read/s.
 // Only the shared coordinator may set approved-runner inputs for a live target.
 import http from 'k6/http';
@@ -61,6 +62,7 @@ export default function () {
   const index = (profile.sequence_start + iteration) % cases.length;
   const item = cases[index];
   const tags = { phase, kind: item.request.kind, case_index: String(index), ...(realMode ? { run_id: profile.run_id, configuration: profile.configuration } : {}) };
+  tags.sample_index = String(execution.scenario.iterationInTest);
   issued.add(1, tags);
   let outcome = 'transport_error';
   let duration;
@@ -71,6 +73,7 @@ export default function () {
     try {
       response = http.get(`${target}${paths[index]}`, { headers: { Accept: 'application/json', 'Cache-Control': 'no-cache', Cookie: cookie }, redirects: 0, timeout: '5s', tags });
     } finally { duration = monotonic.stop(); timerStarted = false; }
+    Object.assign(tags, responseCorrelation(response, value => sha256(value, 'hex')));
     outcome = preliminaryOutcome(response);
     if (outcome === 'requires_correctness_check') {
       outcome = 'incorrect';

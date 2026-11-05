@@ -19,9 +19,6 @@ from app.core.auth import require_caller
 from app.core.config import ConfigurationError, Settings, load_settings
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestLoggingMiddleware
-import app.domains.conversations.public as conversations_public
-import app.domains.conversations.routes as conversations_routes
-from app.domains.conversations.notifications.runtime import notification_runtime
 from app.core.database import PoolFactory, create_async_connection_pool
 from app.core.database_transport import (
     uses_proxy,
@@ -37,10 +34,6 @@ from app.domains.listings.postgres_store import PostgresListingsStore
 from app.domains.listings.search_access import ListingsSearchAccess
 from app.domains.listings.search_runtime import search_runtime, finish_search_cleanup
 from app.domains.listings.s3_storage import S3ListingsImageStorage
-from app.domains.search.wanted_routes import router as wanted_router
-from app.domains.search.wanted_store import PostgresWantedStore
-from app.domains.search.saved_routes import router as saved_router
-from app.domains.search.saved_store import PostgresSavedStore
 
 from app.domains.identity.http import (
     IdentityHttpDependencies,
@@ -48,6 +41,21 @@ from app.domains.identity.http import (
     install_identity_http,
     install_identity_reads,
 )
+
+
+@asynccontextmanager
+async def notification_runtime(*args: Any, **kwargs: Any) -> AsyncIterator[None]:
+    """Load the full application's notification lifecycle only when entered.
+
+    The Listing-only Lambda never enters this context. Keep the composition
+    entry point injectable while avoiding unused notification imports there.
+    """
+    from app.domains.conversations.notifications.runtime import (
+        notification_runtime as full_runtime,
+    )
+
+    async with full_runtime(*args, **kwargs):
+        yield
 
 
 @asynccontextmanager
@@ -71,6 +79,13 @@ async def _marketplace_lifespan(
     application.state.wanted_store = None
     application.state.saved_store = None
     application.state.listings_public = None
+    if not read_only_listings:
+        # Lambda does not install these capabilities. Full ECS composition loads
+        # them before serving, preserving readiness and first-request behavior.
+        import app.domains.conversations.public as conversations_public
+        from app.domains.search.wanted_store import PostgresWantedStore
+        from app.domains.search.saved_store import PostgresSavedStore
+
     if settings.database_url is None:
         application.state.listings_store = None
         application.state.listings_identity = None
@@ -227,7 +242,9 @@ async def application_lifespan(
             read_only_listings=read_only_listings,
         ):
             if not read_only_listings and isinstance(pool, AsyncConnectionPool):
-                services = conversations_routes.create_public_provider(pool)
+                from app.domains.conversations.routes import create_public_provider
+
+                services = create_public_provider(pool)
                 application.state.conversations_public = services
                 application.state.listings_conversations = services
             if read_only_listings:
@@ -263,6 +280,11 @@ def create_app(
     app closes its own configured Listings pool.
     """
     settings = settings if settings is not None else load_settings()
+    if not listings_read_only:
+        import app.domains.conversations.routes as conversations_routes
+        from app.domains.search.wanted_routes import router as wanted_router
+        from app.domains.search.saved_routes import router as saved_router
+
     if listings_read_only and identity is not None:
         raise ConfigurationError("Lambda requires session-only Identity bindings")
     if identity_reads is not None:

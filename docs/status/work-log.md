@@ -1,3 +1,241 @@
+### Deployed runtime and reusable tooling integration prepared — 2026-11-05 10:36:47 UTC
+
+Suraj authorized preparing a separate integration branch up to, but not including,
+PR creation. The branch contains the deployed application at `ed0a6aa`, its build changes,
+supporting tests and the preceding optimization/pilot history. It also
+includes reusable campaign, timing, monitoring, recovery/restore and revised
+NFR-03 tooling repairs. Formal comparison/NFR execution reports and their later
+work-log entries remain preserved in the evaluation worktree and are excluded
+from this integration until the evaluation is finished. No results are erased
+or represented as final acceptance. Cloud configuration inputs remain separately
+gated. Local source validation passed: Python 2576/180 skipped, data 331,
+web 504/3 skipped, 184 Conversations operations, 36 Terraform mocks,
+16 tooling modules under strict typing, contracts, boundaries, database safety,
+migrations and Gitleaks. The final JavaScript entry suite passed all 63 tests. The aggregate data phase initially
+refused the native-pool test flag; the remaining canonical checks passed with
+that flag removed. A test now uses synthetic fixtures instead of a private
+campaign profile. No application code changed from deployed source during this
+integration. PR creation is awaiting Suraj; no deployment or workload is
+authorized by this branch. [Runtime/tool behavior](../evaluation/runtime-measurements.md#integration-of-reusable-measurement-tools).
+
+### Conservative batch local audit passed; source commit gate — 2026-11-04 21:17:07 UTC
+
+Final full Python regression2530pass/180skip with owned real PgBouncer enabled;
+34Terraform mocks,8contract artifacts, zero boundaries,18production-file strict
+Mypy,16focused post-annotation runtime/provenance checks, formatting, whitespace
+and Gitleaks pass. App source stable since full regression; later edits are typed
+measurement accumulators only. Auth expiry/logout/reset/revocation and shared
+pool recovery checks retained. Five Saved/one Wanted fixture prepared with exact
+cleanup intent. No cloud deployment/load/commit/merge yet. User-approved steps
+continue through matched A/B diagnostics and one full B-NFR03then results review.
+Next: exact source commit approval required by CONTRIBUTING and commit-labelled
+image builder, then matched builds and bounded deployment/run plans. [Code map](../evaluation/deployment-20261103/functional-audit/conservative-runtime-20261104.md).
+
+### Approved conservative optimization batch implemented; checks running — 2026-11-04 21:11:54 UTC
+
+Suraj approved steps1–5then stop for step6results review; product retries deferred.
+Reduced transaction-setup round trips, combined session/account lookup preserving
+lock order and lifecycle checks, aligned shared-pool client idle240sbelow300s,
+and added code-owned content-free stage timings plus bounded phase reporting.
+No auth caching/lock removal/model/ranking/response-contract change. Terraform
+memory validation aligned to approved4096ceiling; selected account maximum3008.
+76initial auth/logging checks pass. Affected run1367pass/34skip with one old
+SQL-call-count assertion corrected. Early global logger test patch and missing
+uv/NodePATH corrected; logs retained. Final full Python regression including real
+owned PgBouncer tests running.34Terraform mock checks, contract8artifacts,
+boundaries and four-file type checks pass. Prepared five reversible Saved rows
+and one controlled Wanted fixture through approved account; existing conversation
+selected. No image/deployment/load/commit/merge in this batch yet. Next: finish
+checks/source audit, required commit approval, matched images/plans and three
+approved checks. [Code map and execution contract](../evaluation/deployment-20261103/functional-audit/conservative-runtime-20261104.md).
+
+### Read-only burst reconstruction from retained Lambda trial — 2026-11-04 20:36:46 UTC
+
+Suraj asked whether concurrency peaks can be observed. Bound5882successful
+measured requests through application hashes and same-stream platform boundaries;
+64ambiguous matches excluded. Maximum100msclient issuance6versus20Lambda starts;
+one-second maxima51versus85. Reconstructed accepted peak10with estimated mean
+2.36slots;33of53measured502clientresponses cluster within1second. This supports
+transient bursts, not a proven hotspot/root-location diagnosis. Cross-clock phase
+membership avoided viaIDs; exact rejection arrival and short SQL/lock waits remain
+unobserved. No new load, image, cloud mutation or source-code change. Raw retained.
+[Analysis and limits](../evaluation/deployment-20261103/functional-audit/memory-pilot-results-20261104.md#read-only-arrivalconcurrency-reconstruction).
+Next: human review of generator/network placement versus further instrumentation.
+
+### Higher-memory Lambda diagnostic complete; throttling remains — 2026-11-04 20:22:42 UTC
+
+Suraj authorized highest permitted memory through4GiB and same-load diagnostic.
+AWS4096ValidationException reported3008ceiling; exact3008fallback accepted.
+Same image/source7e88f84, timeout5, quota10, API14/pool3/RDS/permissions unchanged.
+One fresh Lambda cohort:10newstreams/10init reports in warm-up, no prior streams
+reused; firstrequest4211ms correct. Warm-up572/600(28HTTP502); measured5946/6000,
+53HTTP502+1timeout, zero drops/incorrect data; p95496ms,p991497ms. Pilot >=95%
+gates pass but desired failure elimination did not occur. AWS81throttles match
+all502s, errors0, peak10. Execution p95111ms versus prior113–114; client/server
+timing gap retained without claiming a proven hotspot cause. ECS routing restored,
+2API/1poolhealthy, Lambda3008idle for review, owned remote/local monitor tunnel
+closed. All raw/source hashes verified. No NFR/formal run or source/commit/merge.
+[Full results and exact evidence](../evaluation/deployment-20261103/functional-audit/memory-pilot-results-20261104.md).
+If3008is retained, align Terraform's2048validation and selected inputs before
+future apply/freeze; no stale saved-plan replay. Next: human capacity/run decision.
+
+### Three optimized Lambda pilots pass frozen checks; ECS restored — 2026-11-04 19:54:35 UTC
+
+Suraj verified completing revised experiment tooling before image publication,
+then three Lambda-only reruns and a hold for results review. Exact approved
+plan6b88d6... deployed frozen source7e88f84/imagef4ab2e; API14/pool3 unchanged.
+Normal HTTPS10/10response equality, anonymous401/hidden404 pass. First standalone
+diagnostic200in7585ms retained above5sdeadline; no controlled startup-win claim.
+Actual runs pilot-261104t-l100-r1/r2/r3:5963/6000,5935/6000,5996/6000correct;
+p95280/261/231ms,p99388/505/289ms. All warm-ups600/600; zero generator drops,
+timeouts or incorrect data; all frozen pilot gates pass. HTTP50237/65/4match
+AWS throttles; invocation errors zero, peak concurrency10. Nine init reports in
+run1; later runs reuse ten streams without new init reports. Do not attribute
+all throttling to cold starts. Reconciled RDS one-minute CPU maxima45.17/47.21/
+45.77%, observed connections<=20, poolCPU<=6.31%, Lambda531/2048MiB. All safety
+limits held. Initial zero-workload monitor/harness failures retained separately;
+new run IDs/original expiry and allowance retained, no adverse run discarded.
+Final service check: ECS default only,2healthy API/1pool, optimized Lambda idle;
+owned SSM monitoring session closed. Final evaluation450passed/11skipped,
+formatting/import closure/raw hashes and frozen source verified. Local tools
+uncommitted; no CI, push, merge, NFR/formal workload or new reset/fault/restore.
+[Exact results, limitations and evidence paths](../evaluation/deployment-20261103/functional-audit/startup-pilot-results-20261104.md). Next: human pilot
+review, consistent final A/Bsource/settings freeze and separately bounded NFR
+coverage. Remaining concurrency risk is explicit; no NFR accepted.
+
+### Revised runtime measurement tooling checked; Lambda rollout remains next — 2026-11-04 19:28:30 UTC
+
+Suraj verified completing the revised experiment tools before publishing the
+startup image, then proceeding to three Lambda-only pilots and stopping for
+review. Added hashed server-request correlation to all four API workloads;
+phase-separated runtime reports use actual application IDs and unambiguous
+platform START/REPORT boundaries for initialization attribution. Missing evidence
+remains unknown. Added exact-approved fresh-API/Lambda reset observer and bound
+fresh-runtime execution gate for future formal/NFR01–03 runs. Added coverage-first
+campaign order and three repeated NFR01/02/03/05 windows; five-minute formal
+measurements and unchanged shared data/pool caches retained. No reset action or
+NFR/formal traffic authorized/executed. Existing300sALB drain is recorded as a
+transition/recovery investigation concern, not silently changed.
+
+Evaluation suite448passed/11skipped; new reset orchestration doubles2passed;
+additional initialization-correlation and ambiguity checks pass. Initial sandbox
+socket/Node-path and missing fake-port failures were corrected; actual pinned-k6
+initialization with explicit environment passes, zero requests. Revised tools
+stay local/uncommitted; optimized app image remains frozen at7e88f84. Exact
+rollout6b88d6... already approved; no merge. New three-B profiles prepare300
+workers (same300maximum) to avoid dynamic-allocation delay; this amendment needs
+bounded traffic approval. Next: publish/apply that exact image, normal HTTPS
+smoke, then approved Lambda-only runs. Retain all old pilots as historical.
+
+### Bytecode startup probe checked; Lambda-only rerun preparation — 2026-11-04 18:38:08 UTC
+
+Suraj requested quickly/safely checking further Lambda optimization, then deploy
+and rerun Lambda pilots only, with the human present; merge and NFRs remain held.
+Found absent app/helper bytecode in the exact current image. Local offline read-
+only one-core probe: helper median462→273ms over three alternating pairs, same
+query vector and retained artifact/model checks. Canonical API/Hybrid Dockerfiles
+now compile source/library caches at build time; immutable runtime still disables
+writes.35focused checks pass. This is local evidence, not AWS improvement.
+[Files, measurements and exact private receipts](../evaluation/deployment-20261103/functional-audit/startup-import-cleanup.md).
+Next: frozen source/images, exact Lambda-only image/routing/rollback plan, stable-
+network generator headroom amendment and separate bounded traffic approval.
+No AWS changes or new traffic in this preparation increment.
+
+### Local startup import cleanup checked — 2026-11-04 18:27:09 UTC
+
+Suraj requested an easy premature startup optimization. application.py now avoids
+unused full-app Conversations/Wanted/Saved/notification imports on Listing-only
+Lambda composition; full ECS initialization remains before serving. New fresh-
+process regression proves both import paths.23existing Lambda/real-Postgres/full-
+app/notification tests plus new import test pass; focused8follow-up pass, Black
+and whitespace pass. Initial restricted Docker setup failures retained as setup
+failures, corrected rerun passed. Five alternating fresh-process medians587→505ms
+(82ms/~14%import reduction), local imports only. Model/permission checks unchanged;
+no AWS benefit or warmed-concurrency fix claimed. Local/uncommitted; no image,
+deployment, rerun, NFR/formal traffic or merge. Hold after pilots remains.
+[Changed code, measurements and evidence](../evaluation/deployment-20261103/functional-audit/startup-import-cleanup.md).
+
+### Pilot finished; third Lambda repetition invalid; ECS restored — 2026-11-04 18:19:10 UTC
+
+Suraj approved reviewed-tooling execution before merge and deferred integration
+until experiment/optimization review; explicitly holds NFR/formal traffic after
+pilots. All three A runs6000/6000correct, zero failures/drops; p95355/326/234ms.
+B1:5996/6000,p95269ms; B2:5992/6000,p95236ms; B3:5793/5994,201HTTP502,7drops,
+p95509ms/p991553ms. B3fails scheduled delivery/accounting; do not freeze100%or
+select a winner. B1warm-up40failures retained; B2/B3warm-ups600/600. B2/B3reuse
+ten warm environments; each has zero new initialization reports. AWS throttles
+match39/8/201client502totals; invocation errors zero. Hotspot-disruption cause
+unconfirmed. B3client delays exceed recorded function duration and generator
+expanded100→104workers when drops occurred. RDS/pool/service safety limits held.
+Completed-directory verifier bug repaired locally; A1provenance verified against
+unchanged raw receipt, execution still refuses overwrite, tamper regression passes.
+Formatting/two focused tests pass. All six raw hashes verified. Public listener
+has ECS default only;2API/1pooltasks healthy. No NFR/formal run or merge occurred.
+[Full pilot table, diagnosis, limitations and exact evidence](../evaluation/deployment-20261103/functional-audit/pilot-results-20261104.md).
+Next: human review of stable-network/generator and concurrency options; no
+rerun or new traffic until approved. Local NFR01/02profiles prepared only.
+
+### Pilot stopped before traffic; workload startup repair checked — 2026-11-04 17:19:16 UTC
+
+First A coordinator recorded k6exit107in0.20seconds with zero raw/workload samples.
+Batch stopped and selected rule is absent, leaving public ECS. Offline actual-k6
+inspection found approvedApiTarget's browser URL dependency; pilot child env
+also omitted the session cookie. Fixed strict HTTPS DNS-origin validation and
+private pilot session handoff, with regression checks. Repaired real binary
+initialization-only inspect passes; four Node files/three Python checks pass,
+Black/diff checks pass. Retain initial monitor/receipt-name failures separately.
+[Changed files, exact evidence and review checkpoint](../evaluation/deployment-20261103/functional-audit/pilot-20261104-plan.md).
+Next: integrate reviewed tool repair, create new immutable replacement plans and
+review restart under the existing caps/expiry; no capacity result or NFR pass.
+
+### Six-run cloud pilot approved; first run starting — 2026-11-04 17:14:52 UTC
+
+Suraj explicitly approved exact six-run pilot batch71fc6a99... under60minutes,
+USD2and39,600workload requests, selected-rule-only routing changes and ECS finish.
+Approval expires2026-11-04T18:12:36.388980Z. Initial monitor failed before any
+workload: ps returned1because k6had not started; corrected absence handling.
+A second attempt refused to overwrite the retained approval file; changed only
+new attempt receipt names. Both attempts issued zero workload and left ECS.
+Original receipts and caps/expiry retained; corrected batch-plan-v4and helper
+hashes recorded privately. Current monitor observes7DBconnections, no long lock
+waits, healthy2API/1pooltasks; first A coordinator is starting.
+[Exact plan and evidence roots](../evaluation/deployment-20261103/functional-audit/pilot-20261104-plan.md).
+
+### Exact six-run cloud pilot prepared — 2026-11-04 17:11:12 UTC
+
+Suraj requested proceeding with current2048-MiB Lambda and retaining import/model
+startup optimization as future work. Six pilot plans now pass offline validation;
+exact monotonic binary/extension and clock bridge match. Current DB:7connections,
+max78/reserved3,1003ready embeddings,900available listings and unchanged indexes.
+Gross account usageOctober1–November4isUSD31.5397798548before credits/refunds and
+pending billing, not experiment-only spend. Proposed batch60minutes/USD2,
+three A then three100%B,39,600workload requests. Numeric safety stops, immutable
+raw evidence, routing rollback and fixed post-run gates are prepared; fixture
+checks reject incorrect data, low success, drops and missing DB metrics.
+[Complete pilot plan and exact private artifact locations](../evaluation/deployment-20261103/functional-audit/pilot-20261104-plan.md).
+Exact batch SHA71fc6a997985425887655fd658abb17391979948502dd1124dc4b7489851e703;
+separate live-load/routing/window approval pending. No pilot traffic issued.
+
+### Approved Lambda repair deployed; normal HTTPS parity passed — 2026-11-04 16:50:54 UTC
+
+Suraj approved PR34 exact head db8e19c755584f24502c118970438ad9797df78d;
+required CI41867966011 passed and accepted main is8d3e159dab5a11cd59ce0955d8f523bfedb6a309.
+After the requested AWS login refresh, approved plan40afb20d... applied16:45:10.
+Only async Lambda initialization and the selected-GET rule changed; API14/pool3,
+images, five-second timeout, memory, SQL and permissions stayed unchanged.
+Selected Listing GETs now100%Lambda; all other routes remain ECS.
+
+Browser smoke17/17functional assertions passed. First request5147.45ms is above
+formal client deadline and retained, not a performance pass. Normal DNS now
+matches ALB after hotspot switch. Strict A/B captures each passed ten cases,
+anonymous401 and hidden404; all response hashes match. B case times271.37–454.27ms.
+Aggregate logs contain27Lambda REPORTs, one4574.25ms initialization; per-request
+correlation/log completeness is not claimed. Two API tasks and pool healthy.
+B repair smoke used31/50explicit requests. No pilot/NFR/comparison run started.
+[Exact evidence, result details and limitations](../evaluation/deployment-20261103/functional-audit/cloud-pool-checkpoint-20261104.md).
+Next: freeze exact pilot bindings/monitoring and obtain traffic/window approval;
+current B smoke window ends17:23UTC. Email receipt remains unverified.
+
 ### Lambda startup traced; bounded async repair prepared — 2026-11-04 16:27:00 UTC
 
 Suraj approved the exact temporary diagnostic plan bad7664a... and requested a
@@ -3264,8 +3502,8 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
-| EXP-02 | Rahul (D); Search owner C review | in progress | PR #28 merged; shared real-target runner, NFR-01–05/telemetry/reporting, pilot/analysis/cleanup tools are locally implemented | Evaluation suite 364 passed/5 skipped; compile, Black, strict Mypy, Terraform mocks, Gitleaks and whitespace checks passed; no live run. Monotonic k6 binary built, timer smoke passed and Go timer unit tests passed in GOPATH mode. | Prior PR #28 merge confirmed; local implementation committed for human and affected-owner review | PR #28 head `8e1a7e8`, merge `2a0916e`; local work on `task/experiment-tooling-readiness`; [experiment log](../evaluation/experiment-log.md) | PR review/merge, exact deployment plan/credit estimate, website DNS handoff, live smoke, pilot and NFR results remain. Module-mode Go test hits a local toolchain lookup issue; GOPATH-mode test passes. | 2026-11-03 12:52:00 UTC |
-| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | PR33 merged b4d7419; pool and API14 deployed; ECS website/workflows pass. B startup failed; approved manual rollback leaves public ECS routing. | Two16/16live website checks; controlled workflows and1003ready embeddings. Local B10 throttles and live startup failures retained. | Approved diagnostic restored; async-startup repair locally checked and exact two-action plan prepared; source/cloud approvals and normal generator DNS remain. | [Cloud checkpoint](../evaluation/deployment-20261103/functional-audit/cloud-pool-checkpoint-20261104.md); [pool plan](../evaluation/deployment-20261103/functional-audit/pgbouncer-plan.md) | Release approved async-startup repair, verify B parity/DNS and prepare exact pilot approval. | 2026-11-04 15:52:19 UTC |
+| EXP-02 | Rahul (D); Suraj reviewer | in progress | Existing integrated tools plus revised request correlation, fresh-runtime gate and coverage-first repetition policy implemented locally. | Evaluation450passed/11skipped;30focused checks,18Node files, actualk6initialization and immutable pilot provenance pass. | Suraj verified grouped implementation and pilot scope; commit/merge held. | [Runtime tools](../evaluation/runtime-measurements.md); [pilot evidence](../evaluation/deployment-20261103/functional-audit/startup-pilot-results-20261104.md) | Human result review and formal input/action approvals; no NFR acceptance. | 2026-11-04 19:54:35 UTC |
+| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Deployed app/build source ed0a6aa and optimization history prepared on task/deployed-runtime-integration; reusable tooling repairs included. | Local regression, native pool, contract/type, frontend, database, secret and 36 Terraform mock checks passed. Application files match the deployed source. | Suraj authorized preparation through the pre-PR handoff; PR creation remains pending explicit instruction. | [Runtime/tooling integration](../evaluation/runtime-measurements.md#integration-of-reusable-measurement-tools); app ed0a6aa; branch task/deployed-runtime-integration | Create PR only after Suraj instruction, then hosted CI and exact merge approval. Formal execution evidence remains separate until evaluation completion. | 2026-11-05 10:35:11 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
@@ -3307,7 +3545,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | INT-01 | A coordinator; all domain slices | in progress | Tooling and bounded deployment proposal complete locally; normal A/B deployment uses two ECS tasks/two hosts by Suraj decision. Publishing through the authorized PR/check/merge batch; cloud work remains gated. | Full make check passed: Python 2401 passed/176 skipped; data 331; web 498 passed/3 skipped; contracts/types/boundaries, 35 DB safety cases, PostgreSQL migration checks, 184 Conversations operations and Gitleaks passed. Terraform mocks 23 passed. | Suraj authorized plan before commit/PR checks/merge; he remains the sole human reviewer by session direction. | [Deployment plan](../evaluation/deployment-20261103/plan.md); [capacity decision](../decisions/experiment-runtime-capacity.md); [NFR tools](../evaluation/predeployment-gap-tools.md) | Exact cloud release/plan approval, DNS/certificate/Microsoft registration, live smoke/site inspection, pilot, cost-score input freeze and formal measurements remain. No live acceptance claimed. | 2026-11-03 15:11:50 UTC |
 | EXP-01 | C; Suraj coordinates NEXT-01 design | done | NEXT-01 design and gates are approved; actual topology pricing and numeric cost endpoints are NEXT-07 pre-result gates. | Design Steps 1–9 performed; no experiment run | Suraj verified NEXT-01 Steps 1–9 on 2026-10-28; user clarified the 300 concurrent-client-request proposal is non-binding on 2026-11-01 UTC. | [Approved design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md); [NEXT-07 execution plan](../tasks/remaining-project-plan.md#experiment-protocol-reference) | Implementation, final data/tools, actual account/spend, numeric cost endpoints, and separate run approvals remain before measurement. | 2026-10-28 06:24:24 UTC |
 | EXP-04 | B | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-03 | — |
-| EXP-05 | C | in progress | Fixed 15-run candidate matrix, dedicated profile/load script and shared coordinator launch path are prepared; no pilot traffic or weight selection has occurred. | Evaluation suite 364 passed/5 skipped; each run keeps distinct A/B bindings and receipt-bound summaries. No run results. | Human review pending for the proposed selection rule and exact resource/cost limits | [EXP-05 procedure](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#exp-05--pilot-and-confirm-safe-limits); [pilot helper](../../scripts/evaluation/k6/exp05_pilot.py) | Review/merge; finalize deployment and pilot limits; live smoke/site inspection; actual DB/load-generator limits, frozen criteria, pilot execution and review. GOPATH-mode Go tests pass; module mode has a local testdeps lookup issue. | 2026-11-03 12:52:00 UTC |
+| EXP-05 | C; Suraj operator/reviewer | in progress | Three2048MiB pilots retained; one3008MiB fresh diagnostic completed5946/6000correct,53HTTP502+1timeout,zero drops. | Raw/source bindings and late telemetry verified; AWS81throttles incl warmup, zero function errors; pilot gates pass, failure elimination not achieved. | ECS default restored; Lambda3008idle. Hold for review; no NFR acceptance. | [Memory trial](../evaluation/deployment-20261103/functional-audit/memory-pilot-results-20261104.md) | Human capacity decision; align chosen memory in Terraform/frozen inputs before formal runs. | 2026-11-04 20:22:42 UTC |
 | EXP-06 | C operator; B infra support | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-05 | — |
 | EXP-07 | A; C/D calculation review | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-06 | — |
 | EXP-08 | B; A cost review | not started | — | not started | pending | No experiment outputs in initial inventory; task definition in `docs/evaluation/ecs-only-vs-ecs-lambda-task-list.md` | EXP-07 | — |
