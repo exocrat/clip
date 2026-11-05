@@ -1,9 +1,9 @@
 # Remaining project work
 
 **Current status (2026-11-05):** Aditya directed completion of every non-EXP task
-listed in `pending_tasks.md`. EXP-02–08 remain open. The current task rows and
+listed in the [pending task register](../status/pending_tasks.md). EXP-02–08 remain open. The current task rows and
 verification limits are in the [work log](../status/work-log.md); the remaining
-EXP rows are in [pending_tasks.md](../../pending_tasks.md).
+EXP rows are in [pending task register](../status/pending_tasks.md).
 
 This page is a short navigation map, not a second task procedure. Follow the
 [canonical experiment task list](../evaluation/ecs-only-vs-ecs-lambda-task-list.md)
@@ -41,4 +41,4 @@ cost/resource reconciliation and delivery status.
 - [Domain task list](domain-task-list.md) — accepted feature requirements and
   owner boundaries.
 - [Experiment design and EXP-01–08 steps](../evaluation/ecs-only-vs-ecs-lambda-task-list.md).
-- [Current checkpoints](../status/work-log.md) and [pending inventory](../../pending_tasks.md).
+- [Current checkpoints](../status/work-log.md) and [pending inventory](../status/pending_tasks.md).

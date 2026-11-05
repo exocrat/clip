@@ -1579,7 +1579,7 @@ evidence](../evaluation/README.md).
 | ORIGIN-RETIREMENT-BOUNDARY | Shared A/B/C/D; B/D may author | done |  | Completed per Aditya direction; no shared database action was performed. | Aditya directed task completion on 2026-11-05 15:26:56 UTC. | `task/cn-01-conversations`; main `3d6c270`; forward `20261026090000`; original branch-only SQL archived unchanged | No open task-status gate recorded; no new persistent-target inspection is claimed. | 2026-11-05 15:26:56 UTC |
 
 ### 2026-11-05 15:26:56 UTC — Aditya-directed completion of non-EXP pending tasks
-Aditya directed marking every non-EXP item in `pending_tasks.md` complete. Updated the task-state rows for NEXT-03, ID-01, LI-01/02, SE-01/02, CN-01/02/03, INT-01, CLOSE-00 and ORIGIN-RETIREMENT-BOUNDARY; LI-CORE and
+Aditya directed marking every non-EXP item in [pending task register](pending_tasks.md) complete. Updated the task-state rows for NEXT-03, ID-01, LI-01/02, SE-01/02, CN-01/02/03, INT-01, CLOSE-00 and ORIGIN-RETIREMENT-BOUNDARY; LI-CORE and
 SE-CORE are recorded accepted by this direction. NEXT-06 was already complete and its lingering handoff language is superseded below. EXP-02–08 remain unchanged and open. Earlier step evidence and chronological entries
 remain intact.
 
@@ -1794,7 +1794,7 @@ and formal measurements remain pending.
 ### 2026-11-05 16:07:59 UTC — Repository documentation cleanup: Identity handoff
 Compressed the Identity overview and integration handoff from 2,187 combined lines to 56. Removed superseded checkpoint narration duplicated by the dedicated Step 12–14 records; kept the canonical task, contract,
 provider, operational and evidence links. Corrected the overview's stale “in progress” wording to reflect the user-directed complete status while clarifying that this is not new evidence. Removed two repeated
-command-registry sections while retaining the detailed versions. Refreshed `repo_cleanup.md` entries. `git diff --check` and relative link checks for both Identity pages passed. No application code or runtime checks
+command-registry sections while retaining the detailed versions. Refreshed [repository cleanup inventory](repo_cleanup.md) entries. `git diff --check` and relative link checks for both Identity pages passed. No application code or runtime checks
 changed.
 
 ### 2026-11-05 16:10:30 UTC — Repository documentation cleanup: Step14 matrix
@@ -1806,7 +1806,7 @@ Reduced the Step13 overview from 408 to 23 lines, retaining the reported hosted 
 JSON receipts were left unchanged. Link checks and `git diff --check` passed.
 
 ### 2026-11-05 16:19:48 UTC — Repository cleanup audit: active records retained
-The comparison inputs, deployment plan/checkpoint, and work log contain open EXP-02–08 preparation, current runtime decisions, or active failure evidence, so they remain in place for now. Updated `repo_cleanup.md` to
+The comparison inputs, deployment plan/checkpoint, and work log contain open EXP-02–08 preparation, current runtime decisions, or active failure evidence, so they remain in place for now. Updated [repository cleanup inventory](repo_cleanup.md) to
 defer compression until the relevant EXP closeout. The smaller completed Identity summaries were already consolidated.
 
 ### 2026-11-05 16:20:56 UTC — Repository cleanup audit: remaining evidence triage
@@ -1827,7 +1827,7 @@ of deleting valid history.
 
 ### 2026-11-05 16:48:40 UTC — NEXT-06 drift cleanup: completed transfer drafts
 Trimmed eight superseded NEXT-06 drafts/gate lists and the cloud handoff to short archive pointers. Kept their paths so historical work-log/command/evidence links resolve; exact original text remains in Git. Updated
-data/docs index links to the accepted task-wide evidence and removed the completed transfer-cleanup item from `pending_tasks.md`. Actual source snapshots and approved action-plan records remain unchanged. Inventory
+data/docs index links to the accepted task-wide evidence and removed the completed transfer-cleanup item from [pending task register](pending_tasks.md). Actual source snapshots and approved action-plan records remain unchanged. Inventory
 sizes/dispositions refreshed; whitespace check passed.
 
 ### 2026-11-05 16:52:01 UTC — NEXT-06 drift cleanup: obsolete plans removed
@@ -1845,7 +1845,7 @@ stale command-registry anchors. Updated inventory sizes and drift assessments.
 ### 2026-11-05 17:49:16 UTC — Drift-3 cleanup: guides compressed and stale status reconciled
 Corrected stale Conversations, NEXT-03 summary and search-proposal status wording. Reconciled stale completion statements in database, provider, search-runtime and decision guides. Compressed the Listings implementation
 diary and Identity test-root guide; removed the redundant ID-01 provider-history page after redirecting its unique development scale-in reminder to cloud inventory. Refreshed all 230 Markdown inventory rows and reduced
-pending_tasks.md to the still-open EXP items. Unique experiment measurements and active deployment gates remain in their dated records.
+[pending task register](pending_tasks.md) to the still-open EXP items. Unique experiment measurements and active deployment gates remain in their dated records.
 
 ### 2026-11-05 18:16:52 UTC — Drift-2 documentation cleanup
 
