@@ -50,6 +50,8 @@ The API reads these values from the process environment at startup:
 | Variable | Type and local default | Behavior |
 |---|---|---|
 | `CLIP_ENVIRONMENT` | `local`, `test`, or `production`; default `local` | Rejects unsupported or empty values. This labels configuration mode, not deployment readiness. |
+| `CLIP_API_READ_REQUESTS_PER_MINUTE` | Integer 1–100000; default `600` | Aggregate rolling read limit per API process. |
+| `CLIP_API_WRITE_REQUESTS_PER_MINUTE` | Integer 1–100000; default `120` | Aggregate rolling write limit per API process; counters reset on restart and are not shared across replicas. |
 | `CLIP_DEBUG` | Boolean; default `false` | Controls FastAPI debug responses; production rejects `true`. Invalid or empty boolean values fail startup. |
 | `CLIP_IDENTITY_PROVIDER` | `disabled`, `fake`, or `microsoft`; default `disabled` | `microsoft` permits private local/test validator construction; production rejects this incomplete integration and all fake auth. No sign-in route/session is installed. |
 | `CLIP_EMAIL_PROVIDER` | `disabled`, `fake`, `ses`, or `dual`; default `disabled` | Explicit provider selection; the notification worker requires controlled test-mode `dual`. |
@@ -77,7 +79,7 @@ The database adapter is real PostgreSQL code and is enabled only by an explicit
 enabled only when `CLIP_STORAGE_PROVIDER=s3` and its bucket, region, and
 run-scoped prefix are configured; AWS credentials are never placed in these
 settings. The upload URL lasts at most five minutes, and its signed request
-requires the declared content type plus `If-None-Match: *`, so a replay cannot
+requires the declared content type, exact content length and `If-None-Match: *`, so a replay cannot
 replace an object at that key. Confirmation currently checks S3-reported type
 and byte count; Step 5 will add actual file-content checks before the upload can
 be accepted as an image. Identity's public eligibility declaration is not

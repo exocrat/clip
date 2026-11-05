@@ -39,7 +39,7 @@ class LocalPreviewStorage:
         return f"{ORIGIN}/__listings_demo/storage/{token}"
 
     async def create_upload_url(
-        self, object_key: str, media_type: str, expires_at: datetime
+        self, object_key: str, media_type: str, expires_at: datetime, size_bytes: int
     ) -> str:
         return self._link("put", object_key, expires_at, media_type)
 

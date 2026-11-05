@@ -1,5 +1,8 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### Upload and API rate hardening — 2026-11-05 22:06:35 UTC
+Aditya requested S3 upload size enforcement and configurable API limits. Signed PUTs bind the declared byte length while retaining create-only writes; API read/write rolling limits default to 600/120 per minute per process. Existing adapters were adjusted. Counters are shared by users within a process and are not shared across replicas. Browser-to-S3 enforcement, deployment and affected-owner review remain pending. Tests were not run; `git diff --check` passed before this entry.
+
 ### Deployed runtime and reusable tooling integration prepared — 2026-11-05 10:36:47 UTC
 The branch contains the deployed application at `ed0a6aa`, its build changes, supporting tests and the preceding optimization/pilot history. It also includes reusable campaign, timing, monitoring, recovery/restore and
 revised NFR-03 tooling repairs. Formal comparison/NFR execution reports and their later work-log entries remain preserved in the evaluation worktree and are excluded from this integration until the evaluation is
@@ -1523,6 +1526,7 @@ evidence](../evaluation/README.md).
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
+| Security hardening | Aditya; Listings owner review | in progress | Verify signed-length uploads and configurable API limits | performed | pending | task/repo-documentation-cleanup; local changes | Browser/S3 enforcement and affected-owner review pending; no cloud access | 2026-11-05 22:06:35 UTC |
 | EXP-02 |  | in progress | Existing integrated tools plus revised request correlation, fresh-runtime gate and coverage-first repetition policy implemented locally. | Evaluation450passed/11skipped;30focused checks,18Node files, actualk6initialization and immutable pilot provenance pass. |  | [Runtime tools](../evaluation/runtime-measurements.md); [pilot evidence](../evaluation/deployment-20261103/functional-audit/startup-pilot-results-20261104.md) |  | 2026-11-04 19:54:35 UTC |
 | EXP-03 |  | in progress | Deployed app/build source ed0a6aa and optimization history prepared on task/deployed-runtime-integration; reusable tooling repairs included. | Local regression, native pool, contract/type, frontend, database, secret and 36 Terraform mock checks passed. Application files match the deployed source. |  | [Runtime/tooling integration](../evaluation/runtime-measurements.md#integration-of-reusable-measurement-tools); app ed0a6aa; branch task/deployed-runtime-integration |  | 2026-11-05 10:35:11 UTC |
 | SE-01 category-text amendment |  | done |  | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) |  |  | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
