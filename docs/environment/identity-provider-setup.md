@@ -1,30 +1,23 @@
 # ID-01 provider setup
 
-Current status: the [ID-01 work-log summary](../status/work-log.md) and this
-setup guide. Historical cloud/test chronology can be recovered through the
-[evaluation history guide](../evaluation/README.md).
-Canonical choices: [Microsoft/initial SES](../decisions/identity-provider-setup.md)
-and [dual-provider email](../decisions/identity-email-routing.md).
-This guide contains current setup facts and pending actions, not new approval.
+**Task status:** ID-01 is marked complete in the [work log](../status/work-log.md)
+by Aditya's 2026-11-05 direction. This operational guide does not establish
+current cloud, DNS, provider-preference, or secret-parameter state. The recorded
+Step13 hosted checks and Step14 authorization matrix are indexed in the
+[Identity handoff](../evaluation/identity/README.md). Refresh live state and get
+a new exact approval before any provider, permission, or hosting action.
 
-## Current status
+## Recorded provider outcomes
 
-The unmerged [hosted functional repair](../decisions/hosted-functional-repair.md)
-supersedes the old controlled-recipient restriction for the explicitly enabled
-real hosted app. Standalone/local probes retain that restriction. The deployed
-version must be checked before claiming the change is active; real OTP/inbox
-verification remains pending. Historical rows below describe earlier acceptance.
+| Path | Previously verified | Limit of this record |
+|---|---|---|
+| Microsoft | Real IISc sign-in and non-IISc denial were verified locally; Chrome and Firefox sign-in were later reported working. Step13 also recorded successful hosted sign-in and a phone-browser check. | Historical user-reported results; no current origin, application registration, cache or runtime state is asserted. |
+| Resend | Domain verification was user-reported; `verify@clip-iisc.site` delivery and temporary registration/reset flow were reported successful. | Current key/parameter version, runtime preference and inbox placement are not rechecked here. |
+| SES | Production access and a standalone delivery were recorded; Step13 hosted reset flow also completed per user report. | Current task-role policy, SSM preference and deployed image are not rechecked here. |
 
-| Provider/path | Verified | Still pending |
-| --- | --- | --- |
-| Microsoft | Real local IISc sign-in and non-IISc denial human-verified2026-10-26 04:48:20UTC after SPA correction guidance; validator/SQL and controlled browser tests passed. | Hosted origin, mobile-browser and remaining session/cache acceptance; local Chrome/Firefox sign-in verified; default build flag remains disabled. |
-| Resend | Domain human-reported verified; corrected adapter delivered from verify@; real local Gmail temporary registration/login/forgot-password human-verified. Aditya confirms exposed-key revocation and replacement in SSM on2026-10-27 18:25:58UTC. | Current deployed secret access/configuration, cloud/browser/device and delivery checks. |
-| SES | Production access/sending, domain DKIM success and a standalone receipt were recorded2026-10-28; sandbox application-role delivery was verified earlier. | Refresh current runtime role/recipient policy and provider preference before deployment. Source still limits SES to the explicit test profile and controlled recipients; no production send is authorized by this record. |
-
-No new resource-state inspection was performed for this documentation cleanup.
-Provider acceptance/Delivered is not proof of inbox placement. Previous no-reply
-messages were missing at IISc; verify messages arrived. Sender/subject changed
-together in a comparison, so the precise IISc filtering cause is not established.
+Provider acceptance is not proof of inbox placement. Earlier no-reply messages
+were missing at IISc; later tests used `verify@`. The sender/subject comparison
+did not isolate the precise IISc filtering cause.
 
 ## Microsoft registration and policy
 
@@ -58,15 +51,17 @@ verification. Public configuration alone grants no backend auth authority.
 
 Use `verify@clip-iisc.site` for verification/password-reset email. Avoid generic
 no-reply/marketing-style senders. Keep email transport separate from CLIP-owned
-OTP/password/session state. CN03 adoption needs its own owner/public-boundary
-review; do not import Identity-private modules into another domain.
+OTP/password/session state. CN-03 uses its own public notification transport,
+SES-first routing and `updates@clip-iisc.site`; do not import Identity-private
+modules into that domain.
 
 `RefreshingEmailSender` reads one versioned SSM snapshot on first send, then the
 first send after14400monotonic seconds. Each process retains order/key together;
 failed refresh sends nothing from expired settings. No background polling.
-Primary initially Resend; later prefer SES through configuration once ready.
-One primary attempt, then one alternate on any reported failure; same OTP/body,
-no third attempt/fake fallback. Timeout uncertainty can produce two copies.
+SES is the preferred primary; Resend is the configured alternate. One primary
+attempt, then one alternate on any reported failure; same OTP/body, no third
+attempt/fake fallback. The route is read from the versioned configuration below.
+Timeout uncertainty can produce two copies.
 No bounce/webhook-triggered retry or automatic permanent promotion is included.
 
 [Secret reference](secret-handling.md#id-01-dual-email-configuration):
@@ -79,15 +74,15 @@ replacement stored in SSM. This is human-reported; no value/version was retrieve
 and no post-rotation delivery tested in this checkpoint. Operator access is not
 ECS task-role access.
 
-Current adapters accept at most five explicitly controlled recipients. The default
-application composition remains Identity-unbound. An explicit
-operator-local bootstrap command is prepared in the
+Standalone/local test configuration retains its controlled-recipient restriction;
+the explicit hosted Identity runtime permits its authenticated account destination.
+The default synthetic application composition remains Identity-unbound. The
+operator-local bootstrap command is documented in the
 [command registry](commands.md#explicit-real-local-identity-bootstrap--id-01-step12-preparation);
-it requires separate real-access approval and does not enable deployed startup.
-Once both real adapters,
-permissions/outbound access and live loader are deployed, changing primary/key
-can take effect without rebuilding/restarting; update delay is up to four hours
-per active process, or its next send after expiry. General sending is not enabled.
+it requires its own current access approval and does not enable deployed startup.
+A provider/key update takes effect on the first send after the four-hour per-process
+cache expiry, without an image rebuild. This guide records prior setup; it does not
+assert that current runtime configuration was read or tested.
 
 ## SES permissions and sandbox transition
 
@@ -98,9 +93,10 @@ until its deliberate production transition review; do not broaden identity scope
 
 Source in infra/terraform/shared/test/identity-email.tf uses exact verify@
 FromAddress. The approved2026-10-26 07:04:31UTC apply recorded that sender-condition
-update; it is not still an unperformed change. Current effective permissions and
-delivery need verification in the separately approved deployment window. SES sandbox
-recipients must remain verified; Resend fallback cannot bypass that restriction.
+update; it is not still an unperformed change. The recorded apply and delivery
+checks are historical; current effective permissions and runtime delivery state
+are not asserted here. SES sandbox recipients must remain verified; Resend fallback
+cannot bypass that restriction.
 SES uses task-role credentials, not static access keys/SMTP passwords. Local
 operators use their own approved non-root profile; review actual identity first.
 The local SDK lacked optional AWS-login CRT support in recorded tests, so CLI
@@ -124,8 +120,9 @@ its own review and approval. No provider failure activates an account.
 3. Verify intended role/configuration; test actual controlled receipt and OTP flow,
    not only SDK acceptance. Keep ambiguous failures/redacted outcomes explicit.
 4. Verify owned cleanup; leave other contributors' shared data/workloads untouched.
-5. Keep ID-READY incomplete until real provider/runtime/UI checks, independent
-   affected-owner review, current CI and authorized milestone merge are complete.
+5. ID-READY is marked complete in the work log. Future provider/runtime changes
+   still need current source review, applicable checks and their separate action
+   approvals; they do not reuse this task's historical approval or cloud window.
 
 Public DMARC was observed2026-10-24 15:34:02 UTC as v=DMARC1; p=none;. Preserve
 DKIM/SPF setup; verify authentication before tightening policy. Check current
@@ -143,8 +140,8 @@ The local image correction vendors the official public regional roots and direct
 bundled libpq to the installed OS CA file. See the
 [trust decision](../decisions/identity-rds-system-trust.md) and
 [explicit local checks](commands.md#api-image-rds-root-trust--id-01-step12).
-This does not enable authentication or prove AMD64/Hybrid/deployed TLS readiness;
-real runtime configuration, permissions and browser/provider acceptance remain pending.
+This does not enable authentication or prove current AMD64/Hybrid/deployed TLS
+state. The recorded ID-01 acceptance is not a fresh runtime or provider check.
 
 ## Browser transport integration
 
@@ -154,7 +151,8 @@ Protected writes fail before dispatch when fresh preflight fails; no client demo
 bypass or automatic transport replay. See the
 [decision](../decisions/browser-session-transport.md) and the
 [current ID-01 status](../status/work-log.md).
-Real provider/browser/proxy configuration and current image deployment remain gated.
+This local transport change does not establish present provider/browser/proxy or
+image state; consult the current deployment plan before any release action.
 
 ## NFR-07 restore hostname preparation
 

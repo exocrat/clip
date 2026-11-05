@@ -54,9 +54,8 @@ document here for every task.
   [CN-01 Conversations integration](evaluation/domain/conversations-integration.md),
   [CN-02 offers and contact sharing](evaluation/domain/conversations-offers.md),
   and the [Identity demo postmortem](evaluation/identity/id-01-step-12/demo-postmortem-20261026.md).
-- NEXT-03 handoff artifacts: [change summary](tasks/next-03-change-summary.md),
-  [implementation and verification report](tasks/next-03-visual-feedback-implementation-report.md),
-  and the [next-agent PR/cloud-readiness prompt](prompts/next-03-pr-and-cloud-readiness-handoff.md).
+- NEXT-03 evidence: [visual-feedback plan and decisions](tasks/next-03-visual-feedback-plan.md)
+  and the [implementation/verification summary](tasks/next-03-visual-feedback-implementation-report.md).
 
 ## Setup and contributor process
 

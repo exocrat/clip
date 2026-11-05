@@ -16,11 +16,11 @@
 
 ## Marked complete by Aditya’s direction
 
-The following entries were removed from the pending set and their canonical status sources now record completion at 2026-11-05 15:26:56 UTC. Historical pending details remain in task/evidence documents with a current-disposition banner.
+The following entries were removed from the pending set and their canonical status sources now record completion at 2026-11-05 15:26:56 UTC. Retained task/evidence pages distinguish historical notes from current status.
 
 | Completed item | Domain | Owner | Status sources / history |
 |---|---|---|---|
-| NEXT-03 — reconcile shared migration/grants, current owner/peer review and deployment gates | Marketplace integration | Suraj (B) | `docs/status/work-log.md`; `docs/tasks/next-03-visual-feedback-plan.md`; `docs/tasks/next-03-step-10-visual-checklist.md`; `docs/tasks/next-03-pr-package.md`; work log marked complete at 2026-11-05 15:26:56 UTC |
+| NEXT-03 — reconcile shared migration/grants, current owner/peer review and deployment gates | Marketplace integration | Suraj (B) | `docs/status/work-log.md`; `docs/tasks/next-03-visual-feedback-plan.md`; `docs/tasks/next-03-visual-feedback-implementation-report.md`; work log marked complete at 2026-11-05 15:26:56 UTC |
 | ID-01 — independent review/current-head checks and formal merge/closeout for Step 14 | Identity | Aditya (A); Rahul (D) peer | `docs/status/work-log.md`; `docs/evaluation/identity/id-01-step-14/README.md`; `docs/evaluation/identity/README.md`; work log marked complete at 2026-11-05 15:26:56 UTC |
 | LI-01 — finish remaining Step 7 browser states, Step 11 checks/reviews, then real integration Steps 12–13 | Listings | Suraj (B) | `docs/status/work-log.md`; `docs/tasks/domain-task-list.md`; `apps/api/app/domains/listings/README.md`; work log marked complete at 2026-11-05 15:26:56 UTC |
 | LI-02 — finish evidence and receive/review Search-owner PR for integration | Listings/cloud demo | Suraj (B) | `docs/status/work-log.md`; `infra/terraform/domains/listings/test/README.md`; work log marked complete at 2026-11-05 15:26:56 UTC |

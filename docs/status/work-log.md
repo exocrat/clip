@@ -3204,7 +3204,7 @@ in a network-authorized environment. Docker-backed and2Linuxmemfd root tests and
 registered Docker scanner remain platform gates; native equivalent security scan
 is separate evidence, not a CI bypass. No frontend/lockfile changes to hide failures.
 
-Updated loading/design/command/data guides and [cloud handoff](../evaluation/domain/next-06/cloud-handoff.md).
+Updated loading/design/command/data guides and [cloud handoff](../evaluation/domain/next-06/task-wide-review.md).
 Prepared PR/independent review package (original plan remains in Git history at `4bd1143`)
 for Suraj(B), with concrete title/body/files/refusal/privacy/checks and operator
 steps; no messages sent. [Pre-cloud evidence](../evaluation/domain/next-06/pre-cloud/result.json)
@@ -3217,7 +3217,7 @@ source-label binding/DATA-READY remain, with no repeated judgment review needed.
 ### NEXT-06 cloud operator handoff and account restriction — 2026-10-30 13:11:08 UTC
 
 Mohit requested an instruction document for another contributor to add the
-reference corpus to cloud. Prepared [cloud handoff](../evaluation/domain/next-06/cloud-handoff.md),
+reference corpus to cloud. Prepared [cloud handoff](../evaluation/domain/next-06/task-wide-review.md),
 indexed from docs/data guides: local verified counts/fingerprints, exact branch/
 uncommitted source state, ignored a/bpayloads and external45photo transfer,
 December cutoff, accepted22judgments, explicit missing cloud adapter and reviewed
@@ -3252,8 +3252,9 @@ Mohit verified Step6local reset/reload/freeze-candidate result and directed
 continuation. Local numbered work is verified,22human judgments accepted; original
 real integration/final accepted source-contract-label binding/DATA-READY gates
 remain. Registry still lists ID-READY/LI-CORE/SE-CORE/DATA-READY not accepted.
-Prepared [bounded cloud readiness inspection](../evaluation/domain/next-06/step-06/cloud-readiness-plan.md)
-for separate approval: localdefault profile, STSidentity first, expected project
+Prepared a bounded cloud-readiness inspection proposal
+for separate approval (superseded; see the historical stop outcome in the
+[cloud inventory](../environment/cloud-inventory.md)): localdefault profile, STSidentity first, expected project
 account/nonroot stop guard, then named shared ECS/RDS and S3bucket-name metadata,
 max12calls. No secret/SQL/object reads or cloud changes. AWSbinary/default Mumbai
 profile existence checked locally only; actual identity/live cloud state unknown.
@@ -3509,7 +3510,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
 | NEXT-02 | Suraj — planning coordinator | done | Evaluation and documentation cleanup completed; test/fixture and app/infrastructure audits found no safe deletions. | Cleanup review and checks complete; its changes are included in the current commit. NEXT-02 itself changed no executable test or application code. | User accepted the cleanup and directed committing the combined changes on 2026-10-28. | `task/integrated-marketplace-rollout`; [NEXT-02 cleanup criteria](../tasks/remaining-project-plan.md); [command index](../environment/commands.md) | No cleanup blocker; documentation references and `git diff --check` passed. No tests/app checks, AWS actions, or paid runs for NEXT-02. | 2026-10-28 09:26:47 UTC |
-| NEXT-03 | Suraj — planning coordinator | done | Completed per Aditya direction on 2026-11-05 15:26:56 UTC; historical walkthrough and verification links retained. | Completed per Aditya direction; existing checks/evidence remain linked. | Aditya directed task completion on 2026-11-05 15:26:56 UTC. | `task/integrated-marketplace-rollout`; [walkthrough](../tasks/next-03-step-10-visual-checklist.md), [implementation/check report](../tasks/next-03-visual-feedback-implementation-report.md), [PR draft](../tasks/next-03-pr-package.md) | No open task-status gate recorded; historical deployment/peer notes are superseded by this status direction. | 2026-11-05 15:26:56 UTC |
+| NEXT-03 | Suraj — planning coordinator | done | Completed per Aditya direction on 2026-11-05 15:26:56 UTC; historical walkthrough and verification links retained. | Completed per Aditya direction; existing checks/evidence remain linked. | Aditya directed task completion on 2026-11-05 15:26:56 UTC. | `task/integrated-marketplace-rollout`; [implementation/verification summary](../tasks/next-03-visual-feedback-implementation-report.md) | No open task-status gate recorded; historical deployment/peer notes are superseded by this status direction. | 2026-11-05 15:26:56 UTC |
 | NEXT-06 | Mohit (C), Search/data; domain owners review records | done | Frozen dataset published and DATA-READY accepted; downstream SE-01 relevance/NFR work remains separate | All six output groups represented; 453 data/evaluation and 496 web checks; PR #24 hosted CI passed | Steps 5–6 verified by Mohit; DATA-READY confirmed by Aditya; Suraj review reported complete by Aditya | PR #24 merged to `main` at `c0bac59`; [frozen release](../evaluation/domain/next-06/frozen-dataset.json); [task-wide review](../evaluation/domain/next-06/task-wide-review.md); [freeze checks](../evaluation/domain/next-06/transfer/step-06-freeze-result.json) | No remaining NEXT-06/DATA-READY gate; SE-01's final relevance/NFR acceptance remains separate | 2026-11-01 19:38:43 UTC |
 | BOOT-00 | B / Suraj (initial contributor) | done | Local documentation seed verified; publication pushed and verified | performed | verified | Current `origin/main` verified at `cfbf9352c03302990e6ffda09521f0a5450572d7`; includes seed `7fb9bfed79b45614a17de1bf2f9c50dbb3981b3f` and publication record | None | 2026-10-15 07:18 UTC |
 | PD-00 | Kickoff owner — Suraj (B) | done | Steps 1–6 complete; task-wide closeout reviewed | performed | verified | `task/pre-domain-foundation` at base `cfbf9352c03302990e6ffda09521f0a5450572d7`; work-log task table, initial inventory, Document 4 comparison, and `git diff --check` | None | 2026-10-16 07:02 UTC |
@@ -4083,3 +4084,16 @@ Removed the redundant cloud-handoff page and redirected the data/index reference
 to the accepted task-wide review. Corrected the data guide's old “load pending”
 and “DATA-READY pending” statements, and repaired two stale command-registry
 anchors. Updated inventory sizes and drift assessments.
+
+### 2026-11-05 17:49:16 UTC — Drift-3 cleanup: guides compressed and stale status reconciled
+
+Reviewed drift-3 documents against their stated purpose and current work-log rows.
+Corrected stale Conversations, NEXT-03 summary and search-proposal status wording.
+Deleted the obsolete NEXT-03 pre-PR draft and seven redundant ID-01 Step13 prose
+plans; retained JSON approval/results and updated the evidence index/command links.
+Reconciled stale completion statements in database, provider, search-runtime and
+decision guides. Compressed the Listings implementation diary and Identity test-root
+guide; removed the redundant ID-01 provider-history page after redirecting its
+unique development scale-in reminder to cloud inventory. Refreshed all 230 Markdown
+inventory rows and reduced pending_tasks.md to the still-open EXP items. Unique
+experiment measurements and active deployment gates remain in their dated records.

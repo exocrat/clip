@@ -10,7 +10,7 @@ ID-01 delivers Microsoft IISc identity eligibility, temporary email accounts, ac
 
 | Read | Contents |
 | --- | --- |
-| [Provider history](provider-history.md) | SES/Resend setup, sender decisions, delivery results and prior provider findings. |
+| [Provider setup](../../environment/identity-provider-setup.md) and [email-routing decision](../../decisions/identity-email-routing.md) | Current operator guidance and the accepted SES-first/Resend-fallback behavior. |
 | [Step 12 records](id-01-step-12/) | Migration manifests, shared-role evidence and demo postmortem. |
 | [Step 13 evidence](id-01-step-13/README.md) | Runtime/bootstrap, HTTPS, authentication/email, retention and cleanup results. |
 | [Step 14 capability matrix](id-01-step-14/README.md) | Regular/temporary authorization expectations and recorded evidence across 47 operations. |
@@ -18,6 +18,7 @@ ID-01 delivers Microsoft IISc identity eligibility, temporary email accounts, ac
 | [Identity email routing](../../decisions/identity-email-routing.md) | SES/Resend precedence and delivery fallback decision. |
 | [Private-data retention](../../decisions/private-data-retention.md) | Retention rules and sensitive-data handling. |
 | [Work log](../../status/work-log.md) | Dated decisions, outcomes and task status. |
+| [Cloud inventory](../../environment/cloud-inventory.md) | Historical resource operations and cleanup outcomes; not reusable approval. |
 | [Stub/integration gates](../../architecture/stubs-and-integration-gates.md) | Distinguishes isolated local evidence from real integration. |
 | [Secret handling](../../environment/secret-handling.md) and [cloud inventory](../../environment/cloud-inventory.md) | Credential safeguards and recorded cloud state; refresh before any operation. |
 

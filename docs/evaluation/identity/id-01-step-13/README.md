@@ -11,13 +11,13 @@ The bounded hosted run recorded a native AMD64 API image, a clean 23-migration b
 | Record | Contents |
 | --- | --- |
 | [Preflight and proposal](preflight-and-proposal.json) | Reviewed source/input bindings and bounded execution proposal. |
-| [Bootstrap and grants plan](bootstrap-and-grants-plan.md), [review](bootstrap-and-grants-review.json) | Clean bootstrap scope, dependency/grant review and checks. |
+| [Bootstrap and grants review](bootstrap-and-grants-review.json), [execution candidate](bootstrap-execution-candidate.json), and [retry result](bootstrap-retry-result.json) | Retained approval bindings, bootstrap manifest and actual reset/migration/grant result. |
 | [Bootstrap execution](bootstrap-retry-execution.json), [result](bootstrap-retry-result.json) | Applied 23-migration bootstrap and resulting role/runtime checks. |
-| [Runtime plan review](runtime-enabled-plan-review.json), [runtime result](runtime-enabled-result.json) | Enabled API/proxy runtime, HTTPS and hosted-flow outcome. |
-| [Retention review](retention-window-review.json), [retention result](retention-window-result.json) | Scheduled retention behavior observed during the bounded window. |
+| [Runtime approval](runtime-enabled-plan-review.json), [runtime result](runtime-enabled-result.json), and [cleanup result](runtime-cleanup-result.json) | Enabled API/proxy runtime, HTTPS, hosted-flow outcome and teardown. |
+| [Retention approval](retention-window-review.json), [retention result](retention-window-result.json) | Scheduled retention behavior observed during the bounded window. |
 | [Cleanup plan review](runtime-cleanup-plan-review.json), [cleanup result](runtime-cleanup-result.json) | Teardown outcome and retained resources. |
 | [Closeout review](closeout-review.json) | Step13 checklist, verification limits and disposition as recorded at closeout. |
 
-The directory also retains the stopped/enabled Terraform plan reviews, bootstrap attempts, SQL inventory and detailed operation plans. They document past actions and must not be reused as current approval, source bindings or cloud-state evidence. Refresh current owner decisions, account state and exact plans before any future operation.
+The directory retains the machine-readable plan reviews, bootstrap attempts, SQL inventory and execution receipts. These are historical evidence, not current approval, source bindings or cloud-state evidence. Refresh owner decisions, account state and exact plans before any future operation. Redundant prose copies of the plan reviews were removed; the retained JSON records are the approval/evidence source.
 
 Step 14’s authorization matrix is maintained separately in [its own evidence page](../id-01-step-14/README.md). ID-READY and project closeout status belong to the [task list](../../../tasks/domain-task-list.md) and [work log](../../../status/work-log.md).

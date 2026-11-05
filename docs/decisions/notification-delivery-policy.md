@@ -55,7 +55,7 @@ Which conversation emails are required, when are reminders due, and how are fail
 Provides event awareness and a bounded unread reminder without per-message email or repeated reminders during one unread period.
 
 ## Implications
-The [schema](../architecture/mvp-database-schema.md) records episode/target/read state and deterministic keys; CN-01/CN-03 must review and implement producer/worker ownership, atomic state transitions, replay deadlines, safe outcomes and race tests. Addresses are resolved through authorized Identity interfaces, not copied into notification records. The [retention policy](private-data-retention.md) applies to terminal records; cleanup cannot reset an episode or trusted original delivery deadline. Public source replay must not recreate an expired delivery window.
+The installed notification-intent schema is defined by the ordered migrations and summarized in the [database guide](../../database/README.md); CN-01/CN-03 must review and implement producer/worker ownership, atomic state transitions, replay deadlines, safe outcomes and race tests. Addresses are resolved through authorized Identity interfaces, not copied into notification records. The [retention policy](private-data-retention.md) applies to terminal records; cleanup cannot reset an episode or trusted original delivery deadline. Public source replay must not recreate an expired delivery window.
 
 Aditya selected an independently configured, default-off bounded notification
   polling loop in the existing API lifecycle on 2026-10-29 13:14:28 UTC. The

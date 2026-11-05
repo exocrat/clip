@@ -10,17 +10,13 @@ deferral/counts do not describe this combined checkout. See the [current work-lo
 status](../docs/status/work-log.md); detailed old receipts are recoverable through
 the [evaluation history guide](../docs/evaluation/README.md).
 
-CN-02 Step2 reuses the existing offer/revision/contact tables and installed local
-guards; it adds no migration. The registered Conversations checker includes
-`apps/api/tests/test_conversation_offer_storage.py` for revision/withdrawal,
-ownership/origin, integer-paise, rollback, encrypted-note key binding and retained
-identity checks after90-day cleanup. The18 new cases passed inside the132-case
-fresh PostgreSQL18.6 suite. These are synthetic direct-SQL storage checks; the
-offer service/HTTP/idempotency integration remains CN-02 Step3. See the
-[checkpoint](../docs/evaluation/domain/conversations-offers.md#step2-storage-verification--2026-10-27-063124-utc).
+CN-02's offer, revision, and contact behavior is tracked as complete in the work
+log. The linked [historical storage checkpoint](../docs/evaluation/domain/conversations-offers.md#step2-storage-verification--2026-10-27-063124-utc)
+records its original direct-SQL evidence; that evidence is not a fresh integration
+run or a live-database assertion.
 
-PD-08 Step 3 created SQL migrations from the
-[schema](../docs/architecture/mvp-database-schema.md) under the approved
+PD-08 Step 3 created SQL migrations from the historical
+[schema design map](../docs/architecture/mvp-database-schema.md) under the approved
 sequencing exception. The carried PD-08 gates are user-confirmed complete; the
 exact other-machine platform runs are described in the handoff and matrix below.
 
@@ -37,17 +33,14 @@ No API, domain service, provider, deployment or crypto implementation is supplie
 
 ## Tool and migration head
 
-Future cloud backup/restore planning is in
-[backup-and-restore.md](backup-and-restore.md) (PD-08 Step 7). It assigns the
-PD-16/INT-01 handoff, finite-retention/privacy decisions, isolated restore
-procedure and NFR-07 evidence. No cloud commands or operations are implemented
-or authorized by that document; deferred Step 6 checks remain open.
+Backup/restore procedures and their operational limits are in
+[backup-and-restore.md](backup-and-restore.md). That document is planning and
+procedure guidance; it does not authorize or perform a cloud operation.
 
 `dbmate.version` pins dbmate **2.36.0**, a standalone SQL migration tool. The
-selected image is `ghcr.io/amacneil/dbmate:2.36.0`; Step 5 wires the local
-container route and real container verification remains Step 6. Native tool
-execution passed in Step 6. No shared Python/Node manifest or other owner's directory
-was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
+selected image is `ghcr.io/amacneil/dbmate:2.36.0`. Local setup and checks are
+recorded below; the migration-tool choice is explained in the
+[tool rationale](../docs/decisions/database-migration-tool.md).
 
 | Ordered migration | Purpose |
 |---|---|
@@ -86,17 +79,10 @@ was changed. [Tool rationale](../docs/decisions/database-migration-tool.md).
 
 Four superseded branch-only SQL files are preserved byte-for-byte in
 [`archived/cn-01-pre-main`](archived/cn-01-pre-main/README.md), outside the executable
-chain. A target containing any archived version requires a separately reviewed
-upgrade plan; do not apply this fresh-chain procedure to it. The current Identity
-runner pins an unreviewed 23-file candidate and rejects an expanded chain; prior
-evidence also records a 17-file live package whose separate owner review remains
-open. This branch contains 32 SQL migrations. Neither candidate nor local checks
-authorize a shared apply; prepare and review an exact target/package before any
-database operation.
-
-The optional-pickup forward migration is under Listings writer scope; affected
-consumer/schema review and exact shared-database apply remain pending. Local
-isolated checks do not authorize shared/Compose/cloud migration.
+chain. A target containing any archived version needs its own reviewed upgrade
+procedure; this fresh-chain procedure does not cover it. Old Identity package
+sizes and review statements below are historical records, not current release
+requirements. Local checks do not authorize shared, Compose, or cloud migration.
 
 Expected planning-branch migration version: **20261029182500**. One integrator allocates
 later timestamp identifiers; no parallel heads or uncoordinated edits to initial
@@ -152,19 +138,16 @@ not successful password authentication, migration completion or cloud evidence.
 There is no automatic restart, provider, deployment or cloud database. The local
 connection is not a production TLS configuration.
 
-CI must use the same PostgreSQL **18.6** version; PD-12/integration owns that
-configuration and must confirm it before acceptance. No CI file is edited here.
-Step 5 supplies the target-validating lifecycle commands below. Docker and
-Compose are absent on Mohit's verified macOS environment: image pull, Compose
-runtime validation, initialization, authenticated readiness and volume
-persistence are **not yet verified**. Real migration checks retain Step 6.
+CI and local procedures use PostgreSQL **18.6**. The lifecycle commands below
+validate only the explicitly owned local container. Prior runtime checks are
+historical; the work-log status is authoritative for task completion.
 
 ## Local lifecycle commands (PD-08 Step 5)
 
 Run from the repository root on macOS/Linux with **Bash 3.2+**, Docker Engine
 and the **Compose v2** plugin. A local Unix-socket context is mandatory; Docker
-Desktop's local context is compatible by design, but runtime verification is
-pending. No Python/Node/dbmate installation is required on the host. Docker may
+Desktop's local context is compatible by design. No Python/Node/dbmate
+installation is required on the host. Docker may
 download the pinned PostgreSQL/dbmate images from their public registries; this
 does not provision cloud infrastructure. Install/activate the container engine
 using the contributor's approved environment procedure before runtime checks.
@@ -230,17 +213,15 @@ At the Step 5 implementation checkpoint, real Docker/Compose/container
 execution, image inspection, stop/start persistence and reset/recreate were
 pending Step 6. The user later confirmed the carried PD-08 acceptance gates
 complete; exact cross-platform execution details are not retained here. These
-scripts create no marketplace readiness milestone. PD-13 owns the root Makefile
-integration and must preserve the same target/refusal behavior.
+scripts create no marketplace readiness milestone. The root Makefile integration preserves the same target/refusal behavior.
 
 ## Important SQL behavior
 
-- `identity.guard_user_history`, `guard_local_credential` and `guard_enrollment`
-  protect original lifetime/credential class and minimal enrollment records.
-  Cross-key normalized enrollment lookup still needs ID-01/A/D review: the
-  per-key unique index alone cannot establish non-renewal after key rotation.
-  Credential verification, password hashing, OTP/session limits and atomic
-  reset/session revocation are future Identity service behavior.
+- Identity guards protect account lifetime/credential class and minimal
+  enrollment records. Cross-key enrollment, password, OTP, session, and reset
+  behavior are implemented at the Identity service boundary; task status and
+  acceptance evidence are in the work log. These SQL guards alone do not implement
+  the full authentication flow.
 - `listings.guard_image` serializes image mutations with an actual parent-row
   version write. `check_publication` runs deferred so listing/image insertion or
   retirement is atomic while a committed live listing always has 1–8 images.
@@ -270,13 +251,16 @@ integration and must preserve the same target/refusal behavior.
   ordering/offer uniqueness markers on history deletion.
 - `reject_reference_change` prevents physical origin/thread/offer deletion or
   contact-share PK rebinding; approved maintenance retires content in place
-  instead of removing the minimal lifetime uniqueness records.
+  instead of removing the minimal lifetime uniqueness records. Conversations
+  authentication and notification acknowledgements are tracked as complete in
+  the work log; historical database notes below describe only schema behavior.
 - `guard_notification` derives immutable event keys and original due/deadline
   from source records, validates reminder targets and refuses expired replay or
   read/already-reminded episode leasing. It does not enqueue automatically,
   dispatch email, fence a worker's provider call or guarantee exactly-once
-  delivery. CN-01/CN-03 still implement atomic intent persistence, final read/
-  recipient checks, retry scheduling and external-effect handling.
+  delivery. CN-01/CN-03 implement atomic intent persistence, final read/recipient
+  checks, retry scheduling and external-effect handling at the application layer;
+  task status is recorded in the work log.
 
 Migration `20261020142319` removes cross-domain business-table reads/writes from
 the origin, thread, entry and offer-revision triggers while retaining local
@@ -325,4 +309,4 @@ common commands and owner guides. The [work log](../docs/status/work-log.md) has
 current status; detailed prior platform/run receipts are recoverable through the
 [evaluation history guide](../docs/evaluation/README.md).
 
-The `20261029043000_unique_handles_and_participant_projection.sql` migration adds staged Handle claims and an Identity-owned `participant_profiles` view. Existing names and account IDs are preserved; valid unambiguous names are claimed, while invalid/colliding names require setup. The view exposes only user ID, claimed Handle and active account class. An integrated Conversations runtime needs `USAGE ON SCHEMA identity` and `SELECT ON identity.participant_profiles`; it needs no direct access to Identity contacts or provider tables. Apply/grant changes on shared/cloud targets remain separately approved. The pinned Identity17 migration review package is unchanged and is not the complete integrated marketplace release migration set.
+The `20261029043000_unique_handles_and_participant_projection.sql` migration adds staged Handle claims and an Identity-owned `participant_profiles` view. Existing names and account IDs are preserved; valid unambiguous names are claimed, while invalid/colliding names require setup. The view exposes only user ID, claimed Handle and active account class. An integrated Conversations runtime needs `USAGE ON SCHEMA identity` and `SELECT ON identity.participant_profiles`; it needs no direct access to Identity contacts or provider tables. Historical Identity-only migration packages are not the complete integrated marketplace migration set.

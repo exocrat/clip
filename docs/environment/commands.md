@@ -696,7 +696,7 @@ shortcut. Default settings refuse sending. It requires explicit smoke approval,
 test mode, SES selection, exactly one allowlisted recipient and the expected ECS
 container-role credentials. It attempts one fixed generic message, suppresses SDK
 logs and exits within a 45-second command deadline. Success output means provider
-acceptance only. See the [bounded plan](../evaluation/identity/provider-history.md#delivery-diagnostics).
+acceptance only. See the [bounded plan](identity-provider-setup.md).
 
 ### Identity diagnostic wrapper offline checks — ID-01 Step 2
 
@@ -711,7 +711,7 @@ The tests import the exact reviewed diagnostic command from the evaluation folde
 and inject offline SDK failures/success. They perform no AWS calls or sends;
 expected result is 28 passing tests. The wrapper itself can send when explicitly
 run with approved ECS settings; do not invoke it as a local test command. Its
-[live request and cleanup plan](../evaluation/identity/provider-history.md#delivery-diagnostics)
+[live request and cleanup plan](identity-provider-setup.md)
 require separate exact approval. No new Make target or deployment command added.
 
 ### SES authorization diagnostic offline checks — ID-01 Step 2
@@ -723,7 +723,7 @@ uv run --locked black --check docs/evaluation/identity/id-01-step-2/runtime_auth
 
 These are offline checks (37 tests), not a send command. The extended diagnostic
 parses denied-resource/reason text only in memory and emits fixed categories;
-[the exact live plan](../evaluation/identity/provider-history.md#delivery-diagnostics)
+[the exact live plan](identity-provider-setup.md)
 retains a separate approved task/send/cleanup window. Shared sandbox plans must
 preserve the private `TF_VAR_ses_sandbox_recipient_identity_arn` when its additional
 identity scope is still needed; see the shared Terraform README. Never supply
@@ -1909,7 +1909,7 @@ in the loopback-only launcher and is absent from deployed code. Ctrl+C removes
 its database and temporary photos; `--check-only` checks and cleans up without
 serving. `--port 5175` starts an independent debugging fixture while preserving
 the default5174 inspection session; ports outside5174/5175 are rejected. Full steps and sample-account guidance are in the
-[NEXT-03 visual checklist](../tasks/next-03-step-10-visual-checklist.md).
+[NEXT-03 behavior plan](../tasks/next-03-visual-feedback-plan.md) and [completion summary](../tasks/next-03-visual-feedback-implementation-report.md).
 
 Requires locked Python/Node dependencies and local Docker, using only owned
 disposable PostgreSQL. The first command starts one loopback ephemeral HTTP port,
@@ -1945,7 +1945,7 @@ No provider, cloud, retained database or DNS query is involved.
 ## ID-01 Step13 — native Micro build preparation
 
 These operator helpers require the separately approved exact
-[build/database window](../evaluation/identity/id-01-step-13/build-and-database-window.md).
+[Step13 evidence index](../evaluation/identity/id-01-step-13/README.md).
 They are not `make check`, an application startup path or authorization to start AWS.
 
 | Command | Effects and expected result |
@@ -1971,7 +1971,7 @@ SQL, AWS, provider, credential lookup or live reset.
 `docs/evaluation/identity/id-01-step-13/bootstrap-inventory.sql` is a pinned-target
 repeatable-read/read-only review input, not an automatic live command. Proposed
 live counts/window/master read need the separate approval in the linked
-[bootstrap plan](../evaluation/identity/id-01-step-13/bootstrap-and-grants-plan.md).
+[Step13 evidence index](../evaluation/identity/id-01-step-13/README.md).
 The destructive coordinator/grants package is still gated, not registered as
 an executable route.
 
@@ -1982,15 +1982,16 @@ an executable route.
 | `uv run --locked python scripts/identity_bootstrap.py` | Inert documentation entry; does not connect or reset. Actual execution is an operator API requiring reviewed bound inputs and separate live approval, not an unattended CLI. |
 | `uv run --locked pytest -q tests/test_identity_bootstrap.py tests/test_identity_bootstrap_review.py` | Thirteen disposable local TLS tests covering guarded17→23 bootstrap, lock/role preservation, refusal/rollback and restricted trigger grants. Requires Docker; never supply a shared database. Not hosted acceptance. |
 
-[Exact proposed live target, grants, failure behavior and60minute/$1 window](../evaluation/identity/id-01-step-13/bootstrap-live-review.md). No live execution is authorized by these commands.
+[Historical Step13 approval and result records](../evaluation/identity/id-01-step-13/README.md). These commands do not authorize a new live execution.
 
 ## ID-01 Step13 — window-only retention launcher
 
 `uv run --locked python scripts/identity_retention_job.py --help` is inert.
 `uv run --locked pytest -q tests/test_identity_retention_job.py` runs four offline
 safety checks; no cloud/DB. `--image`, `--revision` and `--deadline-utc` bind the
-operator job; default is dry-run. `--apply` and installing the inactive proposed
-service/timer require the [exact live approval](../evaluation/identity/id-01-step-13/retention-window-review.md).
+operator job; default is dry-run. `--apply` and installing a service/timer require a new reviewed plan and exact
+approval; the [Step13 evidence index](../evaluation/identity/id-01-step-13/README.md)
+records only the completed historical run.
 The launcher uses unchanged identity_cleanup.py inside the actual container,
 returns counts only and never installs scheduling itself. No build is needed.
 
