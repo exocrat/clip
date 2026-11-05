@@ -1,5 +1,7 @@
 # ID-01 Step14 — direct-API capability matrix
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya marks ID-01 and Step14 complete. Earlier pending/checkpoint statements below are historical; this status update records his direction and does not add new execution evidence.**
+
 **Current checkpoint:** Aditya reports all remaining Step14 parts verified and accepts
 them. Real S3 upload/display and temporary conversation passed; teardown is complete.
 Suraj approved the two grants and a guarded restoration helper was tested locally.

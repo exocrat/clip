@@ -1,5 +1,7 @@
 # Search contract
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya marks SE-01/SE-02 complete, including the Hybrid runtime/lifecycle acceptance. Earlier pending integration notes below are historical and superseded for task status.**
+
 **Status:** Step 10 domain-owner documentation review is reported approved by
 the user. Step 11 typed declarations are generated from this contract and the
 [combined registry](combined.md). Search implementation and migrations remain

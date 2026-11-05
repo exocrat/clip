@@ -1,5 +1,7 @@
 # NEXT-06 dataset cloud handoff
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya confirms NEXT-06 complete. Pending gates and cloud handoff notes below are historical; they do not represent open NEXT-06 work.**
+
 **Current checkpoint:** [Frozen release/task-wide review](task-wide-review.md). All six output/check groups are represented; Step3normal vector check is human-reported complete. Formal Step6human/current-headCI/peer/merge acceptance remains. Earlier broad hosted-runtime handoff statements are historical and do not create new NEXT-06implementation work.
 
 Prepared for the contributor/operator who will load Mohit Mahapatra's reference

@@ -1,5 +1,7 @@
 # Identity handoff
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya marks ID-01 complete. Earlier pending/checkpoint statements below are historical; this status update records his direction and does not add new execution evidence.**
+
 ID-01 remains in progress. Current status and open gates are in the [domain task
 list](../../tasks/domain-task-list.md#id-01--implement-identity-eligibility-and-temporary-accounts)
 and [work log](../../status/work-log.md). Use the [Identity provider setup](../../environment/identity-provider-setup.md)

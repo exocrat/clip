@@ -1,5 +1,7 @@
 # CN-03 notification email setup
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya marks CN-03 complete. Earlier pending/checkpoint statements below are historical; this status update records his direction and does not add new execution evidence.**
+
 Aditya selected `updates@clip-iisc.site`, SES first, and Resend fallback. Local
 code reuses the existing versioned email-route SecureString format and refreshes
 it at first send and at most once per four hours. It reads the configured

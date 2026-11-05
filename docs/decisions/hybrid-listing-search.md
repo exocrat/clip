@@ -1,5 +1,7 @@
 # DEC-13 — Hybrid listing search amendment
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya confirms the Hybrid search runtime/lifecycle/UI work is complete. Earlier pending activation and acceptance notes below are historical and superseded for task status.**
+
 **Date:** 2026-10-24
 **Origin:** SE-01, human-requested amendment after the isolated Step 9 checkpoint.
 **Status:** Mohit verified the six-step design and staged vocabulary/native

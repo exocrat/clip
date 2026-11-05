@@ -1,5 +1,7 @@
 # NEXT-06 remaining integration and acceptance gates
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya confirms NEXT-06 complete. The gate list below is retained as historical handoff context and is superseded for current task status.**
+
 **Current status:** [Task-wide frozen release review](../task-wide-review.md) supersedes the old pending integration list below. Step3is complete on Mohit's report, Step4reconfirmed, Step5canonical labels verified, and Step6frozen outputs prepared. Remaining gates are human Step6verification, explicit commit/publication, current-headCI and independent review/authorized merge; no new Listings implementation or hosted deployment is assigned.
 
 **Scope correction:** [Ordered Step3 resumption](step-03-runtime-inspection-plan.md) supersedes this document's broad runtime/deployment handoff. A new hosted Hybrid deployment and2GiB allocation are not automatically NEXT-06 deliverables. Earlier dataset evidence remains valid within its recorded scope.

@@ -1,5 +1,7 @@
 # NEXT-03 pre-PR package
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya marks NEXT-03 complete. Earlier pending inspection/PR gates below are historical and superseded for current task status.**
+
 **Draft title:** Complete marketplace controls, visual feedback and planning handoff
 
 **Target:** `main` at fetched base `a60c83f`. The source branch is

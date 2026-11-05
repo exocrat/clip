@@ -1,5 +1,7 @@
 # NEXT-06 task-wide review — frozen data and reviewed labels
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya confirms NEXT-06/DATA-READY complete. The pending acceptance text below is historical and superseded; retained step evidence and stated limits remain unchanged.**
+
 All six canonical output/check groups are represented in the current package.
 Content is frozen; formal task/DATA-READY acceptance remains pending human Step6
 verification, current-head CI and independent human review/authorized merge.

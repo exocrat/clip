@@ -1,5 +1,7 @@
 # NEXT-03 — ready-for-inspection walkthrough
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya marks NEXT-03 complete. Earlier pending inspection/PR gates below are historical and superseded for current task status.**
+
 This walkthrough uses the normal built application, real cookie/CSRF sessions,
 real PostgreSQL domain stores, the pinned Hybrid model/worker, and real browser
 conversation encryption. The launcher substitutes only external Microsoft signing,

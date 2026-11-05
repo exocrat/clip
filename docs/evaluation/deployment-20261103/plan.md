@@ -1,5 +1,7 @@
 # Bounded experiment deployment plan
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya marks INT-01 complete. Earlier pending/checkpoint statements below are historical; this status update records his direction and does not add new execution evidence.**
+
 Prepared on 2026-11-03 for `exocrat/clip`, from the actual
 `task/experiment-tooling-readiness` worktree. This plan is prepared **before
 commit, PR checks and merge**, as Suraj directed. Git integration does not

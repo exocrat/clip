@@ -1,5 +1,7 @@
 # Remaining project work: ordered task groups
 
+**Status update (2026-11-05 15:26:56 UTC): Aditya marks all non-EXP tasks listed in `pending_tasks.md` complete, including NEXT-03 and NEXT-06. EXP-02–08 remain open. Older plan status statements below are retained as historical context.**
+
 **Planning branch:** `task/experiment-tooling-readiness` based on remote `main`
 at `2a0916e` (PR #28), 2026-11-03. **Coordinator:** Suraj for this planning request; domain
 ownership and independent review remain as recorded in the project index.

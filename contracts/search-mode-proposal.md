@@ -1,5 +1,7 @@
 # SE-01 public search mode and relevance proposal
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya confirms Hybrid/search mode lifecycle and UI acceptance complete. Earlier pending browser/lifecycle checklist wording is historical and superseded for task status.**
+
 **Status:** Mohit-verified specification; source/generated API checkpoint implemented,
 API result verified by Mohit. Frontend controls/URL/request handling implemented
 and automated-tested; human browser verification and application lifecycle remain pending. Mohit selected Keyword as the
