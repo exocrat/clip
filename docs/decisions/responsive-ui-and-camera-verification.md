@@ -65,9 +65,9 @@ PR and exact merge gates still apply.
 
 ## Approver
 
-Suraj (B), explicit instruction in this session to add the camera/responsive
-requirements and frequent human browser verification. Shared publication and
-affected-owner review remain pending.
+Suraj (B), explicit instruction to add camera/responsive requirements and frequent
+human browser verification. The corresponding task acceptance is recorded in the
+work log; future features still follow these checkpoints.
 
 ## Supersedes
 

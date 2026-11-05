@@ -160,5 +160,7 @@ The isolated restore app has code support for the exact test origin
 `https://restore.clip-iisc.site`. Before enabling that deployment, its reviewed
 plan must arrange DNS/certificate and register the Microsoft SPA redirect
 `https://restore.clip-iisc.site/auth/callback` with the existing test application.
-This is a pending operator configuration action, not a record of registration.
-See the [NFR-07 provisioning procedure](../evaluation/predeployment-gap-tools.md).
+This was a pending operator configuration action when the procedure was written;
+INT-01 completion and current deployment status are tracked separately. Use the
+[NFR-07 provisioning procedure](../evaluation/predeployment-gap-tools.md) for any
+future restore test, and verify current registration before acting.

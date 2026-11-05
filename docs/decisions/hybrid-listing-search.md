@@ -4,14 +4,10 @@
 
 **Date:** 2026-10-24
 **Origin:** SE-01, human-requested amendment after the isolated Step 9 checkpoint.
-**Status:** Mohit verified the six-step design and staged vocabulary/native
-normalization, local model/storage, native pipeline, helper IPC and DB/helper
-bridge checkpoints. Development calibration is performed; its proposed reference
-policy was subsequently selected as v1 for the verified private-read plan; its
-implementation/check result awaits verification. Public activation is separate.
-Suraj's amendment review is
-user-reported, without a separate artifact; exact implementation review, public
-integration, Linux/resources and original acceptance gates remain pending.
+**Status:** SE-01 is marked complete in the [work log](../status/work-log.md).
+This decision preserves the selected Hybrid design and its dated checkpoint
+history. Earlier “pending” statements below describe their original review time;
+formal EXP/NFR results remain separate.
 
 ## User-interface amendment — 2026-10-26
 

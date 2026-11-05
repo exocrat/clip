@@ -64,7 +64,7 @@ supersede the older no-ALB observations below.
   ten processes still suspended. Launch template now prepares c7i-flex.large;
   the retained stopped host itself remains t3.micro until approved startup.
 - Restore ACM certificate `e5ebe4da-b808-4a73-ba56-9f259ccc626f` is pending
-  DNS validation. [Single exact owner handoff](../evaluation/deployment-20261103/execution/spaceship-handoff.md).
+  DNS validation. [completed owner handoff history](../status/work-log.md).
 - ALB creation: 2026-11-03 16:10:01 UTC. Two-hour phase review deadline:
   18:10 UTC. No automatic shutdown exists. Incremental ALB/two-IP cost starts
   near USD0.0339/hour plus LCU/data; ledger adds USD0.0838 as an unbilled

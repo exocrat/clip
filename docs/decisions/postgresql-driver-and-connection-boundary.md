@@ -54,19 +54,20 @@ for shared resource startup and shutdown.
   surface. `PostgresOriginRetirementOperations` implements
   `get_origin_activity` and `mark_origin_retired`; `PostgresThreadCreationOperations`
   implements Listing and Wanted Request open/create using Identity's public
-  eligibility callable. Both are tested directly. Neither is imported by
-  `main.py` or composed into an application operation; domain-owned composition
-  and real owner integration remain future CN-01 work. Do not hand-edit
-  generated `public.py`.
+  eligibility callable. Both are tested directly. Their domain application
+  composition and integration are marked complete in the work log; this original
+  driver-selection checkpoint does not assert current composition details. Do not
+  hand-edit generated `public.py`.
 - The runtime dependencies are LGPL-3.0-only; retain their license notices and
   include the relevant license records with any distributed application image.
 - `CLIP_DATABASE_DSN` is optional and validated with Psycopg's conninfo parser;
   Pydantic `SecretStr` masks it in representations. No actual DSN value is
   stored or documented.
-- The selected SSM path, dedicated application database principal, ECS secret
-  mapping, and execution-role permission remain pending; the existing PD-16
-  master/probe credentials are not application credentials. No cloud resource
-  or IAM policy is changed by this checkpoint.
+- At this design checkpoint, the SSM path, dedicated application principal, ECS
+  secret mapping, and execution-role permission were pending. Later task and
+  runtime acceptance is recorded in the work log; current values and permissions
+  are not asserted by this decision. No cloud resource or IAM policy was changed
+  by the original driver-selection checkpoint.
 - Reassess pool sizing against deployment connection capacity before enabling
   a deployed DB-backed service, and define separate readiness behavior then.
 

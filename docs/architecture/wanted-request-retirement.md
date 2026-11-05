@@ -2,10 +2,10 @@
 
 **Current disposition (2026-11-05 15:26:56 UTC): Aditya marks ORIGIN-RETIREMENT-BOUNDARY complete. Earlier pending/checkpoint statements below are historical; this status update records his direction and does not add new execution evidence.**
 
-**Status:** Mohit approved this exact local mechanism/order after verifying the
-Step3 wanted API checkpoint. Implementation and isolated verification passed;
-real Conversations integration remains pending. No scheduler or live
-cleanup run is approved.
+**Historical checkpoint:** Mohit approved this local mechanism/order after the
+Step3 Wanted API checkpoint. ORIGIN-RETIREMENT-BOUNDARY is marked complete in the
+work log. The procedure below documents implementation constraints; it does not
+assert current live cleanup state or authorize a new cleanup run.
 
 ## Existing approved prerequisites
 
@@ -60,8 +60,8 @@ threads; recent activity; failed/unknown/delayed provider results; same-ID repla
 wrong pair; concurrent edits and competing retirement attempts; full rollback
 when local cleanup fails; all receipt payloads cleared; retained keys reject late
 create; no origin reopen/new response; every read hides retired content. Use only
-reviewed Conversations doubles until its real provider is ready. Real cross-domain
-activity/marker races remain an integration gate, not a synthetic pass.
+reviewed Conversations doubles until its real provider is ready. The recorded real cross-domain and owner-review results are in the work log; this
+procedure's synthetic cases are not a fresh runtime check.
 
 ## Approval boundary
 
@@ -91,5 +91,6 @@ explicit reviewed test double, not real locking/integration proof.
 
 The detailed check receipt was removed from the checkout; see the
 [evaluation history guidance](../evaluation/README.md) to retrieve it from Git.
-Real Identity/Listings/Conversations readiness, final cross-domain race checks,
-Docker/hosted acceptance and independent affected-owner review remain pending.
+The listed race, owner, and integration checks describe the original checkpoint.
+ORIGIN-RETIREMENT-BOUNDARY is marked complete in the work log; these old statements
+do not reopen its task gates or assert current live state.
