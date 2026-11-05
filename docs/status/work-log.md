@@ -2621,7 +2621,7 @@ real sign-in/S3upload/display; hybrid_tested=false remains a genuine missing che
 Added fixed read-only `reference_runtime_inspection.py` and four controls proving
 exact identity-first refusal,10operation metadata-only scope, suppressed private
 fields and no pagination/approval bypass. Tests4pass0.09s; boundaries0; formatting/
-whitespace pass; no AWS calls. [Exact inspection plan/review](../evaluation/domain/next-06/transfer/step-03-runtime-inspection-plan.md)
+whitespace pass; no AWS calls. Exact inspection plan/review (original plan remains in Git history at `4bd1143`)
 is prepared for separate cloud approval. No later step execution, deployment,
 secret read, commit/push/PRreplacement or resource change in this increment.
 Full data and secret-scan closeout retained with preparation checks.
@@ -2630,7 +2630,7 @@ Full data and secret-scan closeout retained with preparation checks.
 
 Mohit requested continued work after dataset checkpoint verification. Refreshed
 GitHub open PRs read-only: datasetPR22 remains8612633 with no review; Notifications
-PR21 remainsdb8a661. Prepared [current PR review](../evaluation/domain/next-06/current-pr-review.md)
+PR21 remainsdb8a661. Prepared current PR review (original plan remains in Git history at `4bd1143`)
 covering actual cloud load/vector/rebuild outcomes and each new helper. Historical
 pre-cloud publication summary now points to current evidence. Removed only the
 accidental generated9.9MBtunnel-tool binary copy from proposed evidence publication;
@@ -2682,7 +2682,7 @@ All22accepted judgments retain query/context/inclusion/eligible IDs; canonical
 label draft unchanged and no scoring or invented review timestamp. Consolidated
 candidate preserves final_freeze=false/DATA-READY=false and archive checksum.
 
-[Plan](../evaluation/domain/next-06/transfer/dataset-evidence-plan.md) and
+Plan (original plan remains in Git history at `4bd1143`) and
 [preparation checks](../evaluation/domain/next-06/transfer/dataset-evidence-preparation-result.json)
 bind57files for a proposed read-only actual RDS/native vector/index comparison.
 Negative approval gate made0AWS calls/no resource starts. No AWS actions in this
@@ -2765,7 +2765,7 @@ and Linuxhybrid Dockerfile/lock already exist; no missing-source claim. Current
 local3.13.12helper, model/tokenizer hashes and onnxruntime1.23.2/tokenizers0.23.3/
 numpy2.5.4match pipeline; no inference/install/download/AWS calls.
 
-[Proposed staged next checkpoint](../evaluation/domain/next-06/transfer/post-load-integration-plan.md):
+Proposed staged next checkpoint (original plan remains in Git history at `4bd1143`):
 prepare/native-test dedicated ephemeral embedding role and bounded existing Mac
 helper producing vectors from actual RDSsources into RDS through supported
 prepare/queue/worker/activate. No Docker requirement merely for data publication;
@@ -3027,7 +3027,7 @@ cleanup; rawreceipt preserved and explicitflags/owned_resources_stopped event
 establish safe closeout. [Evidence](../evaluation/domain/next-06/transfer/phase-a-20261030/result.json)
 retains exactexecutedsource/command/controller/receipt hashes and base-compute
 estimate, not an actualbill. Retainedstorage/CPU/network/tax caveats remain.
-Prepared local-only [diagnostic correction plan](../evaluation/domain/next-06/transfer/probe-diagnostic-fix-plan.md)
+Prepared local-only diagnostic correction plan (original plan remains in Git history at `4bd1143`)
 for fixed safe stage/reason codes and child failure/SQLSTATE propagation without
 secret output; historical execution remains unchanged. Await checkpoint verification
 and localfix approval, then revisedpayload/windowapproval before another attempt.
@@ -3081,7 +3081,7 @@ listing denied, currentid01bucket private/encrypted/owner-enforced and HTTPSCORS
 No permissions changed; actual runtime rights not inferred from metadata denial.
 [Receipt](../evaluation/domain/next-06/transfer/load-preflight-current.json) and
 [checkpoint evidence](../evaluation/domain/next-06/transfer/load-preflight-result.json)
-bind source/checks. Prepared nonexecuting [load-plan draft](../evaluation/domain/next-06/transfer/load-plan-draft.md)
+bind source/checks. Prepared nonexecuting load-plan draft (original plan remains in Git history at `4bd1143`)
 with candidate isolatedDB/run prefix, route/model/role/pricing/time/rollback gates.
 No starts,scaling,session/remote commands,secrets,SQL,uploads,deploy,IAMchange or
 publication. Await result verification, then exact separately approved action
@@ -3101,7 +3101,7 @@ so actual runtime model packaging remains a reviewed deployment prerequisite.
 
 User objected to multiple simultaneous execution prompts. Independent parallel
 calls caused one prompt each; future approved reads will use one transparently
-bounded batch. Prepared [load-preflight proposal](../evaluation/domain/next-06/transfer/cloud-load-preflight-plan.md):
+bounded batch. Prepared load-preflight proposal (original plan remains in Git history at `4bd1143`):
 local SDKcompatibility plus max18read-only calls for actual host/SSMroute/task-role
 permissions/current id01bucket metadata. No proposed cloud mutation or key creation;
 asks verification before implementation/execution. Suraj peer approval/accepted
@@ -3120,7 +3120,7 @@ no failures/retries, secret/object/SQL reads or mutations. [Current evidence](..
 and cloudinventory updated. Login needs no user-managed access keys; existing
 password/token material was not read, copied or logged.
 
-Prepared the next [read-only configuration scope](../evaluation/domain/next-06/transfer/cloud-config-inspection-plan.md)
+Prepared the next read-only configuration scope (original plan remains in Git history at `4bd1143`)
 (max16calls, exact shared runtime/RDS-related network/capacity and li02bucket
 metadata) for separate approval, to resolve target/settings/connection route before
 an actual load/cost/window/rollback proposal. Await human verification/approval;
@@ -3205,7 +3205,7 @@ registered Docker scanner remain platform gates; native equivalent security scan
 is separate evidence, not a CI bypass. No frontend/lockfile changes to hide failures.
 
 Updated loading/design/command/data guides and [cloud handoff](../evaluation/domain/next-06/cloud-handoff.md).
-Prepared [PR/independent review package](../evaluation/domain/next-06/pre-cloud-review.md)
+Prepared PR/independent review package (original plan remains in Git history at `4bd1143`)
 for Suraj(B), with concrete title/body/files/refusal/privacy/checks and operator
 steps; no messages sent. [Pre-cloud evidence](../evaluation/domain/next-06/pre-cloud/result.json)
 and refreshed local freeze candidate bind current source without overwriting
@@ -4010,3 +4010,76 @@ Reduced the Step13 overview from 408 to 23 lines, retaining the reported hosted
 result, its explicit verification limits, and links to the existing bootstrap,
 runtime, retention and cleanup records. Detailed plans and JSON receipts were
 left unchanged. Link checks and `git diff --check` passed.
+
+### 2026-11-05 16:19:48 UTC — Repository cleanup audit: active records retained
+
+Reviewed the remaining largest inventory candidates. The comparison inputs,
+deployment plan/checkpoint, and work log contain open EXP-02–08 preparation,
+current runtime decisions, or active failure evidence, so they remain in place
+for now. Updated `repo_cleanup.md` to defer compression until the relevant EXP
+closeout. The smaller completed Identity summaries were already consolidated.
+
+### 2026-11-05 16:20:56 UTC — Repository cleanup audit: remaining evidence triage
+
+The repository has no `local-demo-retrospective-2026-10-26.md`. Kept the
+ID-01 demo postmortem because NEXT-04, secret handling, cloud inventory and
+evaluation indexes link to its retained findings. The remaining large inventory
+candidates are active EXP plans/logs or current runtime failure evidence; their
+compression is deferred until task closeout. Updated the inventory dispositions.
+
+### 2026-11-05 16:30:00 UTC — Repository documentation cleanup: Identity pages combined
+
+Combined the 29-line Identity integration handoff into the Identity overview and
+removed the redundant page. Updated the secret-handling runtime link to the
+Step13 evidence section and refreshed the inventory to 255 project Markdown
+files, excluding its two report files. The former page had no other inbound
+references. Link and whitespace checks passed.
+
+### 2026-11-05 16:42:57 UTC — NEXT-06 drift cleanup: superseded PR packages
+
+Replaced stale PR22/PR23 packages with short archive pointers to the accepted
+PR24 release, task-wide review and work-log status. Corrected the task-wide
+review's leftover pending-acceptance statements while preserving its six-step
+evidence table and explicit limits. Updated inventory size/content/drift entries.
+
+### 2026-11-05 16:46:58 UTC — Maximum-drift evidence triage
+
+Trimmed stale NEXT-06 PR22/PR23 packages and reconciled the task-wide review to
+the accepted PR24/DATA-READY status. Audited the other drift-4 preservation cases:
+the two copied Listings/Search contracts differ from current source and remain
+versioned snapshots; the pre-main Conversations SQL archive is explicitly used
+for migration provenance. Retained these immutable artifacts and corrected their
+inventory scores/reasons instead of deleting valid history.
+
+### 2026-11-05 16:48:40 UTC — NEXT-06 drift cleanup: completed transfer drafts
+
+Trimmed eight superseded NEXT-06 drafts/gate lists and the cloud handoff to short
+archive pointers. Kept their paths so historical work-log/command/evidence links
+resolve; exact original text remains in Git. Updated data/docs index links to the
+accepted task-wide review and removed the completed transfer-cleanup item from
+`pending_tasks.md`. Actual source snapshots and approved action-plan records remain
+unchanged. Inventory sizes/dispositions refreshed; whitespace check passed.
+
+### 2026-11-05 16:52:01 UTC — NEXT-06 drift cleanup: obsolete plans removed
+
+Deleted ten superseded PR/review and one-off NEXT-06 draft/gate documents from
+the working tree. Updated command and data indexes and removed their inventory
+rows; historical work-log wording now points to Git history rather than missing
+files. Kept approved source snapshots and executed action-plan records. The
+accepted task-wide review, frozen manifest and actual receipts remain the current
+evidence.
+
+### 2026-11-05 16:54:36 UTC — NEXT-06 drift cleanup: redundant handoff removed
+
+Deleted the seven-line cloud-handoff pointer after consolidating its only useful
+links into the accepted task-wide review and data/transfer guides. Kept the nine
+dated plans/decisions tied to actual or user-reported step outcomes and reduced
+their drift scores after confirming their evidence links; these are historical
+records, not reusable approvals. Updated the docs index and inventory.
+
+### 2026-11-05 16:57:35 UTC — NEXT-06 cleanup: stale links and status corrected
+
+Removed the redundant cloud-handoff page and redirected the data/index references
+to the accepted task-wide review. Corrected the data guide's old “load pending”
+and “DATA-READY pending” statements, and repaired two stale command-registry
+anchors. Updated inventory sizes and drift assessments.

@@ -61,11 +61,8 @@ Validator still rejects changed source/schema/config/photos and unknown ancestry
 A full clone with the recorded base commit is needed; a source ZIP without Git
 history is not the supported validation environment.
 
-Continue with the [cloud handoff](../../docs/evaluation/domain/next-06/cloud-handoff.md)
-and [review package](../../docs/evaluation/domain/next-06/pre-cloud-review.md).
-Only account335523638354 is permitted. This bundle does not authorize deployment
-or accept real Identity/S3/IAM/worker/source-contract/final-freeze gates. Both
-matched measurements must finish before2026-12-01T00:00Z. Source changes require
-review/revalidation; don't relabel queries to improve scores.
+The [accepted task-wide review](../../docs/evaluation/domain/next-06/task-wide-review.md)
+records the final release and its limits. This archive is retained for
+reproducibility; it is not a current deployment procedure or approval.
 
-The archive remains byte-for-byte unchanged after final label/freeze preparation. Current Git now additionally supplies canonical `data/evaluation/query-labels.json`, `docs/evaluation/domain/next-06/frozen-dataset.json` and the release/label verification tools; use them together with this archive. Source/model/index/label bindings and exact remaining acceptance gates are in the [task-wide review](../../docs/evaluation/domain/next-06/task-wide-review.md). No new image download/upload or cloud reset is required merely to verify the retained release.
+The archive remains byte-for-byte unchanged after final label/freeze preparation. Current Git now additionally supplies canonical `data/evaluation/query-labels.json`, `docs/evaluation/domain/next-06/frozen-dataset.json` and the release/label verification tools; use them together with this archive. Source/model/index/label bindings and recorded acceptance limits are in the [task-wide review](../../docs/evaluation/domain/next-06/task-wide-review.md). No new image download/upload or cloud reset is required merely to verify the retained release.

@@ -33,7 +33,6 @@ The following entries were removed from the pending set and their canonical stat
 | CLOSE-00 — final regression, NFR/cost/resource closeout and delivery package | Project closeout | Aditya (A) coordinator; all owners | `docs/status/work-log.md`; `docs/tasks/final-closeout-task-list.md`; work log marked complete at 2026-11-05 15:26:56 UTC |
 | ORIGIN-RETIREMENT-BOUNDARY — affected-owner review, cleanup/race checks and exact persistent-target reconciliation | Cross-domain database | Shared A/B/C/D; Suraj (B), Rahul (D) may author | `docs/status/work-log.md`; `docs/decisions/origin-retirement.md`; `docs/architecture/wanted-request-retirement.md`; work log marked complete at 2026-11-05 15:26:56 UTC |
 | Hybrid search runtime activation and final lifecycle/UI acceptance (SE-01 amendment) | Search/hybrid | Mohit (C); Suraj (B) Listings owner | `contracts/search.md`; `contracts/search-mode-proposal.md`; `docs/decisions/hybrid-listing-search.md`; `docs/status/work-log.md`; work log marked complete at 2026-11-05 15:26:56 UTC |
-| NEXT-06 transfer-plan pending gates — reconcile/archive after accepted DATA-READY closeout | Search/data documentation | Mohit (C) | `docs/evaluation/domain/next-06/cloud-handoff.md`; `docs/evaluation/domain/next-06/pre-cloud-review.md`; `docs/evaluation/domain/next-06/transfer/remaining-integration-gates.md`; `docs/evaluation/domain/next-06/task-wide-review.md`; `docs/status/work-log.md`; work log marked complete at 2026-11-05 15:26:56 UTC |
 
 ## Deliberately unchanged
 
