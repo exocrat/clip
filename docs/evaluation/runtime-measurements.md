@@ -61,3 +61,53 @@ order, then bind each entry to canonical per-run plans and the applicable
 observers. It is an order/preparation helper, not an unattended cloud campaign
 executor. Later overnight execution still needs its bounded action package and
 robust resumption/stop handling; do not treat this helper as that approval.
+
+## Integration of reusable measurement tools
+
+The runtime integration includes the reusable evaluation tools and their tests.
+`campaign_runner.py` journals each run and serializes execution; measured failures
+remain results and unsafe conditions stop the queue. `keep_awake.py` owns a
+temporary sleep-prevention request without editing the machine's power plan.
+`observer_journal.py` preserves incremental recovery/restore observations, and
+`lambda_billing.py` captures numeric billed usage with hashed invocation IDs.
+These tools neither approve a cloud action nor establish an NFR outcome.
+
+Fresh-runtime preparation matches healthy ALB instance/host-port targets to the
+new API tasks. Preflight can wait for bounded transient DNS/provider errors or a
+scheduled database backup, while requiring the same strict target checks before
+traffic. Measured HTTP requests have no retries. The concurrency guard records
+provider failures separately from actual concurrency-setting drift.
+
+NFR-03 optionally adds version-2 sale-listing creation to the existing smooth
+operation schedule. Fixture inputs bind six confirmed photo uploads and future
+availability: one warm-up and five measured creations replace browse operations
+without changing the total rate of 50 requests per second. Unique operation IDs support timeout
+reconciliation. This scheduled-listing subcase does not establish immediate
+publication under concurrent writes; photos are prepared outside timed traffic.
+Legacy version-1 profiles remain supported.
+
+The chat observer validates its target/session receipt, holds the selected active
+browser mode throughout capture and passes an explicit background run ID. The
+background entry point enforces its scheduled request boundary. Recovery counts
+only healthy replacement tasks actually registered at the API target group, and
+uses an absolute deadline beginning before the task-stop API call. Restore
+validation rejects unsafe paths, handles the SDK's actual missing-instance error,
+preserves a pre-action journal and records only sanitized error codes.
+
+Terraform exposes the reviewed 30/300-second drain settings and permits retaining
+idle Lambda resources while selected-read routing is disabled. Isolated restore
+smoke removes the source pool endpoint and replaces all database connections.
+The evaluation reset marker is excluded from unrelated Terraform updates; all
+functional environment settings remain managed.
+
+Formal comparison and NFR execution records are being retained separately until
+the evaluation is complete. This integration includes the application, build
+changes, optimization/pilot history and reusable tooling, without publishing
+those unfinished execution reports. No deployment or load starts on merge.
+
+Local integration validation: Python 2,576 passed/180 skipped (owned native pool
+tests enabled), data 331 passed, web 504 passed/3 skipped, Conversations 184 passed,
+36 Terraform mocks, 16 strictly typed tooling modules, contracts/boundaries, 35 local
+database safety cases, clean/repeated migrations and Gitleaks passed. The final Node entry suite passed all 63 tests after a test was made
+independent of private campaign fixtures. An ambient native-test flag was removed before continuing the data
+checks; no runtime safeguard was weakened. Hosted CI awaits PR creation.

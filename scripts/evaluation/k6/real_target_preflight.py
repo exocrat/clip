@@ -18,7 +18,9 @@ from pathlib import Path
 import re
 import socket
 import ssl
-from typing import Any, cast
+import sys
+import time
+from typing import Any, cast, Callable
 
 from scripts.evaluation.k6.pgbouncer_preflight import validate_pool, verify_pool
 from scripts.evaluation.k6.lambda_concurrency import (
@@ -536,7 +538,9 @@ def verify_lambda_startup(function: dict[str, Any]) -> None:
         raise ValueError("lambda_startup_configuration_mismatch")
 
 
-def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[str, Any]:
+def _inspect_target_once(
+    plan: dict[str, Any], session_factory: Any = None
+) -> dict[str, Any]:
     """Read actual AWS topology and an unauthenticated HTTPS liveness endpoint."""
     validate_plan(plan)
     if session_factory is None:
@@ -673,14 +677,14 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
     rds = rds_client.describe_db_instances(
         DBInstanceIdentifier=resources["database_instance_id"]
     )["DBInstances"]
-    if (
-        len(rds) != 1
-        or rds[0].get("DBInstanceStatus") != "available"
-        or rds[0].get("PubliclyAccessible") is not False
-    ):
+    if len(rds) != 1 or rds[0].get("PubliclyAccessible") is not False:
         raise ValueError("database_state_mismatch")
     if rds[0].get("DBInstanceArn", "").split(":")[4] != plan["account_id"]:
         raise ValueError("database_account_mismatch")
+    if rds[0].get("DBInstanceStatus") == "backing-up":
+        raise ValueError("database_backup_in_progress")
+    if rds[0].get("DBInstanceStatus") != "available":
+        raise ValueError("database_state_mismatch")
     if plan["format_version"] == 3:
         verify_pool(session, resources["database_proxy"], resources["ecs_cluster_arn"])
     _verify_database_proxy(
@@ -764,6 +768,75 @@ def inspect_target(plan: dict[str, Any], session_factory: Any = None) -> dict[st
             "private_raw_evidence_capture",
         ],
     }
+
+
+def inspect_target(
+    plan: dict[str, Any],
+    session_factory: Any = None,
+    *,
+    monotonic: Callable[[], float] = time.monotonic,
+    sleep: Callable[[float], None] = time.sleep,
+    observe: Callable[[dict[str, Any]], None] | None = None,
+) -> dict[str, Any]:
+    """Wait for bounded preparation transients without relaxing target checks.
+
+    DNS caches can briefly disagree and RDS can perform its scheduled backup.
+    Re-run the entire strict read-only inspection, requiring the exact address
+    sets and available private database before proceeding. Confirmed target,
+    permission or configuration drift fails immediately. This waiting happens
+    before measurement and never retries a measured application request.
+    """
+    from scripts.evaluation.k6.lambda_concurrency import failure_code
+
+    limits = {
+        "origin_dns_load_balancer_mismatch": 180.0,
+        "target_dns_resolution_failed": 90.0,
+        "database_backup_in_progress": 900.0,
+        "ReadTimeoutError": 90.0,
+        "ConnectTimeoutError": 90.0,
+        "EndpointConnectionError": 90.0,
+        "ConnectionClosedError": 90.0,
+        "TimeoutError": 90.0,
+        "ConnectionError": 90.0,
+        "ThrottlingException": 90.0,
+        "TooManyRequestsException": 90.0,
+        "ServiceException": 90.0,
+        "ServiceUnavailable": 90.0,
+    }
+    started = monotonic()
+    first_seen: dict[str, float] = {}
+    attempts = 0
+    while True:
+        try:
+            return _inspect_target_once(plan, session_factory)
+        except Exception as error:
+            code = str(error) if isinstance(error, ValueError) else failure_code(error)
+            now = monotonic()
+            first_seen.setdefault(code, now)
+            if (
+                code not in limits
+                or now - first_seen[code] >= limits[code]
+                or now - started >= 900
+            ):
+                raise
+            row = {
+                "event": "preflight_wait",
+                "reason": code,
+                "elapsed_seconds": now - started,
+                "attempt": attempts + 1,
+            }
+            if observe is not None:
+                observe(row)
+            else:
+                sys.stderr.write(json.dumps(row, sort_keys=True) + "\n")
+            sleep(
+                min(
+                    15.0,
+                    2.0 ** min(attempts, 4),
+                    limits[code] - (now - first_seen[code]),
+                )
+            )
+            attempts += 1
 
 
 def check_session_identity(

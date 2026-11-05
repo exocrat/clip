@@ -19,11 +19,14 @@ if (!profile || Object.keys(profile).sort().join(',') !== 'capacity,cases,sequen
 const sequenceStarts = validateSequenceStarts(profile.sequence_starts);
 validateComparisonCases(profile.cases, sequenceStarts.burst);
 const paths = profile.cases.map(item => comparisonPath(item.request));
+const runId = __ENV.CLIP_NFR05_BG_RUN_ID;
+if (typeof runId !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._-]{2,63}$/.test(runId)) throw Error('nfr05_background_run_id_required');
 const cookie = __ENV.CLIP_NFR05_BG_SESSION_COOKIE;
 if (typeof cookie !== 'string' || !/^__Host-clip_session=[A-Za-z0-9._~+/=-]{1,2048}$/.test(cookie)) throw Error('nfr05_background_session_required');
 
 const issued = new Counter('clip_nfr05_bg_issued');
 const outcomes = new Counter('clip_nfr05_bg_outcomes');
+const boundarySkipped = new Counter('clip_nfr05_bg_boundary_skipped');
 export const options = {
   scenarios: {
     nfr05_background: {
@@ -44,8 +47,10 @@ export const options = {
 /** Send one authenticated, non-retried Hybrid search at each scheduled arrival. */
 export default function () {
   const phase = execution.scenario.name;
+  // k6 may schedule one boundary iteration; it must not add an unplanned read.
+  if (execution.scenario.iterationInTest >= 3000) { boundarySkipped.add(1); return; }
   const item = caseForIteration(profile.cases, sequenceStarts.burst, execution.scenario.iterationInTest);
-  const tags = { run_id: profile.run_id, phase, case_id: item.case_id };
+  const tags = { run_id: runId, phase, case_id: item.case_id };
   issued.add(1, tags);
   let outcome = 'transport_error';
   try {

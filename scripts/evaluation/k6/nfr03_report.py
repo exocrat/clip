@@ -94,7 +94,13 @@ def summarize(
         "nfr_warmup": 50 * profile["warmup_seconds"],
         "nfr_measured": 50 * profile["measured_seconds"],
     }
-    expected_writes = sum(expected.values()) // 100
+    listing_revision = profile.get("version", 1) == 2
+    routes = ROUTES | ({"listing_create"} if listing_revision else set())
+    listing_counts = {
+        phase: (n + 2999) // 3000 if listing_revision else 0
+        for phase, n in expected.items()
+    }
+    expected_writes = sum(expected.values()) // 100 + sum(listing_counts.values())
     # Keep the metric accumulator flexible at the ingestion boundary: points
     # carry different fields, while the report validates their relationships
     # before serializing any result.
@@ -150,7 +156,10 @@ def summarize(
                 raise ValueError("preflight_request_count_must_be_integer")
             preflight_http_requests += int(count)
             continue
-        if metric == "http_reqs" and tags.get("route") == "wanted_reconcile":
+        if metric == "http_reqs" and tags.get("route") in {
+            "wanted_reconcile",
+            "listing_reconcile",
+        }:
             if (
                 tags.get("nfr_id") != "nfr-03"
                 or tags.get("run_id") != profile.get("run_id")
@@ -202,12 +211,12 @@ def summarize(
         ):
             raise ValueError("run_identity_mismatch")
         route = tags.get("route")
-        if metric not in {"dropped_iterations"} and route not in ROUTES:
+        if metric not in {"dropped_iterations"} and route not in routes:
             raise ValueError("invalid_route")
         val = _value(point)
         row = data[phase]
         route_data: dict[str, Any] | None = (
-            row["routes"][route] if route in ROUTES else None
+            row["routes"][route] if route in routes else None
         )
         if (
             metric
@@ -226,7 +235,7 @@ def summarize(
             row["issued"] += int(val)
             assert route_data is not None
             route_data["issued"] += int(val)
-            if route == "wanted_create":
+            if route in {"wanted_create", "listing_create"}:
                 operation_id = tags.get("operation_id")
                 if (
                     not isinstance(operation_id, str)
@@ -250,7 +259,7 @@ def summarize(
             row["outcomes"][outcome] += int(val)
             assert route_data is not None
             route_data["outcomes"][outcome] += int(val)
-            if route == "wanted_create":
+            if route in {"wanted_create", "listing_create"}:
                 operation_id = tags.get("operation_id")
                 if (
                     operation_id not in operation_ids
@@ -299,7 +308,13 @@ def summarize(
         delivery_complete &= delivered
         route_results = {}
         for route, route_row in sorted(row["routes"].items()):
-            n = expected[phase] * ROUTE_FRACTIONS[route] // 100
+            n = (
+                listing_counts[phase]
+                if route == "listing_create"
+                else expected[phase] * ROUTE_FRACTIONS[route] // 100
+            )
+            if route == "browse":
+                n -= listing_counts[phase]
             route_outcomes = dict(route_row["outcomes"])
             route_accounting = (
                 route_row["issued"]
@@ -322,7 +337,7 @@ def summarize(
             accounting_complete &= route_accounting
         # A complete total can still describe the wrong route mix. Require all
         # seven operation classes to occur at their exact scheduled counts.
-        accounting_complete &= set(row["routes"]) == ROUTES
+        accounting_complete &= set(row["routes"]) == routes
         phases[phase] = {
             "scheduled": expected[phase],
             "issued": issued,
@@ -359,6 +374,10 @@ def summarize(
         if operation_outcomes.get(operation_id) != "correct"
     )
     return {
+        "profile_version": profile.get("version", 1),
+        "listing_create_schedule": (
+            "one_per_3000_operations_replacing_browse" if listing_revision else "absent"
+        ),
         "local_short_diagnostic": local_short,
         "preview_only": True,
         "nfr_id": "nfr-03",
@@ -386,8 +405,14 @@ def summarize(
         "write_reconciliation": {
             "operation_ids_issued": len(operation_ids),
             "expected_total_including_warmup": expected_writes,
+            "expected_listing_creations_including_warmup": sum(listing_counts.values()),
             "operation_ids_with_outcome": len(operation_outcomes),
             "created_request_ids_by_operation_id": created_rows,
+            "row_id_semantics": (
+                "Wanted request or sale listing ID; distinguish with raw route/write_kind tags"
+                if listing_revision
+                else "Wanted request ID"
+            ),
             "reconciled_request_ids_by_operation_id": reconciled_rows,
             "missing_outcome_operation_ids": missing_write_outcomes,
             "unissued_outcome_operation_ids": extra_write_outcomes,

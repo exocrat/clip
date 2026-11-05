@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter, defaultdict
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -346,6 +347,26 @@ def summarize_file(
     return summarize_points(points, profile, condition)
 
 
+def bound_schedule(plan: dict[str, Any], run_dir: Path) -> Path:
+    """Use the immutable schedule actually staged for a formal comparison.
+
+    Formal case profiles contain cases/capacity, while their separate schedule
+    defines offered counts. Pilot profiles include both. Keep the original case
+    profile for execution-hash checks and verify the staged schedule separately.
+    """
+    stage = run_dir / "stage-root" / str(plan["run_id"])
+    record = json.loads((stage / "staged-files.json").read_text())
+    schedule = stage / "schedule.json"
+    if (
+        record.get("run_id") != plan["run_id"]
+        or record.get("condition") != plan["condition"]
+        or hashlib.sha256(schedule.read_bytes()).hexdigest()
+        != record.get("files", {}).get("schedule.json")
+    ):
+        raise ValueError("staged_schedule_binding_mismatch")
+    return schedule
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("raw", type=Path, help="unchanged k6 --out json=... file")
@@ -363,8 +384,16 @@ def main() -> None:
         if bool(args.execution_receipt) != bool(args.run_plan):
             raise ValueError("both execution receipt and run plan are required")
         profile_path = args.profile or PROFILE
-        report = summarize_file(args.raw, profile_path, args.condition)
+        run_plan = json.loads(args.run_plan.read_text()) if args.run_plan else None
+        profile_input = json.loads(profile_path.read_text())
+        schedule_path = profile_path
+        if "conditions" not in profile_input:
+            if run_plan is None or run_plan.get("workload_kind") != "comparison":
+                raise ValueError("formal_comparison_run_plan_required")
+            schedule_path = bound_schedule(run_plan, args.raw.parent)
+        report = summarize_file(args.raw, schedule_path, args.condition)
         if args.execution_receipt:
+            assert isinstance(run_plan, dict)
             try:
                 from scripts.evaluation.k6.real_run_evidence import verify_execution
 
@@ -380,8 +409,8 @@ def main() -> None:
                     args.raw,
                     profile_path,
                     workload_kind=workload_kind,
-                    configuration=profile["configuration"],
-                    run_id=profile["run_id"],
+                    configuration=run_plan["configuration"],
+                    run_id=run_plan["run_id"],
                 )
             except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:
                 binding = {

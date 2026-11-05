@@ -1,3 +1,4 @@
+import { SUMMARY_FIELDS } from './core.js';
 /** Public Wanted-page correctness while the same workload creates newer rows.
  * Fixture existence is checked separately before measurement. Correct pagination
  * can displace it; every returned row must still satisfy shape, uniqueness/order.
@@ -20,4 +21,18 @@ export function validWantedPage(body) {
   return body.items.every((item, index) => index === 0 ||
     body.items[index - 1].created_at > item.created_at ||
     (body.items[index - 1].created_at === item.created_at && body.items[index - 1].request_id > item.request_id));
+}
+
+
+/** Verify the actual scheduled-listing create result, including attached image.
+ * Its future availability is an explicit fixture choice, never a weakened
+ * browse oracle. The owner view is reconciled separately after measurement.
+ */
+export function validListingCreate(body, command) {
+  const keys = [...SUMMARY_FIELDS, 'proof_available'];
+  if (!body || Object.keys(body).length !== keys.length || !keys.every(k => Object.hasOwn(body, k)) || !uuid.test(body.listing_id)) return false;
+  for (const key of ['title','description','category_code','condition_code','asking_price_paise','original_price_paise','negotiable','pickup_area','available_until','proof_available']) if (body[key] !== command[key]) return false;
+  if (Date.parse(body.available_from) !== Date.parse(command.available_from) || body.availability !== 'available' || typeof body.sensitive_purchase !== 'boolean') return false;
+  if (![body.category_label,body.condition_label].every(v => typeof v === 'string' && v.length > 0)) return false;
+  return Array.isArray(body.image_ids) && body.image_ids.length === 1 && body.image_ids.every(id => uuid.test(id));
 }

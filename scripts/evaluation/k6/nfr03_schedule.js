@@ -42,3 +42,18 @@ export function nfr03CaseIndex(kind, iteration) {
   const ordinal = Math.floor(iteration / 100) * nfr03Weights[kind] + ordinalWithinCycle[iteration % 100];
   return ordinal % casesPerRoute[kind];
 }
+
+
+/** The listing-create revision replaces only the first browse of each minute.
+ * At50rps this is one of3000operations:1warm-up and5measured creates.
+ * The original100-step mix remains available unchanged for historical reports.
+ */
+export function nfr03Kind(iteration, includeListingCreation = false) {
+  if (!Number.isSafeInteger(iteration) || iteration < 0) throw Error('invalid_route_iteration');
+  const kind = orderedRoutes[iteration % orderedRoutes.length];
+  if (includeListingCreation && iteration % 3000 === 0) {
+    if (kind !== 'browse') throw Error('listing_write_must_replace_browse');
+    return 'listing_create';
+  }
+  return kind;
+}

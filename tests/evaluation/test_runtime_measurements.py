@@ -182,7 +182,7 @@ def test_campaign_is_coverage_first_and_keeps_all_performance_repetitions():
             assert all(row["measured_seconds"] == 300 for row in selected)
     comparison = [row for row in rows if row["kind"] == "comparison"]
     assert len(comparison) == 18
-    assert [row["configuration"] for row in comparison[6:8]] == ["B", "A"]
+    assert [row["configuration"] for row in comparison[6:12]] == ["B"] * 3 + ["A"] * 3
     assert campaign["hold_after_lambda_pilots"] and not campaign["execution_authorized"]
 
 
@@ -244,7 +244,10 @@ def test_reset_requires_exact_and_unexpired_approval():
 
 
 @pytest.mark.parametrize("configuration", ["A", "B"])
-def test_reset_replaces_only_api_tasks_and_preserves_lambda_settings(configuration):
+@pytest.mark.parametrize("network_mode", ["awsvpc", "bridge"])
+def test_reset_replaces_only_api_tasks_and_preserves_lambda_settings(
+    configuration, network_mode
+):
     """Exercise real reset orchestration against local AWS doubles, never AWS."""
     now = datetime.now(UTC)
     resources = {
@@ -275,16 +278,33 @@ def test_reset_replaces_only_api_tasks_and_preserves_lambda_settings(configurati
                     "taskDefinitionArn": "api:14",
                     "createdAt": now,
                     "startedAt": now,
-                    "attachments": [
+                    "containerInstanceArn": f"container-instance-{i + 1}",
+                    "containers": [
                         {
-                            "details": [
+                            "name": "api",
+                            "networkBindings": [
                                 {
-                                    "name": "privateIPv4Address",
-                                    "value": f"10.0.0.{i + 1}",
+                                    "containerPort": 8000,
+                                    "hostPort": 18000,
+                                    "protocol": "tcp",
                                 }
-                            ]
+                            ],
                         }
                     ],
+                    "attachments": (
+                        [
+                            {
+                                "details": [
+                                    {
+                                        "name": "privateIPv4Address",
+                                        "value": f"10.0.0.{i + 1}",
+                                    }
+                                ]
+                            }
+                        ]
+                        if network_mode == "awsvpc"
+                        else []
+                    ),
                 }
                 for i, name in enumerate(kwargs["tasks"])
             ]
@@ -306,11 +326,28 @@ def test_reset_replaces_only_api_tasks_and_preserves_lambda_settings(configurati
             ]
         },
         describe_tasks=describe_tasks,
+        describe_container_instances=lambda **_: {
+            "containerInstances": [
+                {
+                    "containerInstanceArn": f"container-instance-{i}",
+                    "ec2InstanceId": f"i-host-{i}",
+                }
+                for i in (1, 2)
+            ]
+        },
     )
     elb = SimpleNamespace(
         describe_target_health=lambda **_: {
             "TargetHealthDescriptions": [
-                {"Target": {"Id": f"10.0.0.{i}"}, "TargetHealth": {"State": "healthy"}}
+                {
+                    "Target": {
+                        "Id": (
+                            f"10.0.0.{i}" if network_mode == "awsvpc" else f"i-host-{i}"
+                        ),
+                        "Port": 18000,
+                    },
+                    "TargetHealth": {"State": "healthy"},
+                }
                 for i in (1, 2)
             ]
         }
@@ -352,8 +389,63 @@ def test_reset_replaces_only_api_tasks_and_preserves_lambda_settings(configurati
     assert result["state"] == "prepared_requires_log_confirmation"
     assert result["cold_observations_confirmed"] is False
     assert len(state["calls"]) == 1 and state["calls"][0]["service"] == "service/api"
+    resumed = resetter.reset(
+        plan,
+        {"resources": resources},
+        session,
+        monotonic=lambda: 1,
+        sleep=lambda _: None,
+        resume_receipt=result,
+    )
+    assert resumed["state"] == "prepared_requires_log_confirmation"
+    assert len(state["calls"]) == 1  # Resumption observes; it never restarts again.
     assert state["env"]["ORIGINAL_SETTING"] == "unchanged"
     if configuration == "B":
         assert state["env"][resetter.MARKER] == "fixture-run"
     else:
         assert resetter.MARKER not in state["env"]
+
+
+@pytest.mark.parametrize("mismatch", ["host", "port", "binding", "lookup"])
+def test_bridge_reset_rejects_unrelated_healthy_targets(mismatch):
+    """Healthy hosts alone cannot prove the replacement API tasks are serving."""
+    tasks = [
+        {
+            "containerInstanceArn": f"container-{i}",
+            "containers": [
+                {
+                    "name": "api",
+                    "networkBindings": [
+                        {"containerPort": 8000, "hostPort": 18000, "protocol": "tcp"}
+                    ],
+                }
+            ],
+        }
+        for i in (1, 2)
+    ]
+    targets = [
+        {
+            "Target": {"Id": f"i-host-{i}", "Port": 18000},
+            "TargetHealth": {"State": "healthy"},
+        }
+        for i in (1, 2)
+    ]
+    result = {
+        "containerInstances": [
+            {"containerInstanceArn": f"container-{i}", "ec2InstanceId": f"i-host-{i}"}
+            for i in (1, 2)
+        ]
+    }
+    ecs = SimpleNamespace(describe_container_instances=lambda **_: result)
+    assert resetter._targets_match(ecs, {"ecs_cluster_arn": "cluster"}, tasks, targets)
+    if mismatch == "host":
+        targets[0]["Target"]["Id"] = "i-unrelated"
+    elif mismatch == "port":
+        targets[0]["Target"]["Port"] = 19000
+    elif mismatch == "binding":
+        tasks[0]["containers"][0]["networkBindings"] = []
+    else:
+        result["failures"] = [{"reason": "MISSING"}]
+    assert not resetter._targets_match(
+        ecs, {"ecs_cluster_arn": "cluster"}, tasks, targets
+    )

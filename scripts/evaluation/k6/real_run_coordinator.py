@@ -894,7 +894,7 @@ def execute(
                     != plan["run_id"]
                 ):
                     raise ValueError("fresh_runtime_lambda_changed")
-        from scripts.evaluation.k6.lambda_concurrency import run_guard
+        from scripts.evaluation.k6.lambda_concurrency import run_guard, failure_code
 
         concurrency_guard = run_guard(target)
         if concurrency_guard:
@@ -929,6 +929,7 @@ def execute(
         timed_out = False
         oversized = False
         concurrency_guard_failed = False
+        concurrency_guard_failure = None
         next_concurrency_check = time.monotonic() + 5
         while process.poll() is None:
             if time.monotonic() - begin > plan["maximum_duration_seconds"]:
@@ -940,8 +941,9 @@ def execute(
             if concurrency_guard and time.monotonic() >= next_concurrency_check:
                 try:
                     concurrency_guard()
-                except Exception:
+                except Exception as error:
                     concurrency_guard_failed = True
+                    concurrency_guard_failure = failure_code(error)
                 next_concurrency_check = time.monotonic() + 5
             if timed_out or oversized or concurrency_guard_failed:
                 os.killpg(process.pid, signal.SIGTERM)
@@ -957,8 +959,10 @@ def execute(
         if concurrency_guard:
             try:
                 concurrency_guard()
-            except Exception:
+            except Exception as error:
                 concurrency_guard_failed = True
+                if concurrency_guard_failure is None:
+                    concurrency_guard_failure = failure_code(error)
         child_env.clear()
         del session_value
         raw_hash, raw_size, output_exceeded = _hash_output(
@@ -989,6 +993,10 @@ def execute(
             "timed_out": timed_out,
             "raw_limit_exceeded": oversized,
             "concurrency_guard_failed": concurrency_guard_failed,
+            "concurrency_guard_failure_code": concurrency_guard_failure,
+            "concurrency_guard_observations": (
+                concurrency_guard.diagnostics() if concurrency_guard else None
+            ),
             "execution_state": (
                 "completed"
                 if return_code == 0

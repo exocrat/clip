@@ -93,6 +93,62 @@ def _running(ecs: Any, resources: dict[str, Any]) -> list[str]:
     return sorted(result["taskArns"])
 
 
+def _targets_match(
+    ecs: Any,
+    resources: dict[str, Any],
+    tasks: list[dict[str, Any]],
+    healthy: list[dict[str, Any]],
+) -> bool:
+    """Bind healthy targets to new tasks for awsvpc or EC2 bridge networking.
+
+    The deployed bridge service registers instance IDs and host ports, rather
+    than task IPs. Resolve its exact container instances and API port bindings;
+    two healthy but unrelated targets must never establish reset readiness.
+    """
+    task_ips = {
+        item["value"]
+        for task in tasks
+        for attachment in task.get("attachments", [])
+        for item in attachment.get("details", [])
+        if item.get("name") == "privateIPv4Address"
+    }
+    targets = [
+        row["Target"] for row in healthy if row["TargetHealth"]["State"] == "healthy"
+    ]
+    if task_ips:
+        return len(task_ips) == 2 and task_ips == {row["Id"] for row in targets}
+    instance_arns = {task.get("containerInstanceArn") for task in tasks}
+    if len(instance_arns) != 2 or any(
+        not isinstance(arn, str) for arn in instance_arns
+    ):
+        return False
+    result = ecs.describe_container_instances(
+        cluster=resources["ecs_cluster_arn"],
+        containerInstances=sorted(cast(set[str], instance_arns)),
+    )
+    if result.get("failures"):
+        return False
+    instances = {
+        row["containerInstanceArn"]: row["ec2InstanceId"]
+        for row in result["containerInstances"]
+    }
+    if set(instances) != instance_arns:
+        return False
+    bindings = {
+        (instances[task["containerInstanceArn"]], binding["hostPort"])
+        for task in tasks
+        for container in task.get("containers", [])
+        if container.get("name") == "api"
+        for binding in container.get("networkBindings", [])
+        if binding.get("containerPort") == 8000
+        and binding.get("protocol") == "tcp"
+        and type(binding.get("hostPort")) is int
+    }
+    return len(bindings) == 2 and bindings == {
+        (row["Id"], row.get("Port")) for row in targets
+    }
+
+
 def reset(
     plan: dict[str, Any],
     target: dict[str, Any],
@@ -101,6 +157,7 @@ def reset(
     monotonic: Callable[[], float] = time.monotonic,
     sleep: Callable[[float], None] = time.sleep,
     progress: Callable[[dict[str, Any]], None] = lambda _: None,
+    resume_receipt: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Restart the exact API service, wait for new healthy tasks, then recycle B.
 
@@ -111,25 +168,51 @@ def reset(
     resources = target["resources"]
     ecs, elb = session.client("ecs"), session.client("elbv2")
     begin = monotonic()
+    if resume_receipt is not None:
+        if (
+            resume_receipt.get("run_id") != plan["run_id"]
+            or resume_receipt.get("configuration") != plan["configuration"]
+            or resume_receipt.get("target_plan_sha256") != plan["target_plan_sha256"]
+            or resume_receipt.get("state")
+            not in {
+                "restarting_ecs",
+                "recycling_lambda",
+                "prepared_requires_log_confirmation",
+            }
+            or type(resume_receipt.get("started_monotonic_seconds")) not in (int, float)
+            or not 0 <= resume_receipt["started_monotonic_seconds"] <= begin
+        ):
+            raise ValueError("reset_resume_binding_or_clock_invalid")
+        begin = resume_receipt["started_monotonic_seconds"]
     deadline = begin + plan["maximum_transition_seconds"]
-    old = _running(ecs, resources)
+    old = (
+        resume_receipt["old_ecs_tasks"]
+        if resume_receipt is not None
+        else _running(ecs, resources)
+    )
     if len(old) != 2:
         raise ValueError("two_initial_api_tasks_required")
-    receipt: dict[str, Any] = {
-        "run_id": plan["run_id"],
-        "configuration": plan["configuration"],
-        "target_plan_sha256": plan["target_plan_sha256"],
-        "started_at_utc": datetime.now(UTC).isoformat(),
-        "old_ecs_tasks": old,
-        "state": "restarting_ecs",
-        "cold_observations_confirmed": False,
-    }
-    progress(receipt)
-    ecs.update_service(
-        cluster=resources["ecs_cluster_arn"],
-        service=resources["ecs_service_arn"],
-        forceNewDeployment=True,
+    receipt: dict[str, Any] = (
+        dict(resume_receipt)
+        if resume_receipt is not None
+        else {
+            "run_id": plan["run_id"],
+            "configuration": plan["configuration"],
+            "target_plan_sha256": plan["target_plan_sha256"],
+            "started_at_utc": datetime.now(UTC).isoformat(),
+            "old_ecs_tasks": old,
+            "state": "restarting_ecs",
+            "cold_observations_confirmed": False,
+            "started_monotonic_seconds": begin,
+        }
     )
+    progress(receipt)
+    if resume_receipt is None:
+        ecs.update_service(
+            cluster=resources["ecs_cluster_arn"],
+            service=resources["ecs_service_arn"],
+            forceNewDeployment=True,
+        )
     while monotonic() < deadline:
         service = ecs.describe_services(
             cluster=resources["ecs_cluster_arn"],
@@ -166,19 +249,7 @@ def reset(
                     for task in tasks
                 ):
                     raise ValueError("fresh_task_revision_mismatch")
-                task_ips = {
-                    item["value"]
-                    for task in tasks
-                    for attachment in task.get("attachments", [])
-                    for item in attachment.get("details", [])
-                    if item.get("name") == "privateIPv4Address"
-                }
-                healthy_ips = {
-                    row["Target"]["Id"]
-                    for row in healthy
-                    if row["TargetHealth"]["State"] == "healthy"
-                }
-                if len(task_ips) != 2 or task_ips != healthy_ips:
+                if not _targets_match(ecs, resources, tasks, healthy):
                     sleep(plan["poll_seconds"])
                     continue
                 receipt["new_ecs_tasks"] = [
@@ -198,32 +269,49 @@ def reset(
         lam = session.client("lambda")
         function = resources["lambda_function_arn"]
         original = lam.get_function_configuration(FunctionName=function)
-        if original["LastUpdateStatus"] != "Successful":
+        if original["LastUpdateStatus"] != "Successful" and not (
+            resume_receipt is not None
+            and original["LastUpdateStatus"] == "InProgress"
+            and original["Environment"]["Variables"].get(MARKER) == plan["run_id"]
+        ):
             raise ValueError("lambda_configuration_not_stable")
         env = dict(original["Environment"]["Variables"])
-        if env.get(MARKER) == plan["run_id"]:
+        marker_already_applied = env.get(MARKER) == plan["run_id"]
+        if marker_already_applied and resume_receipt is None:
             raise ValueError("reset_id_already_used")
         env[MARKER] = plan["run_id"]
         receipt["state"] = "recycling_lambda"
-        receipt["lambda_original_revision"] = original["RevisionId"]
+        if not marker_already_applied:
+            receipt["lambda_original_revision"] = original["RevisionId"]
+            receipt["lambda_expected_memory"] = original["MemorySize"]
+            receipt["lambda_expected_timeout"] = original["Timeout"]
+            receipt["lambda_expected_environment_sha256"] = hashlib.sha256(
+                json.dumps(env, sort_keys=True).encode()
+            ).hexdigest()
         progress(receipt)
-        lam.update_function_configuration(
-            FunctionName=function,
-            RevisionId=original["RevisionId"],
-            Environment={"Variables": env},
-        )
+        if not marker_already_applied:
+            lam.update_function_configuration(
+                FunctionName=function,
+                RevisionId=original["RevisionId"],
+                Environment={"Variables": env},
+            )
         while monotonic() < deadline:
             updated = lam.get_function_configuration(FunctionName=function)
             if updated["LastUpdateStatus"] == "Failed":
                 raise ValueError("lambda_reset_failed")
             if (
                 updated["LastUpdateStatus"] == "Successful"
-                and updated["RevisionId"] != original["RevisionId"]
+                and updated["RevisionId"] != receipt["lambda_original_revision"]
             ):
                 if (
-                    updated["MemorySize"] != original["MemorySize"]
-                    or updated["Timeout"] != original["Timeout"]
-                    or updated["Environment"]["Variables"] != env
+                    updated["MemorySize"] != receipt["lambda_expected_memory"]
+                    or updated["Timeout"] != receipt["lambda_expected_timeout"]
+                    or hashlib.sha256(
+                        json.dumps(
+                            updated["Environment"]["Variables"], sort_keys=True
+                        ).encode()
+                    ).hexdigest()
+                    != receipt["lambda_expected_environment_sha256"]
                 ):
                     raise ValueError("lambda_settings_changed_during_reset")
                 receipt["lambda_revision"] = updated["RevisionId"]
@@ -248,6 +336,11 @@ def main() -> None:
     parser.add_argument("--approval", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--execute", action="store_true", required=True)
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="Observe an existing exact reset; never restart its API tasks twice",
+    )
     args = parser.parse_args()
     if args.output.exists() or args.output.is_symlink():
         parser.error("new_output_required")
@@ -272,12 +365,23 @@ def main() -> None:
         parser.error("aws_identity_mismatch")
     inspect_target(target)
     partial = args.output.with_suffix(args.output.suffix + ".partial")
-    if partial.exists() or partial.is_symlink():
+    if partial.is_symlink() or (partial.exists() and not args.resume):
         parser.error("partial_output_exists")
+    resume_receipt = None
+    if args.resume:
+        if not partial.exists():
+            parser.error("reset_partial_required_for_resume")
+        rows = _read_bounded(partial, 100_000).decode().splitlines()
+        resume_receipt = json.loads(rows[-1])
 
     # Append-only partial observations survive failure, without following links.
     descriptor = os.open(
-        partial, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600
+        partial,
+        os.O_WRONLY
+        | os.O_CREAT
+        | (os.O_APPEND if args.resume else os.O_EXCL)
+        | os.O_NOFOLLOW,
+        0o600,
     )
     with os.fdopen(descriptor, "w") as progress_stream:
 
@@ -286,7 +390,9 @@ def main() -> None:
             progress_stream.flush()
             os.fsync(progress_stream.fileno())
 
-        result = reset(plan, target, session, progress=persist)
+        result = reset(
+            plan, target, session, progress=persist, resume_receipt=resume_receipt
+        )
     result["plan_sha256"] = hashlib.sha256(raw).hexdigest()
     descriptor = os.open(
         args.output, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o400

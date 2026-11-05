@@ -5,7 +5,125 @@ quota stays ten and no other function competes. A pending quota increase must
 not silently change the experiment: the runner polls and stops on drift.
 """
 
-from typing import Any, cast
+import time
+from typing import Any, cast, Callable
+
+
+def failure_code(error: Exception) -> str:
+    """Return a fixed diagnostic, never exception/provider prose or credentials."""
+    validation = {
+        "lambda_reserved_concurrency_drift",
+        "lambda_unreserved_quota_drift",
+        "lambda_unreserved_competing_function",
+        "lambda_concurrency_unbounded",
+        "lambda_guard_observation_gap_exceeded",
+    }
+    if isinstance(error, ValueError) and str(error) in validation:
+        return str(error)
+    kind = type(error).__name__
+    if kind in {
+        "ReadTimeoutError",
+        "ConnectTimeoutError",
+        "EndpointConnectionError",
+        "ConnectionClosedError",
+        "TimeoutError",
+        "ConnectionError",
+    }:
+        return kind
+    response = getattr(error, "response", {})
+    code = response.get("Error", {}).get("Code") if isinstance(response, dict) else None
+    if code in {
+        "TooManyRequestsException",
+        "ThrottlingException",
+        "Throttling",
+        "ServiceException",
+        "ServiceUnavailable",
+        "InternalFailure",
+        "InternalError",
+        "RequestTimeout",
+        "RequestTimeoutException",
+        "ExpiredToken",
+        "ExpiredTokenException",
+        "AccessDenied",
+        "AccessDeniedException",
+    }:
+        return str(code)
+    return "guard_observation_failed"
+
+
+class BoundedGuard:
+    """Retry only observational API failures, retaining their coverage gaps.
+
+    Requests under measurement are never retried. Confirmed capacity drift and
+    access/configuration failures stop immediately. Four observations with short
+    backoff tolerate a temporary control-plane/network interruption; an unknown
+    state beyond twenty seconds remains a safety stop. Diagnostics are bounded.
+    """
+
+    def __init__(
+        self,
+        check: Callable[[], None],
+        *,
+        monotonic: Callable[[], float] = time.monotonic,
+        sleep: Callable[[float], None] = time.sleep,
+    ) -> None:
+        self.check, self.monotonic, self.sleep = check, monotonic, sleep
+        self.failures: list[dict[str, Any]] = []
+        self.failure_count = 0
+        self.recoveries = 0
+        self.maximum_gap_seconds = 0.0
+
+    def __call__(self) -> None:
+        started = self.monotonic()
+        transient = {
+            "ReadTimeoutError",
+            "ConnectTimeoutError",
+            "EndpointConnectionError",
+            "ConnectionClosedError",
+            "TimeoutError",
+            "ConnectionError",
+            "TooManyRequestsException",
+            "ThrottlingException",
+            "Throttling",
+            "ServiceException",
+            "ServiceUnavailable",
+            "InternalFailure",
+            "InternalError",
+            "RequestTimeout",
+            "RequestTimeoutException",
+        }
+        for attempt in range(4):
+            try:
+                self.check()
+            except Exception as error:
+                code = failure_code(error)
+                self.failure_count += 1
+                self.failures.append({"attempt": attempt + 1, "failure_code": code})
+                self.failures = self.failures[-32:]
+                gap = self.monotonic() - started
+                self.maximum_gap_seconds = max(self.maximum_gap_seconds, gap)
+                if code not in transient or attempt == 3 or gap >= 20:
+                    raise
+                self.sleep(min(2**attempt, max(0, 20 - gap)))
+            else:
+                gap = self.monotonic() - started
+                self.maximum_gap_seconds = max(self.maximum_gap_seconds, gap)
+                if gap > 20:
+                    raise ValueError("lambda_guard_observation_gap_exceeded")
+                if attempt:
+                    self.recoveries += 1
+                return
+
+    def diagnostics(self) -> dict[str, Any]:
+        """Retain evidence of recovery without treating failed observations as valid."""
+        return {
+            "failure_count": self.failure_count,
+            "recovered_checks": self.recoveries,
+            "maximum_check_elapsed_seconds": self.maximum_gap_seconds,
+            "recent_failures": list(self.failures),
+            "maximum_unknown_seconds": 20,
+            "measurement_requests_retried": False,
+        }
 
 
 def validate_binding(value: Any, configuration: str) -> None:
@@ -68,4 +186,6 @@ def run_guard(target: dict[str, Any]) -> Any:
             connect_timeout=2, read_timeout=2, retries={"total_max_attempts": 1}
         ),
     )
-    return lambda: verify(lam, target["resources"]["lambda_function_arn"], binding)
+    return BoundedGuard(
+        lambda: verify(lam, target["resources"]["lambda_function_arn"], binding)
+    )

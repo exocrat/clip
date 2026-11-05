@@ -11,12 +11,20 @@ from datetime import datetime
 from typing import Any
 
 
-def build_campaign(prefix: str) -> dict[str, Any]:
+def build_campaign(
+    prefix: str, *, nfr_repetitions: int = 3, main_first: bool = False
+) -> dict[str, Any]:
     """Cover every applicable NFR before extra repetitions and the main comparison."""
     from scripts.evaluation.k6.real_target_preflight import RUN_ID
 
     if not isinstance(prefix, str) or not RUN_ID.fullmatch(prefix) or len(prefix) > 30:
         raise ValueError("invalid_campaign_prefix")
+    if (
+        type(nfr_repetitions) is not int
+        or nfr_repetitions not in (1, 2, 3)
+        or type(main_first) is not bool
+    ):
+        raise ValueError("invalid_campaign_repetition_policy")
     entries = []
 
     def entry(kind: str, config: str, repetition: int, **extra: Any) -> None:
@@ -31,7 +39,7 @@ def build_campaign(prefix: str) -> dict[str, Any]:
             }
         )
 
-    for repetition in (1, 2, 3):
+    for repetition in range(1, nfr_repetitions + 1):
         for kind in ("nfr-01", "nfr-02", "nfr-03", "nfr-05"):
             for config in (("A", "B") if repetition != 2 else ("B", "A")):
                 entry(
@@ -63,8 +71,10 @@ def build_campaign(prefix: str) -> dict[str, Any]:
                 separate_action_approval=True,
             )
     for cycle in (1, 2, 3):
-        for condition in ("low", "normal", "burst"):
-            for config in (("A", "B") if cycle != 2 else ("B", "A")):
+        # Match comparison_pair_plan: finish low/normal/burst on the first
+        # configuration, then the second; reverse the configuration order in c2.
+        for config in (("A", "B") if cycle != 2 else ("B", "A")):
+            for condition in ("low", "normal", "burst"):
                 entry(
                     "comparison",
                     config,
@@ -75,9 +85,15 @@ def build_campaign(prefix: str) -> dict[str, Any]:
                     warmup_seconds=60,
                     measured_seconds=300,
                 )
+    if main_first:
+        entries = [row for row in entries if row["kind"] == "comparison"] + [
+            row for row in entries if row["kind"] != "comparison"
+        ]
     return {
         "format_version": 1,
         "entries": entries,
+        "nfr_repetitions": nfr_repetitions,
+        "main_first": main_first,
         "nfr08_continuous_ledger": True,
         "database_and_pool_caches_reset": False,
         "pilot_policy": "three_lambda_only_repetitions_observe_reuse_no_forced_reset",

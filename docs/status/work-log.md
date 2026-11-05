@@ -1,3 +1,23 @@
+### Deployed runtime and reusable tooling integration prepared — 2026-11-05 10:36:47 UTC
+
+Suraj authorized preparing a separate integration branch up to, but not including,
+PR creation. The branch contains the deployed application at `ed0a6aa`, its build changes,
+supporting tests and the preceding optimization/pilot history. It also
+includes reusable campaign, timing, monitoring, recovery/restore and revised
+NFR-03 tooling repairs. Formal comparison/NFR execution reports and their later
+work-log entries remain preserved in the evaluation worktree and are excluded
+from this integration until the evaluation is finished. No results are erased
+or represented as final acceptance. Cloud configuration inputs remain separately
+gated. Local source validation passed: Python 2576/180 skipped, data 331,
+web 504/3 skipped, 184 Conversations operations, 36 Terraform mocks,
+16 tooling modules under strict typing, contracts, boundaries, database safety,
+migrations and Gitleaks. The final JavaScript entry suite passed all 63 tests. The aggregate data phase initially
+refused the native-pool test flag; the remaining canonical checks passed with
+that flag removed. A test now uses synthetic fixtures instead of a private
+campaign profile. No application code changed from deployed source during this
+integration. PR creation is awaiting Suraj; no deployment or workload is
+authorized by this branch. [Runtime/tool behavior](../evaluation/runtime-measurements.md#integration-of-reusable-measurement-tools).
+
 ### Conservative batch local audit passed; source commit gate — 2026-11-04 21:17:07 UTC
 
 Final full Python regression2530pass/180skip with owned real PgBouncer enabled;
@@ -3483,7 +3503,7 @@ Navigation: [project docs](../README.md), [project task index](../tasks/project-
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
 | EXP-02 | Rahul (D); Suraj reviewer | in progress | Existing integrated tools plus revised request correlation, fresh-runtime gate and coverage-first repetition policy implemented locally. | Evaluation450passed/11skipped;30focused checks,18Node files, actualk6initialization and immutable pilot provenance pass. | Suraj verified grouped implementation and pilot scope; commit/merge held. | [Runtime tools](../evaluation/runtime-measurements.md); [pilot evidence](../evaluation/deployment-20261103/functional-audit/startup-pilot-results-20261104.md) | Human result review and formal input/action approvals; no NFR acceptance. | 2026-11-04 19:54:35 UTC |
-| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Approved startup image7e88f84/f4ab2e deployed; current ECS default only after pilot cleanup; API14/pool3 unchanged. | Normal HTTPS10/10response equality, anonymous401/hidden404; final2API/1poolhealthy. | First diagnostic7585ms retained; source/settings unchanged during pilots; merge held. | [Pilot results](../evaluation/deployment-20261103/functional-audit/startup-pilot-results-20261104.md) | Review pilots; align final A/Bsource before NFR/formal comparison. | 2026-11-04 19:54:35 UTC |
+| EXP-03 | Rahul (D); Suraj reviewer/operator | in progress | Deployed app/build source ed0a6aa and optimization history prepared on task/deployed-runtime-integration; reusable tooling repairs included. | Local regression, native pool, contract/type, frontend, database, secret and 36 Terraform mock checks passed. Application files match the deployed source. | Suraj authorized preparation through the pre-PR handoff; PR creation remains pending explicit instruction. | [Runtime/tooling integration](../evaluation/runtime-measurements.md#integration-of-reusable-measurement-tools); app ed0a6aa; branch task/deployed-runtime-integration | Create PR only after Suraj instruction, then hosted CI and exact merge approval. Formal execution evidence remains separate until evaluation completion. | 2026-11-05 10:35:11 UTC |
 | SE-01 category-text amendment | Mohit (C); Listings reviewer Suraj (B) | merged | PR #25 merged to main at `1f11065`; Steps 1–3 and reported Listings review complete | Exact-head hosted CI passed; [native/model/source evidence](../evaluation/domain/se-01/category-text-checks.json) | Steps 1–3 verified by Mohit; Suraj review reported by Aditya | PR #25; [hosted CI](https://github.com/exocrat/clip/actions/runs/41338792850) | Full SE-01 readiness, final fixed-label relevance and NFR/cloud latency remain open | 2026-11-01 20:18:19 UTC |
 | NEXT-00 | Suraj — requested planning coordinator | done | Planning output verified; NEXT-01 Step 1 authorized. | performed; planning only | verified by Suraj | `task/integrated-marketplace-rollout`, based on main `5e8d264`; [remaining-work plan](../tasks/remaining-project-plan.md), linked from project task index | No blocker for the accepted planning output; implementation and measured-run gates remain separate. | 2026-10-27 18:42:09 UTC |
 | NEXT-01 | Suraj — requested planning coordinator; C retains EXP-01 ownership | done | Design and task-wide review verified; NEXT-02 is next. | Steps 1–9 performed | Steps 1–9 verified | Planning baseline `c869f33`; [design and approved gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-8--proposed-changes-to-measurement-gates); [NEXT-07 references](../tasks/remaining-project-plan.md#experiment-protocol-reference) | No blocker for the design handoff. Real implementations, data, tools, cost anchors, project AWS identity/spend and run approvals remain NEXT-07 prerequisites. | 2026-10-28 06:24:24 UTC |
