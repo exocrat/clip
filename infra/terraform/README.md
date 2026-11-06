@@ -2,6 +2,46 @@
 
 This workflow applies to every Terraform change in `infra/terraform/`. It is a review and safety procedure, not an authorization to create or change AWS resources. All four team members may approve and apply an explicitly reviewed plan. Everyone shares cleanup responsibility; the person who starts the resources has first responsibility for cleanup.
 
+## Deployment operator reading order
+
+The general Terraform workflow below is not a standalone production deployment
+runbook. Start with the [shared test root guide](shared/test/README.md), then
+review the [bounded deployment plan](../../docs/evaluation/deployment-20261103/plan.md)
+for its architecture, source and restore DNS/Microsoft handoff, and the
+[cloud inventory](../../docs/environment/cloud-inventory.md). Those files contain
+historical observations: refresh the real account, resources, DNS, certificates,
+image digests, task definition and costs before planning. Historical approvals,
+plans, task revisions, DNS values and stopped-resource states are not reusable
+authorization or evidence of current state.
+
+For an application rollout, reconcile the current migration head and required
+per-domain database roles and SSM references with the selected image; see the
+[database guide](../../database/README.md), [Identity provider setup](../../docs/environment/identity-provider-setup.md),
+[notification setup](../../docs/environment/notification-email-setup.md) and
+[secret-handling guide](../../docs/environment/secret-handling.md). Build and
+review the image for the target architecture and enable the required runtime
+features explicitly. A matching ECR digest alone does not prove current code,
+database grants, provider permissions, or delivery. Verify HTTPS, sign-in,
+image upload, conversation and email behavior in an approved window; group
+related cloud checks where practical. Confirm rollback, ownership, retention and
+cleanup before starting. The operator must determine actual values from the
+current target; this guide does not supply or authorize credentials.
+
+The API rate limits default to 600 reads and 120 writes per minute per process.
+Their `CLIP_API_READ_REQUESTS_PER_MINUTE` and
+`CLIP_API_WRITE_REQUESTS_PER_MINUTE` overrides are documented in the
+[API settings](../../apps/api/README.md#startup-settings). The shared Terraform
+task definition currently does not expose these overrides as variables; changing
+them there requires a reviewed task-definition/configuration change. The limits
+are shared by all clients of each process, reset on restart, and are independent
+across ECS tasks and Lambda instances. Confirm the selected values do not
+invalidate a planned experiment.
+
+The existing browser-to-S3 signed-length upload change has not yet been verified
+against real S3. Before relying on it in a deployment, verify a valid image
+upload and rejection of a mismatched or oversized signed request in a separately
+approved window, without storing credentials or signed URLs in evidence.
+
 ## 1. Identify and inspect the target
 
 - Identify the owning root configuration, task/resource owner, exact state key, and whether the resources are bootstrap, shared test, or domain-exclusive. Follow [`docs/architecture/terraform-ownership.md`](../../docs/architecture/terraform-ownership.md); never duplicate another root's resources.

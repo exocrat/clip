@@ -1,10 +1,9 @@
 # Private keyword listing relevance — keyword-relevance-v1
 
 **Origin:** SE-01 public mode/both-mode relevance proposal, verified by Mohit.
-**State:** Private option implemented and verified. Public API now maps
-`sort=relevance` to this flag in Keyword mode; UI controls remain pending.
-Mohit owns search behavior. Shared-interface compatibility and independent review
-remain normal PR responsibilities, not a separate permission gate for this work.
+**Status:** SE-01 is marked complete in the [work log](../status/work-log.md).
+This page records the private ranking implementation and its historical checks;
+it does not assert current deployment or formal EXP/NFR results.
 
 ## Interface and ordering
 
@@ -48,11 +47,10 @@ owned catalogue/source/image data and the local static vocabulary only. Real
 Identity/database availability is still required. No new package, extension,
 index, migration, worker/startup switch or model call is introduced.
 
-This internal option does not register public `sort=relevance` or search_mode.
-The [public proposal](../../contracts/search-mode-proposal.md) remains the target
-for the next verified source/generation/dispatch stage. Keyword will use this
-native rule; Hybrid relevance remains model-based. Mode controls and public
-error/switch behavior still need their separate implementation/browser checks.
+The public `sort=relevance` and search-mode behavior is specified in the
+[proposal](../../contracts/search-mode-proposal.md). Keyword uses this native
+rule; Hybrid relevance remains model-based. Current UI/runtime acceptance status
+is recorded in the work log, while formal search NFR evidence remains in EXP.
 
 ## Actual checks and limits
 
@@ -81,6 +79,6 @@ rollback-only65-visible/5-hidden fixture set and actual generated vectors:
 
 Source-bound native/unit evidence is in Git history; see the
 [evaluation retrieval guidance](../evaluation/README.md) and current
-[commands](../environment/commands.md). This is not final usefulness, full-
-corpus latency/concurrency, real Identity integration, browser or FR/NFR/readiness
-acceptance. No public website mode control is activated by these private checks.
+[commands](../environment/commands.md). These dated native checks are not full-corpus latency/concurrency or formal NFR
+acceptance. See the work log for SE-01 task status and the EXP plan for current
+measurement gates.

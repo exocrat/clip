@@ -39,9 +39,11 @@ class S3ListingsImageStorage:
         return f"{self._prefix}/{upload_id}"
 
     async def create_upload_url(
-        self, object_key: str, media_type: str, expires_at: datetime
+        self, object_key: str, media_type: str, expires_at: datetime, size_bytes: int
     ) -> str:
-        """Presign a PUT requiring its declared type and an absent destination."""
+        """Bind the create-only PUT to its declared content type and exact length."""
+        if not 1 <= size_bytes <= MAX_IMAGE_SIZE_BYTES:
+            raise ValueError("Invalid upload size")
         remaining = floor((expires_at - datetime.now(UTC)).total_seconds())
         if remaining < 1:
             raise ValueError("Upload intent has expired")
@@ -53,6 +55,7 @@ class S3ListingsImageStorage:
                     "Bucket": self._bucket,
                     "Key": object_key,
                     "ContentType": media_type,
+                    "ContentLength": size_bytes,
                     "IfNoneMatch": "*",
                 },
                 ExpiresIn=min(300, remaining),

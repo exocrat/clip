@@ -126,7 +126,7 @@ class ListingsImageStorage(Protocol):
         ...
 
     async def create_upload_url(
-        self, object_key: str, media_type: str, expires_at: datetime
+        self, object_key: str, media_type: str, expires_at: datetime, size_bytes: int
     ) -> str:
         """Sign one create-only upload request for a bounded time."""
         ...
@@ -526,7 +526,10 @@ class ListingsService:
         url_expires_at = min(intent.expires_at, now + timedelta(minutes=5))
         try:
             upload_url = await self._image_storage.create_upload_url(
-                intent.object_key, request.media_type, url_expires_at
+                intent.object_key,
+                request.media_type,
+                url_expires_at,
+                request.size_bytes,
             )
         except Exception:
             # The intent is durable. Repeating the same operation can mint a

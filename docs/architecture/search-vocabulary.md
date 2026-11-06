@@ -1,9 +1,9 @@
 # Curated listing-search vocabulary — version 1.0.0
 
 **Origin:** SE-01 hybrid amendment checkpoint 2 / [DEC-13](../decisions/hybrid-listing-search.md).
-**Status:** Mohit verified checkpoint 2 and authorized checkpoint 3. Not wired
-into live search. Mohit confirms Suraj approved the amendment; native query
-verification remains pending.
+**Status:** SE-01 is marked complete in the [work log](../status/work-log.md).
+This page records the selected vocabulary/expansion rules and dated verification;
+formal EXP/NFR evidence remains in its evaluation plan.
 
 The controlled artifact is
 [`search_vocabulary.json`](../../apps/api/app/domains/listings/search_vocabulary.json).
@@ -88,7 +88,7 @@ codes, seller fields or evaluation labels are introduced.
    stop-word/phrase behavior before activation; syntactic validation cannot
    establish those properties. Curated expansion is not semantic inference.
 
-## Query-planning acceptance cases (pending native implementation)
+## Historical query-planning acceptance cases
 
 These specify expected expansion, not human relevance judgments or passed search
 checks. Checkpoint 3 must turn them into planner/native matching tests.
@@ -110,17 +110,13 @@ checks. Checkpoint 3 must turn them into planner/native matching tests.
 | operator-like/plain unknown input | Original plain-text semantics; never raw tsquery execution |
 | over-budget expansion | Complete original query fallback, with no missing independent terms |
 
-## Checks and remaining gates
+## Verification scope
 
-`test_vocabulary.py` checks the actual artifact, directional configuration,
-multiple domains, ambiguous exclusions, phrase aliases, deterministic fingerprints
-and refusal of malformed configuration. It does not compile queries, match
-listings or prove PostgreSQL functionality. No package dependencies are added.
-
-Mohit verified these words/rules and confirms Suraj approved the amendment.
-Before activation, native PostgreSQL tests must pass (currently no Docker/
-PostgreSQL on this machine). Semantic model/storage/fusion remain later gates.
-Final 20+ human-reviewed queries and real NFR-04 evaluation remain separate.
+`test_vocabulary.py` checks the checked-in artifact, directional configuration,
+ambiguous exclusions, phrase aliases, deterministic fingerprints and malformed
+configuration. Native SQL compiler and retrieval checks are recorded in the
+[work log](../status/work-log.md); they are task evidence, not a fresh local run.
+Formal corpus relevance and latency remain separate EXP/NFR evidence.
 
 ## Checkpoint 3 compiler preparation
 
@@ -159,20 +155,21 @@ or retrieval. The existing disposable database suite now calls
 `exercise_expanded_text`: actual vocabulary normalization, vehicle/cycle/book
 directionality, phrase/unknown/ambiguous matching, description edits, exclusion of
 hidden rows, all page sizes with filters and a GIN-eligibility diagnostic. These
-checks subsequently passed in the native PostgreSQL 18.6 checkpoint; public
-activation is still pending human verification and its integration step.
+checks subsequently passed in the native PostgreSQL 18.6 checkpoint. SE-01 public
+activation is marked complete in the work log; this historical receipt is not a
+fresh cloud or full-corpus performance check.
 Use the existing registered `uv run --locked python scripts/check_database.py
 --listings-store` on a supported prepared environment. A forced index-eligibility
 plan is not a latency or natural-planner-choice result. No native pass is claimed.
 
 ## Native query verification follow-up
 
-The historical native checkpoint verifies real English normalization/expansion,
-directional vehicle/cycle and
-book/textbook matching, phrases, ambiguity/unknown cases, updates, visibility,
-filters and all page sizes. GIN eligibility is checked against the compiled text
-predicate; the full browse query may correctly choose recency for a broad set.
-Public routes retain plain matching until the separate activation increment.
+The native checkpoint recorded real English normalization/expansion, directional
+vehicle/cycle and book/textbook matching, phrases, ambiguity/unknown cases, edits,
+visibility, filters and all page sizes. GIN eligibility is checked against the
+compiled text predicate; the full browse query may correctly choose recency for a
+broad set. The production store invokes the compiled search path; no current cloud
+or full-corpus performance claim is made here.
 
 ## Known-vocabulary typo follow-up
 
@@ -182,4 +179,5 @@ The [versioned spelling policy](search-typo-tolerance.md) adds unique near-known
 concepts without changing this artifact/version, keeps complete original matches
 and independent AND groups, and bounds work/corrections. Ambiguous/short cases
 stay literal; near real words can add an unintended alternative. Native checks
-are source-bound separately, and public expansion/typo activation remains off.
+are source-bound separately. The checked-in production store uses the compiled
+path; this document makes no current deployment or NFR claim.

@@ -109,9 +109,8 @@ manifest remains unmodified and truthfully says generated-unloaded; the separate
 actual label-binding manifest joins it to retained real execution receipts.
 
 NEXT-06 is complete and DATA-READY is accepted as recorded in the work log.
-SE-01's final relevance evaluation and cloud NFR evidence remain pending. No
-score, full SE-CORE milestone or fresh cloud state is inferred from a valid
-label file. The original draft/template and historical judgment records remain
+SE-01 is marked complete in the work log. Formal experiment/NFR results remain
+separate; no NFR score or fresh cloud state is inferred from a valid label file. The original draft/template and historical judgment records remain
 unchanged.
 
 `k6/real_target_preflight.py` and

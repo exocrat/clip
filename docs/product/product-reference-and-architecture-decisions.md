@@ -108,7 +108,7 @@ The submitted PRD retains its original wording, including “listing type.” In
 
 ### PD-08 reviewed product/storage choices
 
-Mohit approved the detailed [MVP schema directions](../architecture/mvp-database-schema.md) and linked decision records on 2026-10-18: application-owned temporary password/OTP/session state; required seller price/separate negotiability and optional buyer budget; catalogue/field/image limits; offer revision/withdrawal/selection rules; encrypted-content/key metadata; bounded notification episodes/retries; finite private-data retention; upload staging and inactive-origin retirement. The schema's source/decision links contain exact values and exceptions. These approvals are design choices, not implemented features, affected-owner approval, runtime/provider/security evidence or authorization to provision/deploy/delete cloud resources. Original FR/NFR acceptance remains with the named tasks.
+Mohit approved the initial relational design on 2026-10-18. Exact choices remain in the [decision index](../decisions/README.md): temporary authentication, discovery/catalogue limits, offers, encrypted content, notification delivery, retention and origin retirement. Current installed schema is defined by ordered migrations, not the historical [schema source map](../architecture/mvp-database-schema.md). Decisions do not substitute for implementation, current affected-owner review, runtime/provider/security evidence or action-specific approval. Original FR/NFR acceptance remains with the named tasks.
 
 ## 4. Non-functional requirements and required evidence
 

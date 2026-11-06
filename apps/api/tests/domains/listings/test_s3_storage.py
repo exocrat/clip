@@ -78,7 +78,9 @@ def test_upload_url_is_create_only_and_never_lives_over_five_minutes(monkeypatch
     storage, client, _ = _storage(monkeypatch)
     expires = datetime.now(UTC) + timedelta(minutes=20)
 
-    url = asyncio.run(storage.create_upload_url("test/run-1/key", "image/png", expires))
+    url = asyncio.run(
+        storage.create_upload_url("test/run-1/key", "image/png", expires, 123)
+    )
 
     assert url == "https://signed.invalid/private-token"
     operation, params, seconds, method = client.signed[-1]
@@ -87,6 +89,7 @@ def test_upload_url_is_create_only_and_never_lives_over_five_minutes(monkeypatch
         "Bucket": "private-bucket",
         "Key": "test/run-1/key",
         "ContentType": "image/png",
+        "ContentLength": 123,
         "IfNoneMatch": "*",
     }
     assert seconds == 300

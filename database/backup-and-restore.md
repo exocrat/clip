@@ -91,7 +91,7 @@ PD-08 does not create commands or edit that owner's implementation here.
 
 Follow [private-data retention](../docs/decisions/private-data-retention.md),
 [origin retirement](../docs/decisions/origin-retirement.md), and the
-[reviewed schema boundaries](../docs/architecture/mvp-database-schema.md).
+[current migrations and schema guide](README.md).
 Restoring older bytes must not renew an account lifetime, expiry, retention timer
 or notification deadline.
 

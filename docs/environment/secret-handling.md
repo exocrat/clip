@@ -162,7 +162,7 @@ or change a shared role. Public grants, credential generation, role logging,
 scoped SSM permissions and rollback require a concrete separately approved plan.
 See the current [ID-01 setup and status](identity-provider-setup.md).
 
-See the [runtime handoff](../evaluation/identity/integration.md#secure-runtime-preparation).
+See the [hosted runtime evidence](../evaluation/identity/id-01-step-13/README.md#recorded-result).
 
 ### ID-01 email-key rotation confirmation — 2026-10-27 18:25:58 UTC
 

@@ -47,9 +47,9 @@ but permits an independent C transaction's parent FK key-share lock. Native
 checks prove a separate thread/member FK fixture commits under the guard and
 observe actual owner-close lock waiting during a bounded response. That fixture
 is not a public C provider or a membership/uniqueness integration proof.
-Real Identity/C provider checks, independent affected-owner review and exact
-publication/merge approvals remain pending. No migration/deployment/UI is part
-of this backend correction.
+SE-02 and its owner/peer acceptance are recorded in the work log. This dated
+correction is not a current cloud/runtime check. No migration or deployment was
+part of the backend correction.
 
 ## Approver
 

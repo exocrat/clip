@@ -120,26 +120,6 @@ migration count, avoiding a stale count when main adds migrations.
 verification command. See [local setup and checks](README.md#checks-and-data-tooling)
 for coverage and skipped-check limits. It makes no cloud changes.
 
-## PD-11 boundary checks
-
-`make check` includes the repository's executable architecture and contract
-checks. See the [shared boundary rules](../conventions/shared-conventions-and-cross-domain-contract-rules.md)
-and the relevant test README for exact focused commands. A focused pass does not
-replace the full check or owner review.
-
-## Identity provider offline checks — ID-01 Step 2
-
-From the repository root, after `uv sync --locked`:
-
-```bash
-uv run --locked pytest apps/api/tests/domains/identity/test_email.py apps/api/tests/core/test_provider_settings.py apps/api/tests/test_config.py -q -W error
-```
-
-These checks use controlled clients and synthetic recipients. They create no
-AWS client, send, listener or database. Passing them does not establish provider
-delivery, real sign-in or ID-READY. See the
-[Identity setup record](identity-provider-setup.md) for real gates.
-
 ## Explicit real local Identity bootstrap — ID-01 Step12 preparation
 
 This is operator preparation only. Running it needs separate review and
@@ -398,7 +378,7 @@ Deferred: container image/Compose runtime, loopback TCP/SCRAM readiness,
 stop/start volume persistence, approved reset/recreate, platform/locale parity,
 multi-connection concurrency, query-plan checks, affected-owner acceptance and
 CI same-version checks. Native results do not close PD-08/PRE-00. See the
-[database verification notes](../../database/README.md#native-macos-checkpoint--2026-10-18).
+[database verification notes](../../database/README.md#current-verification-commands).
 
 One-time clone/agent setup belongs in the [workstation guide](wsl-and-first-session.md). Future command owners must register explicit targets and effects above. PD-10/DL-00/domain owners register explicit test-double scenarios and real integration commands with distinct names/modes. No deployed command may default to fake auth/storage/notification/domain providers; startup validation rejects them. Stub tests never share a label or result classification with cloud/NFR runs. No cloud operation belongs in the generic local/CI aggregate target.
 
@@ -716,7 +696,7 @@ shortcut. Default settings refuse sending. It requires explicit smoke approval,
 test mode, SES selection, exactly one allowlisted recipient and the expected ECS
 container-role credentials. It attempts one fixed generic message, suppresses SDK
 logs and exits within a 45-second command deadline. Success output means provider
-acceptance only. See the [bounded plan](../evaluation/identity/provider-history.md#delivery-diagnostics).
+acceptance only. See the [bounded plan](identity-provider-setup.md).
 
 ### Identity diagnostic wrapper offline checks — ID-01 Step 2
 
@@ -731,7 +711,7 @@ The tests import the exact reviewed diagnostic command from the evaluation folde
 and inject offline SDK failures/success. They perform no AWS calls or sends;
 expected result is 28 passing tests. The wrapper itself can send when explicitly
 run with approved ECS settings; do not invoke it as a local test command. Its
-[live request and cleanup plan](../evaluation/identity/provider-history.md#delivery-diagnostics)
+[live request and cleanup plan](identity-provider-setup.md)
 require separate exact approval. No new Make target or deployment command added.
 
 ### SES authorization diagnostic offline checks — ID-01 Step 2
@@ -743,7 +723,7 @@ uv run --locked black --check docs/evaluation/identity/id-01-step-2/runtime_auth
 
 These are offline checks (37 tests), not a send command. The extended diagnostic
 parses denied-resource/reason text only in memory and emits fixed categories;
-[the exact live plan](../evaluation/identity/provider-history.md#delivery-diagnostics)
+[the exact live plan](identity-provider-setup.md)
 retains a separate approved task/send/cleanup window. Shared sandbox plans must
 preserve the private `TF_VAR_ses_sandbox_recipient_identity_arn` when its additional
 identity scope is still needed; see the shared Terraform README. Never supply
@@ -996,7 +976,7 @@ No live-enable command or provider action is authorized by this registry entry.
 ## LI-01 Step 7 — isolated PostgreSQL browser checkpoint
 
 Run from the repository root with the locked Python environment, Node 24/npm 11,
-and local Unix-socket Docker. [Web guide](../../apps/web/README.md#li-01-step-7-isolated-browser-check-with-real-postgresql)
+and local Unix-socket Docker. [Web guide](browser-verification.md)
 has manual actions, expected results and current limitations. These are test-only
 commands, not deployment or task-completion evidence.
 
@@ -1929,7 +1909,7 @@ in the loopback-only launcher and is absent from deployed code. Ctrl+C removes
 its database and temporary photos; `--check-only` checks and cleans up without
 serving. `--port 5175` starts an independent debugging fixture while preserving
 the default5174 inspection session; ports outside5174/5175 are rejected. Full steps and sample-account guidance are in the
-[NEXT-03 visual checklist](../tasks/next-03-step-10-visual-checklist.md).
+[NEXT-03 behavior plan](../tasks/next-03-visual-feedback-plan.md) and [completion summary](../tasks/next-03-visual-feedback-implementation-report.md).
 
 Requires locked Python/Node dependencies and local Docker, using only owned
 disposable PostgreSQL. The first command starts one loopback ephemeral HTTP port,
@@ -1965,7 +1945,7 @@ No provider, cloud, retained database or DNS query is involved.
 ## ID-01 Step13 — native Micro build preparation
 
 These operator helpers require the separately approved exact
-[build/database window](../evaluation/identity/id-01-step-13/build-and-database-window.md).
+[Step13 evidence index](../evaluation/identity/id-01-step-13/README.md).
 They are not `make check`, an application startup path or authorization to start AWS.
 
 | Command | Effects and expected result |
@@ -1991,7 +1971,7 @@ SQL, AWS, provider, credential lookup or live reset.
 `docs/evaluation/identity/id-01-step-13/bootstrap-inventory.sql` is a pinned-target
 repeatable-read/read-only review input, not an automatic live command. Proposed
 live counts/window/master read need the separate approval in the linked
-[bootstrap plan](../evaluation/identity/id-01-step-13/bootstrap-and-grants-plan.md).
+[Step13 evidence index](../evaluation/identity/id-01-step-13/README.md).
 The destructive coordinator/grants package is still gated, not registered as
 an executable route.
 
@@ -2002,15 +1982,16 @@ an executable route.
 | `uv run --locked python scripts/identity_bootstrap.py` | Inert documentation entry; does not connect or reset. Actual execution is an operator API requiring reviewed bound inputs and separate live approval, not an unattended CLI. |
 | `uv run --locked pytest -q tests/test_identity_bootstrap.py tests/test_identity_bootstrap_review.py` | Thirteen disposable local TLS tests covering guarded17→23 bootstrap, lock/role preservation, refusal/rollback and restricted trigger grants. Requires Docker; never supply a shared database. Not hosted acceptance. |
 
-[Exact proposed live target, grants, failure behavior and60minute/$1 window](../evaluation/identity/id-01-step-13/bootstrap-live-review.md). No live execution is authorized by these commands.
+[Historical Step13 approval and result records](../evaluation/identity/id-01-step-13/README.md). These commands do not authorize a new live execution.
 
 ## ID-01 Step13 — window-only retention launcher
 
 `uv run --locked python scripts/identity_retention_job.py --help` is inert.
 `uv run --locked pytest -q tests/test_identity_retention_job.py` runs four offline
 safety checks; no cloud/DB. `--image`, `--revision` and `--deadline-utc` bind the
-operator job; default is dry-run. `--apply` and installing the inactive proposed
-service/timer require the [exact live approval](../evaluation/identity/id-01-step-13/retention-window-review.md).
+operator job; default is dry-run. `--apply` and installing a service/timer require a new reviewed plan and exact
+approval; the [Step13 evidence index](../evaluation/identity/id-01-step-13/README.md)
+records only the completed historical run.
 The launcher uses unchanged identity_cleanup.py inside the actual container,
 returns counts only and never installs scheduling itself. No build is needed.
 
@@ -2082,109 +2063,14 @@ the two column-level FOR SHARE grants against disposable PostgreSQL; it never
 changes a shared database. The live grants require affected-owner review and
 durable restoration handling before task acceptance.
 
-## NEXT-06 reference generation and isolated local loading
+## NEXT-06 frozen dataset validation
 
-The [reference generator guide](../../data/README.md#next-06-reference-inputs-and-local-loading)
-registers the exact generate/validate/test commands and retained two-run names.
-`data.generators.reference` accepts only generate/validate, fresh named outputs
-under data/runs, explicit UTCmidnight/day/threshold and an external ordinary image
-root. It rechecks45approved photo hashes/magic/sizes and safe paths. No overwrite,
-reset, database/cloud target, provider call, photo modification or session creation.
-The amended2026-10-30runs contain5000regular users/1000listings/1000planned objects.
-The guide also registers `scripts.evaluation.reference_local` with required
-`CLIP_ENVIRONMENT=test` and `--isolated-local-reference`: fresh fixed-role Unix-only
-native PG18.6,29migrations, real local photo bytes and Listings HTTP checks.
-Optional `--embeddings` uses the installed pinned offline model and supported
-pipeline tools; it verifies1000current vectors, searches and automatic vector
-publication in a separate probe clone. No existing/cloud target is accepted;
-owned processes stop and private evidence is retained. Caller/storage fixtures
-do not accept actual Identity/S3; human labels/freeze/DATA-READY remain pending.
-Use a fresh name and current UTCday
-for future generation; old run validation is read-only. Deployment/upload/load
-commands and actual storage prefix/target require separate cloud approval.
-
-The same local command additionally accepts `--rebuild-check` with `--embeddings`
-for Step6. Only the new DB created by that invocation is reset, migrated/reloaded
-and re-encoded; record/media/vector/index fingerprints must match. The ordinary
-loader retains its nonempty-target refusal. No target/prefix URL or forced-drop
-option exists. See the guide for the exact command and local freeze-candidate
-limits; this is not authorization to reset existing/cloud data or accept DATA-READY.
-
-
-## NEXT-06 guarded cloud adapter — offline preparation
-
-The [operator handoff](../evaluation/domain/next-06/cloud-handoff.md#6-review-the-prepared-cloud-adapter-then-load)
-registers exact `data.generators.reference_cloud plan` and `load` forms.
-`plan` is offline and validates inputs; `load` requires an explicit fully reviewed
-JSON target, fresh private ledger, exact TLS process secret and `--execute`, plus
-separate cloud approval. The null target template is not executable. Only account
-335523638354/ap-south-1/non-root identity is permitted. The15minute CLI enforces
-create-only/hash-verified media, exact server/role/schema, empty rows/registry and
-transactional validation. No reset/migrate/grant/delete/start/retry is implemented.
-No live execution or actual session/S3/IAM acceptance has occurred.
-
-```sh
-.venv/bin/python -m data.generators.reference_cloud plan --name next06-transfer-42-20261030-a --image-root /absolute/path/to/clip-dataset-images
-.venv/bin/python -m pytest data/tests/test_reference_cloud.py -q -W error
-```
-
-
-### NEXT-06 browser-login compatibility
-
-The explicit `reference_cloud load` command now uses `reference_login.sdk_session`.
-For a named `login_session` profile it delegates to the existing AWS CLI process
-credential-export interface, captures credentials only in memory and refreshes
-before expiry; no CRTextra, access keys or global AWSprofile writes are needed.
-Offline `plan` remains client/credential-export free. Existing non-login profiles
-keep their normal SDK chain. Account, non-root, region, target and action gates
-remain unchanged; no live cloud load is accepted by this local compatibility fix.
-
-```sh
-.venv/bin/python -m pytest data/tests/test_reference_login.py data/tests/test_reference_cloud.py -q -W error
-```
-
-
-### NEXT-06 prepared private read-only DBinventory window
-
-The [exact proposal](../evaluation/domain/next-06/transfer/start-access-load-proposal.md)
-records fixed resources, public-price evidence, proposed1USD/60+15min budget,
-conditional ASG safety and cleanup, and separately gated later load phases.
-`scripts/evaluation/reference_db_inventory.py` is inert without its explicit mode
-and is intended only for the approved existing remote host, not the contributor's
-Mac. Its reviewed SSMpayload is prepared but NOT approved/executed. It uses the
-existing instance role/cached pinned APIimage, captures only one named runtime
-connection secret to stdin, enforces fullTLS/readonly/nonsuperuser SQL and reads
-only metadata. No pull/install/grant/schema/data mutation exists. Cleanup checks
-its random label and removes only that owned container ID. Missing tools/image/
-permissions/route cause refusal, not fallback. Do not run this under current
-read-only-metadata approval or use it as a generic remote shell.
-
-```sh
-.venv/bin/python -m pytest data/tests/test_reference_db_inventory.py -q -W error
-```
-
-Prepared local-only [v2 probe diagnostics](../evaluation/domain/next-06/transfer/probe-diagnostic-v2.md) supersede the proposed remote payload. Historical Phase A failed with both resources stopped. A retry is not authorized by local preparation; verify exact hashes and obtain separate cloud-window approval.
-
-NEXT-06 private admin catalog inventory: [exact proposed window](../evaluation/domain/next-06/transfer/admin-inventory-plan.md). Local guard tests: `.venv/bin/python -m pytest data/tests/test_reference_admin_inventory.py -q -W error`. The helper imports inertly; only the separately approved hash-bound controller may connect. Repository-local plugin `.tools/session-manager/1.2.896.0/bin/session-manager-plugin --version` is a local version check, not cloud-session approval.
-
-NEXT-06 isolated database setup: [exact proposed cloud scope](../evaluation/domain/next-06/transfer/database-setup-plan.md). Local unit controls: `.venv/bin/python -m pytest data/tests/test_reference_database_setup.py -q -W error`. Real native permission rehearsal: `.venv/bin/python -m scripts.evaluation.reference_setup_local --local-rehearsal`; creates only a fresh Unix-only cluster under `/private/tmp`, uses existing pinned PG/dbmate, compares full schema and exercises restricted bulk SQL, then stops/retains it. macOS may require sandbox approval for shared memory. No AWS/media/model/provider calls. This command never approves cloud setup; both new cloud roles remain NOLOGIN until separate credential/load authorization.
-
-NEXT-06 exact S3/SQL load package: [proposed scope and recovery](../evaluation/domain/next-06/transfer/cloud-load-plan.md). Local controls: `.venv/bin/python -m pytest data/tests/test_reference_load_access.py data/tests/test_reference_cloud.py -q -W error`. Native authentication/revocation proof: `.venv/bin/python -m scripts.evaluation.reference_setup_local --local-rehearsal --credentials`; only a fresh private Unix cluster, actual SCRAM/bulk SQL then credential clearing and stopped cleanup. Uses existing native tools, no AWS/S3. Proposed cloud controller is not a general CLI and refuses unconfirmed storage review before any AWS call; exact cloud action approval remains separate.
-
-NEXT-06 dedicated vector-producer preparation: [exact proposed cloud window](../evaluation/domain/next-06/transfer/vector-window-plan.md). Unit controls: `.venv/bin/python -m pytest data/tests/test_reference_vector_access.py -q -W error`. Actual local model/role/SQL rehearsal: `.venv/bin/python -m scripts.evaluation.reference_setup_local --local-rehearsal --credentials --vectors`; new private Unix-only PG18.6 cluster, canonical schema/restrictedbulk/SCRAM, dedicated producer/real pinned worker and productionSQLcases, source invariance and password/helper/cluster closeout. Existing tools/model only; no AWS/S3/HTTPfake caller. Cloud execution needs the exact separate approval; raw metadata/APIflags do not enable an app runtime.
-
-NEXT-06 current dataset reproducibility: `CLIP_ENVIRONMENT=test .venv/bin/python -m scripts.evaluation.reference_local --name next06-transfer-42-20261030-a --image-root /Users/mohitmahapatra/Desktop/clip-dataset-images --isolated-local-reference --embeddings --rebuild-check`. Requires existing native tools/model/photos; creates/resets only its new private Unix target and stops it. No AWS. The SELECT-only `reference_freeze_snapshot.py` is a bound reader, not a general target CLI. [Read-only cloud comparison scope](../evaluation/domain/next-06/transfer/dataset-evidence-plan.md) needs separate approval.
-
-NEXT-06 Step3 runtime metadata inspection: `.venv/bin/python -m scripts.evaluation.reference_runtime_inspection --approved-cloud-inspection`; requires separate exact [read-only plan](../evaluation/domain/next-06/transfer/step-03-runtime-inspection-plan.md) approval. Fixed non-root335523638354/Mumbai;10metadata calls maximum, no secret values/starts/writes. Controls: `.venv/bin/python -m pytest data/tests/test_reference_runtime_inspection.py -q -W error`.
-
-NEXT-06 Step3 real workflow: native-only preparation `CLIP_ENVIRONMENT=test .venv/bin/python -m scripts.evaluation.reference_workflow_local --local-rehearsal`. Actual Microsoft/browser/S3mode requires separate [exact live plan](../evaluation/domain/next-06/transfer/step-03-workflow-live-plan.md) approval; no SSMsecret/RDS/EC2 actions. New private SQL/model process stops on exit; reference data untouched. Tests: `.venv/bin/python -m pytest data/tests/test_reference_workflow_local.py -q -W error`.
-
-NEXT-06 Search vector operator: [narrowed automatic Step3 plan](../evaluation/domain/next-06/transfer/step-03-search-vector-plan.md) supersedes the manual Listings exercise. The existing local workflow command now serves a loopback-only operator page after real sign-in; it invokes unchanged public APIs and verifies current vectors before/after one edit. No product UI/feature change; separate live S3/provider approval required. Unit controls: `.venv/bin/python -m pytest data/tests/test_reference_search_operator.py data/tests/test_reference_workflow_local.py -q -W error`.
-
-NEXT-06 Step5 labels: `.venv/bin/python -m scripts.evaluation.reference_labels validate --image-root /absolute/path/to/clip-dataset-images`. Existing canonical22judgments/actual corpus bindings are revalidated, never rewritten; no network/provider/model/SQL/scoring. Requires retained/restored named payload and original45photos/full accepted source Git objects. Initial `write` creates fixed outputs only once and refuses existing files. [Step5 evidence](../evaluation/domain/next-06/transfer/step-05-final-labels-result.json); Step6freeze remains separate.
-
-NEXT-06 frozen release: `.venv/bin/python -m scripts.evaluation.reference_release validate --image-root /absolute/path/to/clip-dataset-images --model-root /absolute/path/to/model`. Verifies both payloads, all52archive members, actual load ledger/model/index/reset/label evidence without extraction/network/inference/SQL. Initial `freeze` exclusively creates the fixed release and refuses overwrite; do not remove a release to bypass versioning. [Task-wide handoff](../evaluation/domain/next-06/task-wide-review.md). Valid content is separate from DATA-READY/CI/peer/run approval.
-
+NEXT-06/DATA-READY is complete. Current offline release validation and dataset
+instructions are in the [data guide](../../data/README.md) and [accepted
+ task-wide review](../evaluation/domain/next-06/task-wide-review.md). The old
+transfer, cloud-inspection and runtime-preparation commands were one-time task
+procedures; their original text remains in Git history and they are not current
+operational commands.
 ## Deployed experiment preflight and isolated restore commands
 
 See the [live parity, Lambda initialization and NFR-07 provisioning guide](../evaluation/predeployment-gap-tools.md)

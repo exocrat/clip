@@ -8,8 +8,8 @@ four-hour refresh and one alternate-provider attempt if the first fails.
 ## Selected behavior
 
 Retain application-owned OTP/password/session state and the existing private
-EmailSender signature. Support real Resend and SES adapters. Configure preferred
-order, initially Resend then SES; later prefer SES through runtime configuration.
+EmailSender signature. Support real Resend and SES adapters. Configure SES as the
+preferred primary and Resend as its alternate through runtime configuration.
 One logical OTP ticket may dispatch once to a router. Router attempts primary
 once; on any reported exception, including an ambiguous timeout, attempt the
 other real provider once using the identical recipient/subject/body/OTP. Stop on
@@ -56,26 +56,18 @@ Suraj's 2026-11-03 [hosted functional repair](hosted-functional-repair.md)
 supersedes the recipient restriction below only for the explicit real hosted
 runtime. Both adapters use the same hosted recipient policy; local/standalone
 probes retain controlled recipients. Provider order, refresh and bounded fallback
-remain. The repair is not yet merged or verified by real mailbox receipt.
+remain. The hosted repair and inbox checks were subsequently recorded; ID-01 is marked
+complete in the work log. The following historical limits describe the earlier
+staged configuration, not current cloud state. Local/standalone probes retain
+controlled recipients; the explicit real hosted Identity runtime permits its
+account destination. SES production access was later recorded on 2026-10-28. Refresh
+current runtime preference, role policy and provider state before a new operation.
+Never paste keys or real OTPs in chat. A decision record is not approval for a live
+send or cloud policy change.
 
-Local Resend adapter retains at most five explicit controlled recipients. Existing
-SES production refusal and sandbox allowlist remain. No production selector or
-real deployment is enabled by this decision. Resend account/domain/API-key setup,
-exact SSM provisioning/IAM, live sends, DNS and deployed rollout need their separate
-reviewable approvals. Verify Resend DNS while preserving existing SES records;
-turn off tracking for OTP mail and review provider content retention. Never paste
-keys or real OTPs in chat. A verified Resend path may satisfy active-provider readiness. Later hosted
-evidence recorded SES production access, DKIM success and a standalone receipt
-on 2026-10-28; that supersedes the older pending-access status but does not enable
-unrestricted application sends. The source still limits Identity/SES to the bounded
-test profile and controlled recipients, and the deployed route preference/effective
-role policy require a reviewed refresh. Do not treat account-level production
-access as permission for a live send or cloud policy change.
-
-CN-03 may adopt this design through its own public transport/owner review; it must
-not import Identity-private modules or claim its notification worker is ready.
-Step12 requires actual runtime/provider/browser evidence before ID-READY. The
-Step14 consumer matrix remains outside this scope.
+CN-03 adopted SES-first delivery through its own public transport and owner review;
+it must not import Identity-private modules. ID-01 and CN-03 task status is recorded
+in the work log; their task completion does not assert current live provider state.
 
 ## Approver and superseded scope
 
@@ -100,8 +92,8 @@ project email; choose future purpose-specific addresses through their owning tas
 Human-confirmed Resend delivery to IISc supports this choice but does not prove
 which filter rejected older messages. Preserve no-reply historical evidence.
 Local adapters/default examples and desired SES FromAddress policy now use verify.
-Live SES permission still uses no-reply until its separately reviewed plan/apply;
-local policy edits do not apply themselves or authorize a send. Keep SES sandbox
-recipient limits and production guards. Current routing schema remains unchanged: a
+Live SES permission and inbox results were later checked in the task evidence;
+current policy is not asserted here. Keep SES sandbox recipient limits and
+production guards. Current routing schema remains unchanged: a
 primary/key update cannot choose arbitrary sender addresses. No new DNS or mailbox
 provisioning is implied by selecting an address on the verified sending domain.

@@ -1,13 +1,12 @@
 # SE-01 public search mode and relevance proposal
 
-**Status:** Mohit-verified specification; source/generated API checkpoint implemented,
-API result verified by Mohit. Frontend controls/URL/request handling implemented
-and automated-tested; human browser verification and application lifecycle remain pending. Mohit selected Keyword as the
-initial mode, switching both ways with short explanations, and relevance sorting
-in **both** modes. Mohit verified the proposal and clarified that
-search implementation decisions are his. Shared compatibility and independent
-review follow the normal PR process, not a separate implementation approval. This document specifies the registered query amendment; it grants no deployment
-or merge permission. Frontend controls are a separate checkpoint.
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya confirms Hybrid/search mode lifecycle and UI acceptance complete. Earlier pending browser/lifecycle checklist wording is historical and superseded for task status.**
+
+**Status:** SE-01 is marked complete in the [work log](../docs/status/work-log.md).
+This proposal preserves the selected request and relevance behavior. Its original
+implementation sequence and acceptance checklist are historical; they are not a
+current task ledger or fresh evidence of browser, deployment, NFR, or peer-review
+checks. The specification grants no deployment or merge permission.
 
 **Owner:** Mohit (Search); Listings owns the query/data boundary. Primary affected
 reviewer: Suraj; retain Identity review for caller eligibility. This continues
@@ -102,9 +101,10 @@ before ordering or pagination:
    candidate cap or per-page reranking. Numeric ranks remain internal and are
    not comparable to semantic cosine scores across modes/queries.
 
-This rule is now [implemented and native-tested privately](../docs/architecture/keyword-listing-relevance.md),
+This rule is [implemented and native-tested privately](../docs/architecture/keyword-listing-relevance.md),
 with its result verified by Mohit. Public source/type/validation/dispatch work
-is now performed; its result awaits verification. Native
+is part of the completed SE-01 status recorded in the work log; this document
+adds no fresh verification. Native
 `ts_rank_cd` accounts for term proximity using stored positions; normalization0
 adds no document-length normalization. See
 [PostgreSQL18 ranking documentation](https://www.postgresql.org/docs/18/textsearch-controls.html#TEXTSEARCH-RANKING).
@@ -203,7 +203,7 @@ Keyword results as a successful Hybrid page. Keyword failures use the ordinary
 retry/error flow.503is a controlled response, not a website crash. No user-facing
 model/pipeline/embedding/version/resource details are needed in this flow.
 
-## Review packet, downstream file map and acceptance checklist
+## Historical implementation checklist and boundaries
 
 The actual shared-source edit will be `contracts/source/types.py`; verify its
 use in `contracts/source/listings.py` rather than adding a new endpoint/callable.

@@ -19,7 +19,8 @@ The already recorded base apply is historical evidence, not retrospectively auth
 
 ## PD-16 operational closeout and PD-17 documentation continuation — 2026-10-19
 
-The user explicitly accepted the current work as sufficient, directed closing PD-16 **for now**, committing it, and moving to PD-17. Accept the verified operational scope: image publication, private health/SQL checks, shutdown, operator/deadline and approximate cost review. At that point the original platform/affected-owner/upstream/independent/hosted/merge obligations had not passed. The user later confirmed the carried PD-08/09/12/13/15 acceptance gates complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). The combined PD-17–19 review/merge and PRE-00 remain pending.
+The user explicitly accepted the current work as sufficient, directed closing PD-16 **for now**, committing it, and moving to PD-17. Accept the verified operational scope: image publication, private health/SQL checks, shutdown, operator/deadline and approximate cost review. At that point the original platform/affected-owner/upstream/independent/hosted/merge obligations had not passed. The user later confirmed the carried PD-08/09/12/13/15 acceptance gates complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). The combined PD-17–19 review/merge and PRE-00 were later completed; the work log
+records current status.
 
 This explicitly permits **PD-17 documentation work only** against the recorded PD-14/15/16 artifacts despite deferred final acceptance. PD-17 may inspect/update the single domain task list, traceability and checklists. No domain implementation, new deployment, PRE-00/DL-00 acceptance or automatic approval of a PR/merge is granted. PD-18/19 retain their own selection/verification gates; PD-19/PRE-00 cannot pass until all carried required obligations close. Normal independent review and exact merge authorization still apply before publishing acceptance on main.
 
@@ -37,9 +38,10 @@ The following list preserves the original obligations and their owning tasks:
 
 The user later confirmed these carried acceptance gates complete on 2026-10-19;
 the task evidence and confirmation are in the [work log](../status/work-log.md#resolved-integration-evidence).
-This does not pass the combined PD-17–19 review/merge or PRE-00.
+At the time, this did not pass the combined PD-17–19 review/merge or PRE-00;
+those were later completed as recorded in the work log.
 
-Each deployment, upload, state action and cleanup still requires its own exact approval. Stop if a staged increment depends on an unreviewed interface or an unavailable real prerequisite. Record failures and return to the original checks when their prerequisites arrive. PD-19/PRE-00 cannot pass with any required gate unresolved.
+Each deployment, upload, state action and cleanup still requires its own exact approval. Stop if a staged increment depends on an unreviewed interface or an unavailable real prerequisite. Record failures and return to the original checks when their prerequisites arrive. PD-19/PRE-00 later closed; see the work log for current milestone status.
 
 ## Approver
 User in the current session; personal name not recorded.

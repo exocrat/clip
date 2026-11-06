@@ -1,5 +1,7 @@
 # Campus Marketplace — Final Project Closeout
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya marks CLOSE-00 complete while explicitly leaving EXP-02–08 open. This is a user-directed status override of the original EXP-08 start dependency; no experiment completion is implied.**
+
 **Canonical path:** `docs/tasks/final-closeout-task-list.md`
 
 ## CLOSE-00 — Final regression, cost/resource closeout, and delivery package

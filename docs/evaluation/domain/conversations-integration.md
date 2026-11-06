@@ -1,5 +1,7 @@
 # Conversations application integration checkpoint
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya marks CN-01 complete. Earlier pending/checkpoint statements below are historical; this status update records his direction and does not add new execution evidence.**
+
 Owner/writer: Rahul (D), `task/cn-01-conversations`. Scope verified by Rahul on
 2026-10-26; Step1 inventory recorded at2026-10-26 14:51:33 UTC. This is a local
 integration plan within CN-01 Steps4/6/8–10/13, not full CN-01 acceptance.

@@ -1,5 +1,7 @@
 # Bounded experiment deployment plan
 
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya marks INT-01 complete. Earlier pending/checkpoint statements below are historical; this status update records his direction and does not add new execution evidence.**
+
 Prepared on 2026-11-03 for `exocrat/clip`, from the actual
 `task/experiment-tooling-readiness` worktree. This plan is prepared **before
 commit, PR checks and merge**, as Suraj directed. Git integration does not
@@ -169,8 +171,9 @@ Use TTL 300 seconds if offered. Save the old apex A/AAAA values for rollback;
 remove only records conflicting with the new apex alias. Do not pin ALB IPs or
 change MX/SPF/DKIM/DMARC. Spaceship documents that a CNAME entered for `@` is
 resolved as an ALIAS in its [official guide](https://www.spaceship.com/en-GB/knowledgebase/dns-alias-record/).
-Actual ALB/validation values do not exist yet; provide the exact generated values
-after their separately approved creation, not guessed placeholders to enter now.
+ALB and validation values in prior execution receipts are historical snapshots.
+Obtain the exact current values from the approved deployment or ACM before changing
+DNS; do not reuse an old hostname or token without checking the target.
 
 The Identity owner must register the additional SPA redirect
 `https://restore.clip-iisc.site/auth/callback` in the existing Microsoft app.

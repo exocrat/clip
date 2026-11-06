@@ -301,7 +301,7 @@ async def app_probe(cluster, objects, bundle, image_root, *, helper=None):
         def object_key_for(self, upload_id):
             return objects.object_key_for(upload_id)
 
-        async def create_upload_url(self, key, media_type, expires):
+        async def create_upload_url(self, key, media_type, expires, size_bytes):
             return self.sign(key, "put", expires)
 
         async def create_download_url(self, key, expires):
