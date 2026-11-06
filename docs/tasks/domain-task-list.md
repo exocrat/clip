@@ -1,5 +1,7 @@
 # Campus Marketplace — Domain Task List
 
+**Current status (2026-11-05 15:26:56 UTC): Aditya directs that ID-01, LI-01/02, SE-01/02, CN-01/02/03 and INT-01 are complete. The work log records this status and preserves the prior evidence. EXP tasks remain open. Numbered acceptance text below is task definition/history; any earlier pending wording is superseded for current status.**
+
 **Canonical repository path:** `docs/tasks/domain-task-list.md`
 **Status:** Planned work; no domain implementation or domain cloud provisioning is represented as completed here.
 

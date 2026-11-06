@@ -13,7 +13,10 @@ cache and precomputed norms, then ordered-double NumPy scoring after returning
 the DB lease. Numerical workers are limited to two per process, with32pending
 requests and an overall20second deadline. Cancellation retains its numerical slot
 until the underlying CPU work finishes. There is no cached authorization/page or
-automatic Keyword fallback. This remains uncommitted/local, not deployed.
+automatic Keyword fallback. This paragraph describes the 2026-11-04 local checkpoint; it is not a current
+release or deployment assertion. SE-01 completion is tracked in the work log, while
+formal experiment/NFR and deployment evidence remains in the linked evaluation
+records.
 
 Merge follow-up: [the combined deployment handoff](listings-search-deployment.md)
 now provides and locally verifies an optional Linux AMD64 Hybrid image and normal
@@ -21,9 +24,9 @@ website-serving configuration. The original checkpoint evidence below remains
 historical; integrated cloud workload/resource acceptance is still separate.
 
 **Origin:** SE-01 hybrid amendment checkpoint5, Mohit-verified implementation plan.
-**State:** Implemented and locally checked; result awaits human verification.
-Linux/deployment/resource acceptance and actual upstream identity/images remain
-pending. This checkpoint supplied read capability. A subsequent separately enabled
+**Task status:** SE-01 is complete in the work log. The implementation and local
+checks described here are historical evidence. EXP deployment, NFR, final corpus,
+and live upstream evidence remain separately tracked. A subsequent separately enabled
 [dispatcher](semantic-embedding-dispatcher.md) now processes existing jobs only;
 pipeline activation/backfill remain separate.
 
@@ -93,10 +96,10 @@ RSS is separate. No live listener or existing/shared target is accepted.
 The historical receipt records source hashes, actual run/cleanup/resource
 observations and focused checks; see the
 [evaluation retrieval guidance](../evaluation/README.md).
-Worker scheduling is now implemented in its subsequent checkpoint, awaiting
-result verification. Controlled bootstrap/backfill/activation, real upstream and
-Linux/deployment checks remain subsequent verified checkpoints. Final counts,
-20+human labels, relevance/load/NFR and CI/peer/merge gates remain incomplete.
+The subsequent dispatcher and bootstrap checkpoints are documented separately.
+This runtime guide does not claim that experiment deployment, controlled corpus,
+relevance or NFR gates have passed; those remain in the evaluation plan. SE-01's
+peer, merge, and task acceptance status is recorded in the work log.
 
 
 Worker-enabled cleanup now first cancels/awaits/closes the dedicated dispatcher,

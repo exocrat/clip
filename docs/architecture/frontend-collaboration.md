@@ -116,86 +116,42 @@ All paths below are relative to `apps/web/`:
 | `src/features/search/` | Search, Wanted Request, and Saved Listing UI. | C / Search, Wanted, and Saved. |
 | `src/features/conversations/` | Private conversation and offer UI. | D / Conversations and Offers. |
 
-The four feature roots have `.gitkeep` handoff markers. Each remains in the
-PD-07 handoff and is removed only by that feature's owner at their first
-authorized implementation write. The markers in `src/app/`, `src/pages/`,
-`src/shared/ui/`, and `src/shared/styles/` only make those currently empty
-directories visible to Git; remove each ordinary marker when its first real
-file is added. No separate marker is needed for the `src/shared/` parent because
-Git records it through its tracked child directories.
+The route/page composition files connect public feature exports; domain behavior
+stays in feature-owned components and APIs. Current paths are `src/app/router.tsx`,
+`src/app/AppShell.tsx`, `src/pages/ScaffoldPages.tsx`,
+`src/pages/ConversationRuntime.tsx`, and `src/pages/ConversationOffers.tsx`.
 
-### Step 6 scaffold paths and connections
+### Public feature entry points
 
-The route table above is defined in `src/app/approvedRoutes.tsx` and mounted by
-`src/app/router.tsx`; every route uses the shared shell in
-`src/app/AppShell.tsx` and a page composition component in
-`src/pages/ScaffoldPages.tsx`. The shell navigation includes all twelve routes;
-the `example` values in dynamic-route preview links are route samples only and
-do not identify real records. The catch-all renders a local not-found message;
-it is not an additional product route.
-
-| Page path | Page component | Public feature placeholders and connections | Owning task(s) |
-|---|---|---|---|
-| `/sign-in` | `SignInPage` | `identity/SignIn` (Microsoft and temporary registration/login/reset; real local provider smoke verified) | A — ID-01 |
-| `/auth/callback` | `AuthCallbackPage` | `identity/MicrosoftCallback` (real local IISc success/non-IISc denial verified; cloud/device acceptance pending) | A — ID-01 |
-| `/` | `DiscoveryPage` | `search/SaleDiscovery` renders reviewed public sale summaries, displays the first attached photo via Listings' public `ListingImagePreview`, and links to B's detail route; `search/WantedBrowse` renders open requests | C — SE-01/SE-02; B — public summary/image delivery integration |
-| `/listings/new` | `ListingCreatePage` | public `identity/SellerEligibilityGate` wraps `listings/CreateListing`; mounts only for a current regular session, blocks temporary/loading/missing/expired/unavailable states | B — LI-01/LI-02; A — ID-01 integration |
-| `/listings/:listingId` | `ListingDetailPage` | `listings/ListingDetail` composes Search's `SaveListingAction` and public `listings/StartListingConversationAction`; the latter invokes Listings' guarded start/reopen HTTP command and navigates to the validated returned conversation ID | B — LI-01/LI-02; C — SE-02; D — CN-01 integration |
-| `/listings/:listingId/edit` | `ListingEditPage` | public `identity/SellerEligibilityGate` wraps `listings/ListingEdit`; server enforces regular seller/owner checks | B — LI-01/LI-02 |
-| `/my/listings` | `MyListingsPage` | Local view switch; public `listings/MyListings` and `search/MyWantedRequests` with draft matching; public Identity account boundary resets private state on actor changes; Conversations integration pending | B — LI-01/LI-02; C — SE-02; D — CN-02 integration |
-| `/saved` | `SavedListingsPage` | `search/SavedListings` uses the same `SaleListingCard` as Discover, including the Listings public photo renderer, current availability and Remove action; retired records remain content-free | C — SE-02; B — LI-01/LI-02 integration |
-| `/my/conversations` | `ConversationsPage` | `ConversationRuntime` provides the authenticated Conversations API to `ConversationInboxPage`. The member-scoped inbox has buyer/seller/requester/responder roles, origin grouping, partner/offer filters, amount sorting and bounded paging. Until owner interfaces expose display names, group/partner labels use shortened IDs; details and message content are not fetched for the inbox. | D — CN-01/CN-02; B — listing display context remains a small integration |
-| `/my/conversations/:conversationId` | `ConversationDetailPage` | `ConversationRuntime` provides the authenticated Conversations API to the private encrypted thread view. Message/key/read states, seller selection, deliberate contact sharing, and the amount-only offer panel are connected. `pages/ConversationOffers.tsx` composes authorized Conversations reads with public Listings submit/withdraw exports; only buyers submit/revise/withdraw. Seller group done-deal actions use the Listings availability port. Real provider/cloud acceptance remains separately gated. | D — CN-01/CN-02; B — listing selection/availability; A — Identity contact options |
-| `/account/contacts` | `AccountContactsPage` | `identity/ContactsEditor` (own-source editor; human verification pending) | A — ID-01 |
-| `/wanted/:requestId` | `WantedRequestPage` | public `search/WantedDetail` reads `/me`, disables responses for temporary/expired sessions and calls the response API; real Conversations provider pending | C — SE-02; A — ID-01 and D — CN-01/CN-02 integration |
-
-Public wrappers are `src/features/identity/IdentityPlaceholder.tsx`,
-`src/features/listings/ListingsPlaceholder.tsx`,
-`src/features/search/SearchPlaceholder.tsx`, and
-`src/features/conversations/ConversationsPlaceholder.tsx`, exported through
-each respective `index.ts`. All wrappers delegate to
-`src/shared/ui/ScaffoldPlaceholder.tsx`, which labels the unfinished section
-and owner and provides an explicit `children` slot for page-level composition.
-That slot is a presentation boundary, not a finalized cross-domain data/event
-contract. Domain owners may replace the implementation behind their public
-entry point; changes to a public export or cross-domain prop/event connection
-must be coordinated with affected consumers and reflected in this map.
-The foundation scaffold has only local selection of the two approved view
-toggles. LI-01 Step 7's first increment replaces the Listings create/detail
-placeholders with API-backed public exports from the same Listings entry point.
-It preserves the existing A/C/D child slots and adds no cross-domain data/event
-props. Its isolated browser harness uses real local PostgreSQL but synthetic
-trusted Identity and image-confirmation metadata, explicitly labelled in the UI.
-It supplies no real sign-in, photo upload/delivery, save-to-favourites, chat,
-contact or offer behavior. Edit/My Listings remain placeholders at this checkpoint.
-Listings removed its own `.gitkeep`; other feature markers remain with their owners.
-
-Page-composition ownership is intentionally unassigned. When an integration
-requires a shared page edit, the available integrator/merger coordinates it and
-becomes the current writer for that edit. Only one person edits a given page
-composition at a time; feature contributions remain in their owning feature
-roots. The current writer records the affected page and coordinates with the
-involved domain contributors before changing a public component connection.
-
-## Significant cross-domain connections
-
-This table identifies the connection and its eventual contract work. It does
-not define final component props, API signatures, caches, or event payloads.
-
-| Connection | Feature responsibilities and user-visible result | Contract / state question to resolve later |
+| Owner | Public entry point | Examples of exported behavior |
 |---|---|---|
-| Discovery/saved/match result → listing summary/detail | C owns the query or saved state; B owns authoritative listing/availability/images. Discover and Saved use the same Search sale-card presentation. Both receive photo IDs from the reviewed sale summary and call the Listings feature's public `ListingImagePreview`, which requests authorized image delivery; Search does not read Listings internals or storage. | DL-00 chooses supported listing reads or the approved Search projection and synchronization. Listing-summary display boundaries are verified in PD-07 Step 3; photo display uses the existing Listings delivery operation. |
-| Listing detail/result → save action | C owns save/unsave while B supplies listing context. The detail action reads the caller's private saved pages before offering Save, then displays the existing saved state; the server's idempotent write remains the race-safe fallback. Saved sale cards share Discover's presentation. | DL-00 assigns UI state ownership, refresh/invalidation, response/errors, idempotency and expired-session behavior; SE-02 implements it. |
-| Listing detail → start/reopen conversation | The Listings-owned action validates current listing/owner state and invokes Conversations to create or return the thread; Conversations owns thread persistence. Identity supplies trusted eligibility. One buyer/listing pair has at most one conversation. | DL-00 freezes create-or-existing behavior, failures, participant derivation, and stale/unavailable-listing rules. |
-| Wanted-request discovery/detail → contact requester → private conversation | Search owns public wanted-request browse/detail and request state; its Contact requester action invokes Conversations to create or return the thread. Conversations owns thread persistence; Identity supplies trusted account capability. Temporary accounts can browse but cannot respond because they are new freshers without items to sell. Public request details do not expose contact information. | DL-00/SE-02/CN-01 define request visibility, response eligibility, request association, duplicate/retry behavior, participant authorization, and behavior if the author closes the request. The existing one-buyer/one-listing conversation rule does not define uniqueness for request responses. |
-| My Listings → seller overview → conversation | B's owned listing record links to D's view of that listing's conversations/current offers under `/my/conversations`. D keeps private conversations isolated. The inbox has buying vs selling/request-response views and candidate grouping/filtering by listing or wanted request, person, and offer amount. | DL-00/CN-02 define authorization, grouping, available filters/sorts, offer semantics, and how request-origin conversations appear. |
-| Conversation → selected buyer and availability | The conversation screen presents the action and invokes the Listings-owned selection operation through the frontend/API boundary. Listings remains authoritative and may call Conversations to confirm thread participation; the seller sees confirmed results or an actionable failure. | DL-00 decides selection/availability relationship, permissions/visibility, retry/concurrency, and cross-view refresh. Selection, availability, payment and handover must remain distinct. |
-| Conversation → listing offer mutation | The conversation screen submits create/revise/resubmit/withdraw through a Listings-owned command. Listings serializes current availability/eligibility and asks Conversations to persist the offer; Conversations remains the offer-record owner. | DL-00/CN-02 freeze eligibility, retry/concurrency and failure behavior. Buyer withdrawal after ordinary unavailability follows the approved offer decision. |
-| Conversation → own contact options/editor → deliberate reveal | A owns private contact editing/options; D owns the per-conversation selection/confirmation/reveal flow. Only the actor's selected fields reach the relevant participants. | DL-00 freezes authorized contact retrieval and encryption/exposure/retention; ID-01 and CN-02 bind the real interfaces and failure handling. |
-| Listing form → image handling → publishable listing | B owns both LI-01 and LI-02. The form must display pending/rejected/retry states without falsely publishing an image-backed listing. | Reviewed listing/image contracts define publication, upload limits, confirmation, partial failure and retry. |
-| Wanted editor → possible sale matches | C owns the draft and matching UI; B supplies active sale data through the approved boundary. Suggestions appear before submission and do not block it. | DL-00/SE-02 define bounded matching inputs/results, draft-update behavior, unavailable exclusion, and safe failures. |
-| Identity/session → every protected feature | A owns trusted account/capability/session interfaces; each domain owns its own authorized operation. | DL-00 freezes session/provider placement, capability/error shapes, expiry/revocation handling and refresh responsibilities. |
-| Conversation display/read acknowledgement → notification suppression | D acknowledges messages actually displayed; CN-03's delivery worker uses the Conversations-owned read-state/intent contract and Identity's recipient interface. Email failure does not fail a successful marketplace write. | DL-00 freezes read-watermarks, events and producer transaction; CN-01/CN-03 implement the real path. Notification email destinations should reuse approved routes without leaking private content. |
+| A — Identity | `src/features/identity/index.ts` | Sign-in/session, contacts, seller eligibility, account boundary, Handle setup/editor |
+| B — Listings | `src/features/listings/index.ts` | Listing create/detail/edit, owner listings, authorized image preview and listing actions |
+| C — Search | `src/features/search/index.ts` | Sale discovery/cards, Wanted browse/management/detail, Saved listings |
+| D — Conversations | `src/features/conversations/index.ts` | Inbox/thread pages, encryption/session, read acknowledgements, unread count and listing-selection ports |
+
+Import these public indexes across feature boundaries. Pages compose the
+features; they do not reach into another feature's private implementation. A
+shared page, API or style edit needs one named writer and review from affected
+owners under `CONTRIBUTING.md`.
+
+## Cross-domain boundaries
+
+- Identity owns authentication, current account capabilities and private
+  contact editing. A visible control is never authorization; the server checks
+  current trusted session state.
+- Listings owns listing state, availability and image storage/delivery. Search
+  consumes Listings' public summary/image interfaces and never reads its tables.
+- Search owns discovery, Wanted Requests and Saved state. Conversation creation
+  and persistence belong to Conversations and are reached through its public
+  operation.
+- Conversations owns private messages, offers, read acknowledgements and
+  notification event/read-state interfaces. Contact values come from Identity
+  only after deliberate participant selection; notification email is handled
+  through the reviewed public provider boundary.
+- Keep payment, item quality, delivery and handover claims out of the UI. CLIP
+  does not verify them. The optional notification centre and optional search
+  enhancements are not part of the selected required scope.
 
 ## Product constraints carried into the proposed surfaces
 
@@ -216,62 +172,11 @@ not define final component props, API signatures, caches, or event payloads.
 - No payment, order-processing, delivery, rating, moderation dashboard, or optional
   feature pages are derived from the current required scope.
 
-## Verified product clarifications and deferred contracts
+## Current status and maintenance
 
-Suraj verified the public Sale Listings/Wanted Requests toggle on `/`, an
-owner-only Sale Listings/Wanted Requests toggle on `/my/listings`, public wanted
-request details, and a private conversation started by an eligible regular
-member who wants to respond. The author can mark a request unavailable after it
-is no longer wanted. Temporary accounts may browse but cannot respond because
-they are new freshers with nothing to sell. Request pages must not expose the
-author's private contact information.
-
-Suraj also verified buyer/seller inbox views and filters/grouping by listing or
-request, conversation partner, and offer amount where applicable. Exact queries,
-ordering, request-conversation association, and duplicate behavior remain DL-00
-and domain-task contract work; this map does not invent them. The public post
-type taxonomy and schema are owned elsewhere and are outside this frontend map.
-The weekly wanted-request digest remains optional and should link to public
-request details without including private conversation/contact data.
-
-## Review checkpoints
-
-Steps 2–3 verified the page inventory, contributor roles, public feature entry
-points, shared-page coordination rule, and shared UI baseline. No page/route/
-feature stubs are created by these planning steps. DL-00 and the domain task
-lists must define the business contracts before implementation depends on them.
-Step 9 updates downstream task and agent instructions to the implemented
-scaffold and reviewed contracts.
-
-## Current integration status
-
-Use the [domain task list](../tasks/domain-task-list.md) for required feature
-behavior and the [work log](../status/work-log.md) for current owners, checkpoints
-and verification. The Search product has no visible mode selector and defaults
-to Hybrid; legacy Keyword URLs/API handling remain for compatibility. Current
-Conversations and Identity integration details are in their retained
-[CN-01 handoff](../evaluation/domain/conversations-integration.md),
-[CN-02 handoff](../evaluation/domain/conversations-offers.md), and
-[ID-01 provider guide](../environment/identity-provider-setup.md). No historical
-reservation below should be treated as current authorization.
-
-### NEXT-03 inspection composition
-
-Suraj is the sole writer for the `ScaffoldPages.tsx`/`ConversationOffers.tsx` integration increment authorized by the user on 2026-10-28. The normal conversation routes expose inbox multi-selection, buyer selection and seller done-deal actions; the old development-only presentation demo is not the inspection route. `scripts/marketplace_inspection.py` serves the normal built UI and application factory with real local sessions/domain stores and explicit synthetic external provider ports. Its actor controls are test-only and never installed by normal startup. Shared page editing is complete for this increment; affected-owner and independent PR review remain required.
-
-### Conversations-first functional correction — 2026-10-28
-
-Suraj is the sole writer for AppShell/account-key setup, ConversationRuntime/page
-composition and the safe contact-settings return link for this verified scope.
-The public Conversations entry point exposes ConversationKeySetup; AppShell
-mounts it for authenticated accounts before marketplace pages. Matching legacy
-keys are retained, new accounts have separate IndexedDB namespaces, and ordinary
-returning logins resume without key consent again. The SDK13.0.0 compatibility
-adapter configures database/lock identity before initialization and fails closed
-if its pinned adapter shape changes; real-browser regressions are required on
-SDK upgrades. No shared global IndexedDB factory is changed and no private key
-is copied between accounts. Identity handle/schema work remains later.
-
-### NEXT-03 full visual-feedback follow-up — 2026-10-29
-
-Suraj remains the sole writer for the authorized integrated correction through local visual inspection. Identity's public entry exports `HandleSetup` and `HandleEditor`, reused by AppShell and account settings; Conversations exports `ConversationUnreadBadge`, keyed by authenticated account, and accepts the public origin-context renderer on both inbox and thread. The composition page supplies that renderer using only Listings/Search public reads. The inbox uses reviewed marketplace modes and group-first pagination; participant identity comes only from Identity's public `participant_profiles` projection through member-authorized Conversations summaries. Handle/database, modes/pagination and unread work were explicitly included by the later full-batch authorization; earlier exclusions are historical. Independent owner/peer review and cloud gates remain separate.
+The page inventory above records the approved route surfaces and domain owners.
+The [work log](../status/work-log.md) is the status source; the
+[domain task list](../tasks/domain-task-list.md) and current contracts own
+behavior and acceptance details. This map carries no active writer reservation
+or historical task gate. Refresh actual code and owner assignments before a
+future shared-page change.

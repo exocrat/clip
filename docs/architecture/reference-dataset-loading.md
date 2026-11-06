@@ -1,9 +1,10 @@
 # NEXT-06 Step3: reviewed reference-data load and media path
 
-**State:** Mohit verified the local rehearsal plan and directed execution after
-approving the November-evaluation recipe amendment. The guarded local SQL/real-byte
-rehearsal is performed; actual sessions, S3, semantic publication/vector checks and
-final readiness remain pending. No cloud approval is implied.
+**Status:** NEXT-06/DATA-READY is marked complete in the [work log](../status/work-log.md)
+and [task-wide review](../evaluation/domain/next-06/task-wide-review.md). This guide
+preserves the implementation/reproducibility path; its “pending” gates describe the
+original preparation checkpoint. They are not current task status or reusable
+approval for a new data operation.
 
 ## Inputs and ownership
 
@@ -87,8 +88,9 @@ Normal production startup must never discover or enable it implicitly.
   Compare safe logical row projections to the generated input fingerprint.
 - Verify1000byte hashes/references plus public/owner/hidden image-authorization
   cases through the real Listings handler/service with an explicit isolated
-  eligibility/caller fixture when actual session wiring is unavailable. Report
-  that fixture honestly; actual Identity sessions/S3 remain pending.
+  eligibility/caller fixture only in an isolated reproduction. The accepted
+  NEXT-06 review records the actual session/media checks; this local recipe is not
+  a substitute for or a fresh run of those receipts.
 
 ## Normal publication and pipeline dependency
 
@@ -104,7 +106,7 @@ close this Step3obligation. Do not claim it passes merely because an intent/job
 exists, copy a vector, or silently mark the whole step complete. Mohit must
 verify this staged checkpoint dependency before advancing.
 
-## Required real/cloud gates (not authorized here)
+## Original real/cloud gate list (historical)
 
 The2026-10-29inventory records stopped shared ECS/RDS, Hybrid/worker disabled and
 remaining DNS/HTTPS/runtime/role work. It is historical, not a live check. Do not

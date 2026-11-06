@@ -15,7 +15,7 @@ Which category/condition values and text/image limits should the initial schema 
 - Hard-coded database enums or unrestricted free-form category/condition values, complicating catalogue evolution or consistent filtering.
 
 ## Selected choice
-Mohit approved the catalogue and limits detailed in the [schema document](../architecture/mvp-database-schema.md):
+Mohit approved the catalogue and limits in this decision; the installed seed and forward changes are the ordered [database migrations](../../database/migrations/).
 
 - Category codes: `mobile_phone`, `laptop`, `electronics`, `furniture`, `books`, `bicycles`, `appliances`, `sports_fitness`, `other`. Labels are Mobile Phones, Laptops, Electronics, Furniture, Books and Study Materials, Bicycles, Home Appliances, Sports & Fitness, Other. Electronics excludes mobile phones, laptops, and household appliances. Mobile phones and laptops carry the FR-17 sensitive-category flag; the independent price-threshold rule still applies to every category.
 - Condition codes: `new`, `like_new`, `good`, `fair`, with the seller-declared meanings in the schema. These are not platform quality/functionality guarantees.
@@ -51,7 +51,7 @@ LI-01/LI-02/SE-01/SE-02 and DL-00 must preserve consistent validation/filter sem
 ## Approver
 Mohit (C), explicit approval of the presented catalogue and field-limit proposal. The user later confirmed the PD-08 affected-owner schema gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). This records the gate status without inferring a reviewer identity.
 
-The pickup-area correction is directed by Suraj (B), 2026-10-21. Affected consumer/schema review remains pending before shared integration.
+The pickup-area correction was directed by Suraj (B), 2026-10-21. The work log records the affected consumer/schema review and LI-01/NEXT-03 completion; this decision is not a live schema-state check.
 
 ## Supersedes
 None.

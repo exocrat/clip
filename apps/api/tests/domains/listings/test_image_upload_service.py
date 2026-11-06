@@ -198,7 +198,7 @@ class _ImageStorage:
     def object_key_for(self, upload_id: UUID) -> str:
         return f"private-test/listings/{upload_id}"
 
-    async def create_upload_url(self, object_key, media_type, expires_at):
+    async def create_upload_url(self, object_key, media_type, expires_at, size_bytes):
         self.upload_signatures.append((object_key, media_type, expires_at))
         if self.upload_sign_failures:
             self.upload_sign_failures -= 1

@@ -1,11 +1,12 @@
 # NEXT-06 task-wide review — frozen data and reviewed labels
 
-All six canonical output/check groups are represented in the current package.
-Content is frozen; formal task/DATA-READY acceptance remains pending human Step6
-verification, current-head CI and independent human review/authorized merge.
-No new dataset feature/integration implementation is identified by this review.
-Step3's remaining normal workflow check is accepted on Mohit's explicit report
-that another person performed it, with no executor/raw receipt/revision invented.
+**Current disposition (2026-11-05 15:26:56 UTC): Aditya confirms NEXT-06/DATA-READY complete. The pending acceptance text below is historical and superseded; retained step evidence and stated limits remain unchanged.**
+
+All six canonical output/check groups are represented. Aditya later confirmed
+NEXT-06/DATA-READY complete; PR #24 merged the frozen release to `main` at
+`c0bac59`, and hosted CI run `41217783729` passed. This status update adds no
+new dataset check. Step3's normal workflow check is accepted on Mohit's report
+that another person performed it; no executor, raw receipt or revision is inferred.
 
 ## Canonical ordered-step audit
 
@@ -99,6 +100,6 @@ concrete commit, publish images and replace PR23 as requested; new-head CI and
 independent review remain necessary. Primary peer Suraj, affected Identity/
 Listings review as appropriate, using docs/prompts/peer-review-prompt.md.
 Author/agent checks cannot approve a PR; exact merge needs separate authorization.
-Formal DATA-READY acceptance is recorded separately against this immutable
-manifest/hash and accepted merge revision; do not hand-edit frozen metadata to
-pretend that pending human/CI/peer gates have passed.
+DATA-READY acceptance is recorded against this immutable manifest/hash and
+accepted merge revision in the [work log](../../../status/work-log.md). Keep the
+frozen metadata unchanged; this page records the evidence limits above.

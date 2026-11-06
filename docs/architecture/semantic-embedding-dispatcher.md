@@ -1,8 +1,9 @@
 # Bounded embedding job dispatcher
 
 **Origin:** SE-01 hybrid integration checkpoint5; Mohit verified the worker plan.
-**State:** Implemented/locally checked; result awaits human verification. No shared
-activation, controlled bootstrap, Linux acceptance or deployment is implied.
+**Task status:** SE-01 is complete in the work log. The implementation and local
+checks below are historical evidence, not proof of current cloud activation or
+formal EXP/NFR acceptance.
 
 ## Enablement and ownership
 
@@ -75,8 +76,9 @@ Only identity is a test override; bootstrap is explicit fixture setup outside
 app startup. The historical receipt records source hashes, failed-probe
 correction, real results and remaining gates; see the
 [evaluation retrieval guidance](../evaluation/README.md).
-Actual upstream/auth/images, controlled bootstrap, Linux/resources/final corpus,
-20+human labels/NFR/full CI/secret scan/independent review remain pending.
+The linked experiment plan tracks deployment, controlled corpus, relevance, and
+NFR evidence. Task peer review, merge, and acceptance status are recorded in the
+work log; this historical checkpoint does not reopen those task gates.
 
 
 The subsequent [bootstrap checkpoint](semantic-pipeline-bootstrap.md) now supplies

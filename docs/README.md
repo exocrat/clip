@@ -15,12 +15,9 @@ document here for every task.
 - Active task procedures: [domain](tasks/domain-task-list.md) and
   [final closeout](tasks/final-closeout-task-list.md). BOOT-00 and PRE-00 are
   complete; see the task index and work log for their accepted status.
-- [NEXT-06 frozen dataset review](evaluation/domain/next-06/task-wide-review.md) —
-  actual data/image/vector/label/rebuild evidence, provenance and final acceptance gates.
-  The [pre-cloud package](evaluation/domain/next-06/pre-cloud-review.md) is historical.
-- [NEXT-06 dataset cloud handoff](evaluation/domain/next-06/cloud-handoff.md) —
-  verified local inputs, external photo transfer, cloud adapter/integration gates
-  and account335523638354-only restriction.
+- [NEXT-06 accepted frozen dataset review](evaluation/domain/next-06/task-wide-review.md) —
+  actual data/image/vector/label/rebuild evidence, provenance, completion status
+  and retained limits.
 - [Work log](status/work-log.md) — current status rows, pending real-integration
   checks and concise project history. Older detailed entries remain in Git.
 - [PD-19 foundation handoff](status/foundation-handoff.md) — short historical
@@ -57,9 +54,8 @@ document here for every task.
   [CN-01 Conversations integration](evaluation/domain/conversations-integration.md),
   [CN-02 offers and contact sharing](evaluation/domain/conversations-offers.md),
   and the [Identity demo postmortem](evaluation/identity/id-01-step-12/demo-postmortem-20261026.md).
-- NEXT-03 handoff artifacts: [change summary](tasks/next-03-change-summary.md),
-  [implementation and verification report](tasks/next-03-visual-feedback-implementation-report.md),
-  and the [next-agent PR/cloud-readiness prompt](prompts/next-03-pr-and-cloud-readiness-handoff.md).
+- NEXT-03 evidence: [visual-feedback plan and decisions](tasks/next-03-visual-feedback-plan.md)
+  and the [implementation/verification summary](tasks/next-03-visual-feedback-implementation-report.md).
 
 ## Setup and contributor process
 

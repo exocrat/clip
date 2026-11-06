@@ -1,18 +1,6 @@
 # Proposed reference dataset for NFRs and the architecture comparison
 
-**State:** NEXT-01 Step 5 design verified by Suraj on 2026-10-28. NEXT-06 Step2
-has generated two reproducible local reference-input runs. Fresh isolated Step3/4
-rehearsals verify actual SQL/local media and pinned model vectors; actual cloud
-media/auth/runtime and final label/source binding/DATA-READY remain pending. Mohit
-accepted all22proposed relevance groups and inclusion policy without corrections.
-Step6 verified an isolated same-target reset/reload with identical record/media/
-vector/index fingerprints; a local freeze candidate is retained, not final acceptance. Immutable input
-manifests retain their original generated-unloaded phase; receipts describe loads.
-NEXT-06 and SE-01 own implementation, data creation,
-human label review and DATA-READY. The [submitted PRD](../../docs/source/ICC_Project_PRD_FINAL.pdf)
-requires at least 5,000 users and 1,000 listings; this recipe proposes exactly
-those counts as the smallest reference corpus. Later changes to the product's
-categories, schema or search behavior must be reconciled before final generation.
+**Status:** NEXT-06/DATA-READY is marked complete in the [work log](../../docs/status/work-log.md) and the [task-wide review](../../docs/evaluation/domain/next-06/task-wide-review.md). This file preserves the accepted corpus design and reproducibility requirements; its old preparation gates are historical, not current task status or permission to rebuild/load data.
 
 ## Reproducible inputs
 

@@ -31,17 +31,17 @@ Vendoring makes certificate changes reviewable and avoids a mutable build downlo
 
 ## Implications
 The shared image trust store affects all its TLS clients that use system roots;
-B/C/shared-owner review is required. Only regional root CAs are added; source
+reviewed owner/task acceptance is recorded in the work log. Only regional root CAs are added; source
 certificates contain no private keys or intermediates. Existing provider/session,
 DB-role/URI and hostname-verification policy remains. Certificate changes require
 reviewed source/manifest updates and image rebuild; no runtime download or rotation
-job is introduced. Native local proof is separate from AMD64/Hybrid and deployed
-RDS acceptance. No cloud permission, live call or deployment is authorized here.
+job is introduced. Native local proof is distinct from current AMD64/Hybrid/deployed RDS state. No
+cloud permission, live call or deployment is authorized by this decision.
 
 ## Approver
 Aditya(A) authorized implementation of the certificate fix; routine packaging
-choices follow the authorized local judgment. Human result verification and
-independent/affected-owner image approval remain pending.
+choices followed the authorized local judgment. ID-01 task acceptance is recorded
+in the work log; this decision is not a current image-state check.
 
 ## Supersedes
 None; implements the existing verify-full/system requirement.

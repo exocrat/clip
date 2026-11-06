@@ -45,8 +45,8 @@ Migration `20261025012200_wanted_category_code_reference.sql` and its populated
 rollback/reapply test correct the earlier storage-only no-gap conclusion.
 Listings sale rows retain their existing category UUID reference. Shared database
 wrappers and fixtures follow the new head; existing migrations stay unchanged.
-Real upstream integration, normal affected-owner/independent review, publication,
-cloud migration and concrete request cleanup approvals remain separate gates.
+The work log records SE-02 and the affected-owner review as complete. This dated
+decision does not assert current cloud schema state or authorize a future migration.
 
 ## Approver
 

@@ -59,14 +59,13 @@ ambiguous mutations. Shared behavior prevents feature-private coupling.
 
 ## Implications
 A coordinates the bounded technical helper; Suraj(B)/Mohit(C) retain their feature
-logic and must review adapter/test-fixture changes. There are no page/route/UI or
-business-contract changes. Actual browser/device, proxy/TLS/provider and deployed
-runtime checks remain pending. Local TypeScript/HTTP/SQL evidence uses controlled
-signing/mail and synthetic data, not live providers or the Step14 full matrix.
+logic and must review adapter/test-fixture changes. There are no page/route/UI or business-contract changes. ID-01 and affected
+marketplace task status is recorded in the work log. This decision is not a current
+proxy/TLS/provider-state assertion.
 
 ## Approver
-Aditya(A) authorized starting the explained integration. Human result verification,
-independent and affected-owner review remain pending; no push/deployment approval.
+Aditya(A) authorized the integration. Human/owner acceptance is recorded in the
+work log; this does not approve any future push or deployment.
 
 ## Supersedes
 None; implements the existing reviewed session/CSRF extension across feature APIs.
@@ -74,10 +73,8 @@ None; implements the existing reviewed session/CSRF extension across feature API
 ## Firefox origin compatibility — 2026-10-26 19:31:52 UTC
 
 Aditya verified the API-only referrer-policy correction. Both CSRF preflight and
-business fetches pin `referrerPolicy: origin`, overriding caller options. The
-page retains `no-referrer`; Firefox otherwise sends `Origin: null` for these
-same-origin-mode POSTs. This preserves backend exact-origin validation and emits
-only an origin as referrer, never callback paths/query parameters. Firefox148
-reproduced the old behavior and verified the actual corrected transport against a
-local synthetic endpoint. Aditya confirmed real local Firefox sign-in works on 2026-10-26 19:36:18 UTC;
-affected-owner review and deployed acceptance remain pending.
+business fetches pin `referrerPolicy: origin`, overriding caller options. The page
+retains `no-referrer`; Firefox otherwise sends `Origin: null` for these same-origin
+POSTs. Firefox 148 reproduced and verified the correction locally, and Aditya
+confirmed real local Firefox sign-in on 2026-10-26 19:36:18 UTC. Later task
+acceptance is recorded in the work log; no current browser session is asserted.

@@ -271,28 +271,41 @@ The ordinary loader still refuses nonempty databases.
 
 The [Step6 evidence](../docs/evaluation/domain/next-06/step-06/result.json) and
 [freeze candidate](../docs/evaluation/domain/next-06/step-06/freeze-candidate.json)
-retain exact inputs, counts and fingerprints. This is a locally verified freeze
-candidate, not final DATA-READY acceptance. Accepted22human judgments are retained
-without changes; actual source/contract acceptance, Identity/S3/cloud runtime
-integration and final source binding remain pending. Do not regenerate or alter
-labels merely to improve results; revalidate the binding after material changes.
+retain exact inputs, counts and fingerprints. This section records the pre-acceptance freeze candidate. NEXT-06/DATA-READY is
+now complete per the [accepted task-wide review](../docs/evaluation/domain/next-06/task-wide-review.md)
+and [work-log status](../docs/status/work-log.md). The22accepted judgments and
+source bindings remain unchanged; revalidate only after material input changes.
 
 
-For another contributor loading this corpus into AWS, use the
-[NEXT-06 cloud handoff](../docs/evaluation/domain/next-06/cloud-handoff.md). It
-identifies required external payload/photos, the missing cloud loader, accepted
-judgments, account restriction and pending real integration/final freeze gates.
+NEXT-06/DATA-READY is complete; no new load is required. Use the [frozen
+manifest](../docs/evaluation/domain/next-06/frozen-dataset.json) and [accepted
+task-wide review](../docs/evaluation/domain/next-06/task-wide-review.md) for the
+release, its provenance and verification limits.
 
 
 ### NEXT-06 prepared cloud adapter (offline preparation complete)
 
 `data.generators.reference_cloud plan` validates a named input and prints an offline
-plan without constructing clients. `load` is explicit/operator-only; no cloud load
-has been executed. `reference-cloud-target.template.json` intentionally contains
+plan without constructing clients. `load` is explicit/operator-only. The accepted NEXT-06 load is recorded in the
+task-wide review; do not rerun it just to recreate the published release. `reference-cloud-target.template.json` intentionally contains
 nulls for operator-owned live bindings and cannot execute unchanged. See the
-[cloud handoff](../docs/evaluation/domain/next-06/cloud-handoff.md#6-review-the-prepared-cloud-adapter-then-load)
-for exact commands, approvals, limits and failure/cleanup rules. The prepared
-adapter is account335523638354-only; alternate/root identities are refused.
+[accepted task-wide review](../docs/evaluation/domain/next-06/task-wide-review.md)
+for the accepted result and evidence limits. The cleanup removed the earlier
+operator handoff, so the invocation forms are retained here for a future, newly
+reviewed target (replace every placeholder; do not replay the accepted load):
+
+```sh
+.venv/bin/python -m data.generators.reference_cloud plan --name <prepared-run-name> --image-root /absolute/path/to/clip-dataset-images
+.venv/bin/python -m data.generators.reference_cloud load --name <prepared-run-name> --image-root /absolute/path/to/clip-dataset-images --target /absolute/private/approved-target.json --ledger /absolute/private/new-run-ledger.jsonl --execute
+```
+
+The `plan` form is offline. The `load` form can write S3 and the database: it
+requires a reviewed current target and scope, private inputs and a fresh ledger,
+explicit approval, bounded cost and time, and a recovery/cleanup plan. An error or
+timeout can have a partial or uncertain outcome; inspect the ledger and actual
+state before proposing recovery. Never print secrets or signed URLs. The adapter
+retains its account and non-root identity guards; new operations require fresh
+review and approval.
 
 `reference_rows.py` shares schema-aware insertion/verification between local and
 cloud adapters; the local wrapper's original fixed DB/role/Unix/object guards remain.
@@ -305,8 +318,8 @@ records and the input logical fingerprint must remain unchanged.
 Tests use explicit synthetic guard fixtures and Botocore Stubber for request/byte
 semantics; they are not real S3/IAM/session/deployment evidence. The native local
 rebuild checks the actual shared SQL, real photo bytes, model and dispatcher.
-The [pre-cloud review package](../docs/evaluation/domain/next-06/pre-cloud-review.md)
-records the final local checks, remaining environment gates and peer handoff.
+The [accepted NEXT-06 task-wide review](../docs/evaluation/domain/next-06/task-wide-review.md)
+records completion, final checks and the limits of the retained evidence.
 
 
 ### Complete published transfer
@@ -341,8 +354,9 @@ metadata, not credential output. See the latest preflight evidence under
 
 ### NEXT-06 current Step5 canonical labels
 
-`data/evaluation/query-labels.json` now contains22unchanged Mohit-reviewed cases, all included, bound to the actual7efd142e corpus, a12f4a3dataset source and6edb52bpublic contracts. Mohit explicitly chose the recorded acceptance timestamp as reviewed_at. Revalidate locally with `.venv/bin/python -m scripts.evaluation.reference_labels validate --image-root /absolute/path/to/clip-dataset-images`; original/restored payload/photos and full accepted Git objects are required. The command reconstructs actual inputs, committed source and recorded cloud/rebuild bindings without network/inference/scoring. `write` refuses existing output. Historical drafts/proposals and old1ffa78freeze candidates remain historical; Step6formal freeze/DATA-READY and final scoring are separate.
+`data/evaluation/query-labels.json` now contains22unchanged Mohit-reviewed cases, all included, bound to the actual7efd142e corpus, a12f4a3dataset source and6edb52bpublic contracts. Mohit explicitly chose the recorded acceptance timestamp as reviewed_at. Revalidate locally with `.venv/bin/python -m scripts.evaluation.reference_labels validate --image-root /absolute/path/to/clip-dataset-images`; original/restored payload/photos and full accepted Git objects are required. The command reconstructs actual inputs, committed source and recorded cloud/rebuild bindings without network/inference/scoring. `write` refuses existing output. Historical drafts and earlier freeze candidates remain historical; the accepted
+Step6 frozen manifest and DATA-READY status are recorded separately.
 
 ### NEXT-06 Step6 frozen release
 
-[The immutable frozen manifest](../docs/evaluation/domain/next-06/frozen-dataset.json) now binds actual5,000users/1,000listings/images,2,000vector parts and22reviewed labels. Verify with `reference_release validate` as indexed in the command registry. Both generated record sets,52archive members/45photos, load ledger, pinned model and real reset/cloud-native hashes match. Step3normal workflow completion is explicitly human-reported from another executor. No data/labels regenerated or cloud objects deleted. [Task-wide review](../docs/evaluation/domain/next-06/task-wide-review.md) lists source/provenance/checks and human/CI/peer/merge acceptance still needed for formal DATA-READY.
+[The immutable frozen manifest](../docs/evaluation/domain/next-06/frozen-dataset.json) now binds actual5,000users/1,000listings/images,2,000vector parts and22reviewed labels. Verify with `reference_release validate` as indexed in the command registry. Both generated record sets,52archive members/45photos, load ledger, pinned model and real reset/cloud-native hashes match. Step3normal workflow completion is explicitly human-reported from another executor. No data/labels regenerated or cloud objects deleted. [Task-wide review](../docs/evaluation/domain/next-06/task-wide-review.md) lists source/provenance/checks and the recorded user/CI/peer/merge acceptance and its limits.

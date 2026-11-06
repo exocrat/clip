@@ -1,6 +1,10 @@
 # Browse/search workload profiles — isolated preparation
 
-local-search-pilot-v1.json is the verified bounded local profile:2rps,5s warm-up,
+The reference data is accepted in the NEXT-06 task-wide review. These workload
+files remain a mixture of local preview profiles and non-executable drafts; DATA-READY
+does not itself accept an EXP workload or authorize measured traffic.
+
+`local-search-pilot-v1.json` is the verified bounded local profile:2rps,5s warm-up,
 10s measured,max2active clients,3s timeout,30HTTP request cap. It mixes browse,
 Keyword cycle and Hybrid wheeled vehicle over3controlled native sources. The
 expected UUID is from the explicitly synthetic native preview seed, not a human
@@ -33,9 +37,10 @@ never authorizes a run.
 `ecs-lambda-case-corpus-v1.json` is a dataset-bound draft, not an executable
 profile. Seven browse/detail cases have expected responses derived from the
 frozen archive. Three Hybrid requests bind to reviewed relevance-label sets, but
-their ordered expected responses remain unset pending final DATA-READY search
-references and independent review. `prepare_comparison_corpus.py` recreates the
-draft from the retained archive and refuses to overwrite an existing output.
+their ordered expected responses remain unset in this draft. DATA-READY is
+accepted; final source-bound experiment inputs and their review belong to EXP.
+`prepare_comparison_corpus.py` recreates the draft from the retained archive and
+refuses to overwrite an existing output.
 
 EXP-05 pilot profiles are per run and use the same reviewed ten-case read mix,
 with a 60-second 10-read/s warm-up, five-second drain and 120-second 50-read/s
