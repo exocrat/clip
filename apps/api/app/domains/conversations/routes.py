@@ -180,19 +180,11 @@ async def submit_message(
     caller: CallerContext = Depends(require_caller),
 ) -> ConversationEntry:
     """Submit one ciphertext/control envelope and return 200 only for exact retry."""
-    # Protocol recovery controls are needed to read previously encrypted history.
-    if (
-        payload.envelope.recovery_for_entry_id is not None
-        or payload.envelope.sdk_message_type == "retry_request"
-    ):
+    # Unavailable sale listings reject all entries, including opaque controls.
+    async with _listing_write_guard(request, caller, conversation_id):
         result = await _operations(request).submit_message(
             caller, conversation_id, payload
         )
-    else:
-        async with _listing_write_guard(request, caller, conversation_id):
-            result = await _operations(request).submit_message(
-                caller, conversation_id, payload
-            )
     if result.replayed:
         response.status_code = 200
     return result.entry

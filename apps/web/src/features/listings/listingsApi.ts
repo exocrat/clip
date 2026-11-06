@@ -263,7 +263,7 @@ async function confirmUploadedImage(uploadId: string, signal?: AbortSignal) {
     return await confirmImageUpload(uploadId, signal);
   } catch (error) {
     if (error instanceof ListingsApiError && error.status === 422) {
-      throw new ListingImageFinalError('This file could not be verified as a valid JPEG, PNG, or WebP photo of 10 MiB or smaller. Remove it and choose another photo.');
+      throw new ListingImageFinalError('This file could not be verified as a valid JPEG, PNG, or WebP photo of 5 MiB or smaller. Remove it and choose another photo.');
     }
     if (error instanceof ListingsApiError && error.status === 409) {
       throw new ListingImageFinalError('This photo upload expired or is no longer usable. Remove it and choose the photo again.');

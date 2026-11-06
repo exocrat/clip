@@ -17,6 +17,7 @@ from app.contracts.domain_types import ImageId
 from app.domains.listings.service import InvalidImageContent, StoredImageMetadata
 
 MAX_IMAGE_SIZE_BYTES = 10_485_760
+MAX_NEW_IMAGE_SIZE_BYTES = 5_242_880
 MAX_IMAGE_PIXELS = 40_000_000
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
@@ -45,7 +46,7 @@ class S3ListingsImageStorage:
         self, object_key: str, media_type: str, expires_at: datetime, size_bytes: int
     ) -> str:
         """Bind the create-only PUT to its declared content type and exact length."""
-        if not 1 <= size_bytes <= MAX_IMAGE_SIZE_BYTES:
+        if not 1 <= size_bytes <= MAX_NEW_IMAGE_SIZE_BYTES:
             raise ValueError("Invalid upload size")
         remaining = floor((expires_at - datetime.now(UTC)).total_seconds())
         if remaining < 1:

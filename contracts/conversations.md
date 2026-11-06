@@ -64,8 +64,7 @@ withdrawal remains allowed. Reopening restores writes. Listings supplies a
 server-authorized availability guard held across the independent Conversations
 message transaction; it serializes with availability changes and fails closed
 on missing state. A participant-scoped summary reports the current listing
-availability so the client can disable writes and explain the reason. Protocol
-recovery traffic needed to read existing encrypted history remains permitted.
+availability so the client can disable writes and explain the reason. Recovery controls are also blocked while unavailable; history requiring recovery may not be readable until the listing reopens.
 
 An unavailable/closed origin blocks new threads but does not revoke the
 existing participants' thread access. Existing listing/request threads remain

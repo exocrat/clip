@@ -189,8 +189,7 @@ def test_offer_selection_and_contact_share_work_together_through_real_apis():
                 await state.client.put(offer_url, json=offer_body)
             ).status_code == 200
             assert await snapshot(pool, state.thread) == after_offer
-            # Private tracking is independent: explicitly close the deal before
-            # verifying the unavailable-offer gate and still-allowed contact flow.
+            # Closing the listing blocks both offers and new contact shares.
             state.app.dependency_overrides[require_caller] = lambda: caller(state.owner)
             closed = await state.client.put(
                 f"/listings/{state.listing}/availability",
@@ -213,6 +212,29 @@ def test_offer_selection_and_contact_share_work_together_through_real_apis():
 
             contact_body = contact_request().model_dump(mode="json")
             share_url = f"/conversations/{state.thread}/contact-shares"
+            blocked_share = await state.client.post(share_url, json=contact_body)
+            assert blocked_share.status_code == 409
+            assert await snapshot(pool, state.thread) == after_offer
+
+            # Reopening restores participant writes without losing the offer.
+            state.app.dependency_overrides[require_caller] = lambda: caller(state.owner)
+            closed_listing = await state.store.read_listing(state.listing)
+            reopened = await state.client.put(
+                f"/listings/{state.listing}/availability",
+                json={
+                    "availability": "available",
+                    "expected_revision": closed_listing.revision,
+                    "available_from": closed_listing.available_from.isoformat(),
+                    "available_until": (
+                        closed_listing.available_until.isoformat()
+                        if closed_listing.available_until
+                        else None
+                    ),
+                    "operation_id": str(uuid4()),
+                },
+            )
+            assert reopened.status_code == 200
+            state.app.dependency_overrides[require_caller] = lambda: caller(state.buyer)
             share = await state.client.post(share_url, json=contact_body)
             assert share.status_code == 201
             assert share.json()["kind"] == "contact_share"
