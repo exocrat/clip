@@ -36,7 +36,7 @@ export type ContactField = ContactPreparationRequest['fields'][number];
 export class ConversationApiError extends Error {
   constructor(readonly status: number, readonly kind: 'http' | 'transport' | 'invalid_response',
     readonly reason?: 'peer_key_not_registered') {
-    super('Conversation request could not be completed');
+    super(status === 413 ? 'This request is too large. Reduce its contents and try again.' : 'Conversation request could not be completed');
     this.name = 'ConversationApiError';
   }
 }

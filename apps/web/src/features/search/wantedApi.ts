@@ -29,6 +29,7 @@ export class WantedApiError extends Error {
           403: 'This action is not available to this account.',
           404: 'This item is no longer available to you.',
           409: 'This request changed. Reload it before editing again.',
+          413: 'This request is too large. Reduce its contents and try again.',
           422: 'Use a title up to 120 characters, description up to 5,000, a current category, and an optional whole-rupee budget up to ₹1,00,00,000.',
           503: 'This service is temporarily unavailable. Please retry.',
         } as Record<number, string>

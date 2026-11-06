@@ -1,5 +1,8 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### API and image security hardening — 2026-11-06 18:12:12 UTC
+Aditya approved per-client API rate limits, a 1 MiB streaming request-body limit, and metadata-based image validation capped at 40 million pixels. Implemented bounded per-address counters, safe 413 errors, Pillow structure checks and frontend messages; image bytes remain limited to 10 MiB and are not re-encoded. Focused API checks 67 passed; affected frontend tests 90 passed and typecheck passed. Real proxy/Lambda client-address behavior, browser-to-S3 integration, and affected-owner review remain pending; no cloud actions.
+
 ### Unavailable-listing conversation behavior — 2026-11-06 16:51:42 UTC
 Aditya approved read-only existing sale conversations while unavailable, blocking messages and offer submission while permitting withdrawal and reopening writes when available. Added the shared contract and participant summary availability, Listings-owned lock held over message/contact-share writes, and browser notice/disabled controls. Contract artifacts regenerated; frontend typecheck and diff whitespace check passed. Runtime and concurrency tests were not run; human visual verification and Listings/Conversations owner review remain pending. No cloud actions.
 
@@ -1535,6 +1538,7 @@ evidence](../evaluation/README.md).
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
+| API and image security hardening | Aditya; Listings and shared-core owners | in progress | Verify proxy client addresses and real image upload; arrange owner review | Local implementation and focused checks performed | pending | `task/unavailable-listing-conversations` | Real proxy/Lambda identity and browser-to-S3 checks pending | 2026-11-06 18:12:12 UTC |
 | Unavailable listing conversations | Aditya; Listings and Conversations owners | in progress | Verify read-only behavior, reopen and race handling | performed locally | pending | `task/unavailable-listing-conversations`; uncommitted changes | Runtime/concurrency verification and affected-owner review pending | 2026-11-06 16:51:42 UTC |
 | Security hardening | Aditya; Listings owner review | in progress | Verify signed-length uploads and configurable API limits | performed | pending | task/repo-documentation-cleanup; local changes | Browser/S3 enforcement and affected-owner review pending; no cloud access | 2026-11-05 22:06:35 UTC |
 | EXP-02 |  | in progress | Existing integrated tools plus revised request correlation, fresh-runtime gate and coverage-first repetition policy implemented locally. | Evaluation450passed/11skipped;30focused checks,18Node files, actualk6initialization and immutable pilot provenance pass. |  | [Runtime tools](../evaluation/runtime-measurements.md); [pilot evidence](../evaluation/deployment-20261103/functional-audit/startup-pilot-results-20261104.md) |  | 2026-11-04 19:54:35 UTC |

@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../shared/ui';
 import { createDisplayedReadAcknowledger } from './read-state';
+import { ConversationApiError } from './api';
 import {
   KEY_REGISTRATION_WARNING,
   PEER_KEY_CHANGE_WARNING,
@@ -84,7 +85,7 @@ export function ConversationThread({
 }: ConversationThreadProps) {
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState<PendingSend | null>(null);
-  const [sendError, setSendError] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [refreshError, setRefreshError] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
   const [acknowledgedRegistration, setAcknowledgedRegistration] = useState(false);
@@ -217,15 +218,17 @@ export function ConversationThread({
     const text = draft;
     setDraft('');
     setPending({ operationId, text, state: 'sending' });
-    setSendError(false);
+    setSendError(null);
     try {
       await onSend(text, operationId);
       scrollToBottomAfterSend.current = true;
       setPending(null);
       setShowOpeningUnreadBoundary(false);
-    } catch {
+    } catch (error) {
       setPending({ operationId, text, state: 'failed' });
-      setSendError(true);
+      setSendError(error instanceof ConversationApiError && error.status === 413
+        ? 'This request is too large. Reduce its contents and try again.'
+        : 'The action did not finish. Retry it or refresh before sending another message.');
     } finally {
       sendLock.current = false;
     }
@@ -250,9 +253,9 @@ export function ConversationThread({
       await onRetry(pending.operationId);
       scrollToBottomAfterSend.current = true;
       setPending(null);
-      setSendError(false);
+      setSendError(null);
     } catch {
-      setSendError(true);
+      setSendError('The action did not finish. Retry it or refresh before sending another message.');
     } finally {
       setActionBusy(false);
     }
@@ -273,7 +276,7 @@ export function ConversationThread({
     try {
       await action();
     } catch {
-      setSendError(true);
+      setSendError('The action did not finish. Retry it or refresh before sending another message.');
     } finally {
       setActionBusy(false);
     }
@@ -365,7 +368,7 @@ export function ConversationThread({
       </ol>
       {sendError ? (
         <p className="conversation-thread__error" role="status">
-          The action did not finish. Retry it or refresh before sending another message.
+          {sendError}
         </p>
       ) : null}
       <form className="conversation-thread__composer" onSubmit={(event) => void submit(event)}>

@@ -25,6 +25,8 @@ export class IdentityError extends Error {
         ? 'Sign-in failed or your session has ended.'
         : status === 403
           ? 'This action is not allowed. Refresh and try again.'
+          : status === 413
+            ? 'This request is too large. Reduce its contents and try again.'
           : status === 422
             ? 'Check your details or request a new verification code.'
             : status === 429
