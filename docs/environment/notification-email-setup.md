@@ -20,11 +20,11 @@ require their own exact approved plans. No separate mailbox is assumed.
 
 The sender requires an explicit test or production profile; test defaults to
 up to five configured recipients. Aditya authorized an explicit test-worker
-switch allowing other eligible notification recipients; it is not yet deployed.
-For the next notification deployment, explicitly enable
+switch allowing other eligible notification recipients; was later exercised in a hosted test; the currently deployed setting has not been verified here.
+For a notification deployment that should allow all eligible recipients, explicitly enable
 `notification_allow_unlisted_recipients` so the worker has no recipient
-allowlist, as Aditya directed on 2026-10-30. Deployment and live testing are deferred.
-The image published at digest
+allowlist, as Aditya directed on 2026-10-30. Confirm the actual deployed revision before treating prior tests as evidence for it.
+The historical image published at digest
 `sha256:3faaeb2ebe160868d1e7b194e373051a1bde2fc5d84cef60959a028d3e8f3d00`
 contains that feature, but predates the later Identity database-metadata checker
 correction in the branch. It is not an exact image of the final branch; rebuild
@@ -35,8 +35,7 @@ start it only in the existing real Identity test profile with controlled
 recipients. It uses one serial poller per API process, a 1–50 job batch and a
 1–3600 second polling interval. Attempts remain capped at five, with database
 leases across replicas. Production notification startup remains disabled.
-The setting is not activated in the deployed runtime. General-recipient runtime permissions and bounded
-cloud/inbox verification remain later CN-03 checkpoints. A provider exception
+Check the actual task definition, provider permissions and bounded inbox delivery for the target deployment; this document does not establish their present state. A provider exception
 can be ambiguous; fallback and later retries may cause duplicate delivery.
 
 ## Step 10 integration preparation

@@ -1,5 +1,11 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### Deployment documentation audit — 2026-11-06 06:08:18 UTC
+Aditya requested a check against pre-cleanup deployment records. Compared changed and deleted deployment, DNS, notification and data-handoff guidance with retained plans, Terraform and runtime configuration. Added an operator reading order and runtime limitations, restored the cloud dataset loader invocation forms with fresh-approval and partial-failure conditions, corrected stale DNS/notification statements and reconciled the two-task experiment capacity guidance. Local relative Markdown targets in the inspected deployment directories resolved. No cloud access or deployment performed; live configuration, S3 enforcement and a complete deployment rehearsal remain unverified.
+
+### Listings rate-limit message — 2026-11-06 06:05:56 UTC
+Aditya requested a clear 429 message after an agent simulation identified the generic Listings error. Listings now tells users to wait and retry, matching Search. Local code change performed; human verification pending. No tests or cloud actions performed.
+
 ### Upload and API rate hardening — 2026-11-05 22:06:35 UTC
 Aditya requested S3 upload size enforcement and configurable API limits. Signed PUTs bind the declared byte length while retaining create-only writes; API read/write rolling limits default to 600/120 per minute per process. Existing adapters were adjusted. Counters are shared by users within a process and are not shared across replicas. Browser-to-S3 enforcement, deployment and affected-owner review remain pending. Tests were not run; `git diff --check` passed before this entry.
 

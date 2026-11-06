@@ -290,8 +290,22 @@ plan without constructing clients. `load` is explicit/operator-only. The accepte
 task-wide review; do not rerun it just to recreate the published release. `reference-cloud-target.template.json` intentionally contains
 nulls for operator-owned live bindings and cannot execute unchanged. See the
 [accepted task-wide review](../docs/evaluation/domain/next-06/task-wide-review.md)
-for exact commands, approvals, limits and failure/cleanup rules. The adapter retains its account and non-root identity guards; new operations
-require fresh review and approval.
+for the accepted result and evidence limits. The cleanup removed the earlier
+operator handoff, so the invocation forms are retained here for a future, newly
+reviewed target (replace every placeholder; do not replay the accepted load):
+
+```sh
+.venv/bin/python -m data.generators.reference_cloud plan --name <prepared-run-name> --image-root /absolute/path/to/clip-dataset-images
+.venv/bin/python -m data.generators.reference_cloud load --name <prepared-run-name> --image-root /absolute/path/to/clip-dataset-images --target /absolute/private/approved-target.json --ledger /absolute/private/new-run-ledger.jsonl --execute
+```
+
+The `plan` form is offline. The `load` form can write S3 and the database: it
+requires a reviewed current target and scope, private inputs and a fresh ledger,
+explicit approval, bounded cost and time, and a recovery/cleanup plan. An error or
+timeout can have a partial or uncertain outcome; inspect the ledger and actual
+state before proposing recovery. Never print secrets or signed URLs. The adapter
+retains its account and non-root identity guards; new operations require fresh
+review and approval.
 
 `reference_rows.py` shares schema-aware insertion/verification between local and
 cloud adapters; the local wrapper's original fixed DB/role/Unix/object guards remain.
