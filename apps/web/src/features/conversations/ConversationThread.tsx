@@ -34,6 +34,9 @@ export type ConversationThreadProps = {
   last_read_sequence: number;
   opening_read_sequence?: number;
   opening_unread_count?: number;
+  /** Older pages stay put; an explicit return to live chat requests a scroll. */
+  viewing_history?: boolean;
+  latest_view_revision?: number;
   /** Changes only the privacy/call-to-action copy for a loopback synthetic demo. */
   presentationMode?: 'live' | 'local-demo';
   loading?: boolean;
@@ -64,6 +67,8 @@ export function ConversationThread({
   last_read_sequence,
   opening_read_sequence,
   opening_unread_count = 0,
+  viewing_history = false,
+  latest_view_revision = 0,
   presentationMode = 'live',
   loading = false,
   recoveredPending = null,
@@ -83,6 +88,8 @@ export function ConversationThread({
   const [showOpeningUnreadBoundary, setShowOpeningUnreadBoundary] = useState(true);
   const messageListRef = useRef<HTMLOListElement>(null);
   const scrollToBottomAfterSend = useRef(false);
+  const followingLatest = useRef(true);
+  const previousLatestRevision = useRef(latest_view_revision);
   // Freeze the opening boundary: read acknowledgements must not move the divider.
   const opening = useRef<number | null>(null);
   const positioned = useRef(false);
@@ -100,8 +107,21 @@ export function ConversationThread({
     const target = targetSequence ? list.querySelector<HTMLElement>(`[data-sequence="${targetSequence}"]`) : null;
     if (target) list.scrollTop = target.offsetTop - list.offsetTop;
     else list.scrollTop = list.scrollHeight;
+    followingLatest.current = list.clientHeight > 0 && list.scrollHeight - list.scrollTop - list.clientHeight <= 32;
     positioned.current = true;
   }, [entries, firstUnread, key_state.kind, opening_unread_count, precedingText]);
+  useEffect(() => {
+    const list = messageListRef.current;
+    if (!list || !positioned.current) return;
+    const explicitReturn = previousLatestRevision.current !== latest_view_revision;
+    previousLatestRevision.current = latest_view_revision;
+    // Incoming messages follow a reader already at the bottom. Never pull a
+    // reader away from older messages or acknowledge unseen text on their behalf.
+    if (explicitReturn || (!viewing_history && followingLatest.current)) {
+      list.scrollTop = list.scrollHeight;
+      followingLatest.current = true;
+    }
+  }, [entries, viewing_history, latest_view_revision]);
   useEffect(() => {
     if (!scrollToBottomAfterSend.current || pending?.state === 'sending') return;
     const list = messageListRef.current;
@@ -284,6 +304,10 @@ export function ConversationThread({
         aria-live="polite"
         className="conversation-thread__messages"
         ref={messageListRef}
+        onScroll={(event) => {
+          const list = event.currentTarget;
+          followingLatest.current = list.clientHeight > 0 && list.scrollHeight - list.scrollTop - list.clientHeight <= 32;
+        }}
       >
         {entries.map((entry, index) => (
           <Fragment key={entry.entry_id}>

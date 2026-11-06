@@ -56,10 +56,19 @@
 
 /* One compact product geometry across public, owner, saved and draft surfaces. */
 .discovery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.discovery-card { display: grid; grid-template-columns: minmax(5.5rem, 9rem) minmax(0, 1fr); align-items: start; gap: var(--space-3); padding: var(--space-3); height: auto; }
-.discovery-card__photo { aspect-ratio: 1; margin: 0; }
+.discovery-card { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); align-items: start; gap: var(--space-3); padding: var(--space-3); height: auto; }
+/* Stretch each desktop row to its tallest card and keep actions at the bottom,
+   including when only one listing has a sensitive-purchase warning. */
+@media (min-width: 48.001rem) {
+  .discovery-card { height: 100%; grid-template-rows: 1fr auto; }
+}
+.discovery-card__photo { align-self: stretch; aspect-ratio: auto; min-height: 11rem; display: grid; align-items: center; margin: 0; }
+.discovery-card__photo > img,
+.discovery-card__photo .listings-image-preview { object-fit: contain; }
 .discovery-card__body { min-width: 0; }
-.discovery-card .discovery-card__body > p, .discovery-card h2 { margin-block: 0 var(--space-2); }
+.discovery-card .discovery-card__body > p, .discovery-card h2 { margin-block: 0 .375rem; }
+.discovery-card .discovery-card-meta { font-size: .8125rem; line-height: 1.4; }
+.discovery-card .discovery-description { font-size: .875rem; line-height: 1.45; -webkit-line-clamp: 2; }
 .discovery-card__badges { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-block-end: var(--space-2); }
 .discovery-card__badges > span { justify-self: start; width: fit-content; max-width: 100%; margin: 0; border-radius: 999px; padding: .2rem .55rem; font-size: .82rem; line-height: 1.3; overflow-wrap: anywhere; }
 .discovery-card__badges .discovery-category { background: var(--color-surface-muted); color: var(--color-muted); }
@@ -67,16 +76,30 @@
 .discovery-card__badges .discovery-negotiability { font-weight: 600; }
 .discovery-card h2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .discovery-card .discovery-card__body > .discovery-price { font-size: 1.25rem; margin-bottom: var(--space-1); }
-.discovery-description { -webkit-line-clamp: 2; }
-.discovery-card__actions { grid-column: 1 / -1; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-2); margin: 0; padding-top: var(--space-1); }
+.discovery-card__actions { grid-column: 1 / -1; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: var(--space-2); margin: 0; padding-top: .5rem; border-top: 1px solid var(--color-border); }
 .discovery-card__actions > div { display: flex; flex: 0 1 auto; flex-wrap: wrap; align-items: center; gap: var(--space-2); width: auto; }
 .discovery-card__actions .ui-button { width: auto; min-height: 2.5rem; padding: .45rem .65rem; }
 .discovery-detail { display: inline-flex; align-items: center; padding: .45rem .65rem; border: 1px solid var(--color-border); border-radius: var(--radius-control); color: var(--color-text); text-decoration: none; }
 @media (max-width: 48rem) { .discovery-grid { grid-template-columns: minmax(0, 1fr); } }
-@media (max-width: 26rem) {
-  .discovery-card { grid-template-columns: 6.5rem minmax(0, 1fr); gap: var(--space-2); padding: var(--space-2); }
-  .discovery-card__actions { grid-column: 1 / -1; gap: .35rem; }
-  .discovery-card__actions > div { gap: .35rem; }
+/* Phone product rows give the whole item a substantial left-hand photo panel.
+   Details remain compact; independent actions keep comfortable touch targets. */
+@media (max-width: 38rem) {
+  .discovery-card { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: .625rem; padding: .5rem; }
+  .discovery-card__photo { align-self: stretch; aspect-ratio: auto; min-height: 11rem; display: grid; align-items: center; }
+  .discovery-card__photo > img,
+  .discovery-card__photo .listings-image-preview { object-fit: contain; }
+  .discovery-card .discovery-card__body > p,
+  .discovery-card h2 { margin-block: 0 .375rem; }
+  .discovery-card h2 { font-size: 1rem; line-height: 1.35; }
+  .discovery-card__badges { gap: .25rem; margin-bottom: .375rem; }
+  .discovery-card__badges > span { padding: .15rem .4rem; font-size: .6875rem; }
+  .discovery-card .discovery-card__body > .discovery-price { font-size: 1.3rem; line-height: 1.3; }
+  .discovery-card .discovery-description { font-size: .8125rem; line-height: 1.45; }
+  .discovery-card .discovery-card-meta { font-size: .75rem; line-height: 1.4; }
+  .discovery-card .discovery-sensitive { font-size: .75rem; line-height: 1.4; }
+  .discovery-card__actions { justify-content: flex-start; gap: .5rem; padding-top: .5rem; border-top: 1px solid var(--color-border); }
+  .discovery-card__actions > div { gap: .5rem; max-width: 100%; }
   .discovery-card__actions .ui-button,
-  .discovery-card__actions .discovery-detail { min-height: 2.35rem; padding: .35rem .3rem; font-size: .78rem; white-space: nowrap; }
+  .discovery-card__actions .discovery-detail { min-height: 2.75rem; padding: .5rem .65rem; font-size: .8125rem; white-space: normal; }
+  .discovery-card__actions [role="alert"] { flex-basis: 100%; margin: .25rem 0 0; font-size: .8125rem; }
 }

@@ -44,7 +44,7 @@ describe('Listings draft preview', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Preview listing' }));
     expect(await screen.findByRole('heading', { name: 'Synthetic item' })).toBeTruthy();
     expect(screen.getAllByText('Books').length).toBeGreaterThan(1);
-    expect(screen.getByText('Condition: Good')).toBeTruthy();
+    expect(screen.getByText('Condition:', { selector: 'strong' }).parentElement?.textContent).toBe('Condition: Good');
     expect(screen.getByText('₹125')).toBeTruthy();
     expect(screen.getByText('Original price (Seller Provided): ₹200')).toBeTruthy();
     expect(screen.getByText('Negotiable')).toBeTruthy();
