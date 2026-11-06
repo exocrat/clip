@@ -25,8 +25,8 @@ class ConfigurationError(RuntimeError):
 
 
 # Default aggregate API requests per process in a rolling minute.
-DEFAULT_API_READ_REQUESTS_PER_MINUTE = 600
-DEFAULT_API_WRITE_REQUESTS_PER_MINUTE = 120
+DEFAULT_API_READ_REQUESTS_PER_MINUTE = 60
+DEFAULT_API_WRITE_REQUESTS_PER_MINUTE = 10
 
 ISOLATED_LISTINGS_TEST_DATABASE = "clip_test_listings"
 ISOLATED_LISTINGS_TEST_BUCKET = "clip-test-listings-images-ap-south-1-li02"

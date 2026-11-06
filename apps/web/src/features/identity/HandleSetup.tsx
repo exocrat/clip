@@ -41,7 +41,7 @@ function HandleEditorForm() {
   }
   return <section className="identity-card"><h2>Your Handle</h2>
     <p>Choose a unique Handle so people can recognize you in conversations. You can change it here later.</p>
-    <form onSubmit={save}><label htmlFor="account-handle">Handle</label>
+    <form className="identity-handle-form" onSubmit={save}><label htmlFor="account-handle">Handle</label>
       <input id="account-handle" autoComplete="username" value={value} maxLength={64}
         onChange={(event) => setValue(event.target.value)} required disabled={busy} />
       <p>3–30 letters, numbers or underscores. Uppercase and lowercase count as the same name.</p>

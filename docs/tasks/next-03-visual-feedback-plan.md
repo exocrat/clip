@@ -1,5 +1,17 @@
 # NEXT-03 — visual feedback and agreed correction scope
 
+**2026-11-06 sign-in alignment:** Rahul requested a better aligned sign-in page. The title, intro and form now share a bounded layout, with a stacked mobile layout and CLIP branding; visual review remains pending.
+
+**2026-11-06 Handle button feedback:** Rahul requested that Save Handle no longer stretch across the card. The Handle form now keeps the button at its natural width; Rahul reported it looks good.
+
+**2026-11-06 frontend recheck:** Pinned frontend lint, 513 tests (3 skipped), typecheck and build passed; Python boundary checks found no violations. The real client-to-API integration check still fails in the rapid save/unsave flow under the requested shared rate limit. Browser visual automation was unavailable; affected-owner and independent review remain pending.
+
+**2026-11-06 alignment feedback:** Rahul requested consistent account-card, listing-action and discovery-filter alignment, clearer light/dark icons, and native dropdowns that follow the selected theme. The adjustments are implemented on `task/mobile-menu-checkbox`; local and LAN preview rebuilds and pinned frontend checks passed. Rahul's visual review of these five corrections, including the browser-native dropdown, remains pending.
+
+**2026-11-06 approved redesign:** Rahul approved the separate green marketplace preview and requested integration across existing pages with dark mode, then requested the title CLIP. Rahul is the sole current writer on `task/mobile-menu-checkbox` for the shared shell, page composition and shared presentation styles; Aditya (shell/Identity), Suraj (Listings), Mohit (Search/Wanted/Saved), and Rahul (Conversations) are affected owners. The shared palette, responsive navigation, discovery presentation and persistent theme switch are implemented without changing domain behavior; the LAN-only synthetic chat bypass stays outside the repository. Pinned frontend checks passed and the local inspection preview is available. Human visual inspection in both themes, affected-owner and independent PR review remain pending. The broader Python gate is blocked by the separately requested shared rate limits; see the work log.
+
+**2026-11-06 mobile feedback:** Rahul is the sole current writer on `task/mobile-menu-checkbox` for the mobile navigation background and Identity email checkbox styles. Rahul verified both changes visually in the local preview. Aditya owns the shared shell and Identity and must review the bounded changes; prior NEXT-03 completion is not reclassified.
+
 **Current disposition (2026-11-05 15:26:56 UTC): Aditya marks NEXT-03 complete. Earlier pending/checkpoint statements below are historical; this status update records his direction and does not add new execution evidence.**
 
 **Source:** Suraj's desktop inspection feedback, including four screenshots and
