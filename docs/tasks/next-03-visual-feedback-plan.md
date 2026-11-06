@@ -1,5 +1,7 @@
 # NEXT-03 — visual feedback and agreed correction scope
 
+**2026-11-06 rate-limit correction:** Rahul authorized keeping 60 reads/10 writes per minute while separating authenticated users. The limiter uses verified account identities, anonymous transport peers, and an additional broader peer ceiling before authentication; cross-domain fixtures explicitly raise limits. The final targeted integration suite passed 56 tests; the local aggregate timed out during Python tests and CI and review remain pending.
+
 **2026-11-06 sign-in alignment:** Rahul requested a better aligned sign-in page. The title, intro and form now share a bounded layout, with a stacked mobile layout and CLIP branding; visual review remains pending.
 
 **2026-11-06 Handle button feedback:** Rahul requested that Save Handle no longer stretch across the card. The Handle form now keeps the button at its natural width; Rahul reported it looks good.
