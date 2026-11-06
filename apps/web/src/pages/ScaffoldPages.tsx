@@ -70,8 +70,9 @@ export function AuthCallbackPage() {
 
 export function DiscoveryPage() {
   const { status, user } = useIdentity();
-  const canUseSellerActions = status === 'ready' && user?.account_class === 'regular'
-    && Date.parse(user.valid_until) > Date.now();
+  // Temporary buyers may contact a seller, but only regular members may sell.
+  const canContactSeller = status === 'ready' && !!user && Date.parse(user.valid_until) > Date.now();
+  const canUseSellerActions = canContactSeller && user?.account_class === 'regular';
   const [view, setView] = useState<View>('sales');
   return (
     <RoutePage title="Discover">
@@ -92,11 +93,11 @@ export function DiscoveryPage() {
             {status === 'ready'
               ? <SaveListingAction listingId={listingId} compact />
               : <Link className="ui-button ui-button--secondary" to="/sign-in">Sign in to save</Link>}
-            {canUseSellerActions
+            {canContactSeller
               ? <StartListingConversationAction compact listingId={listingId} />
               : status === 'anonymous'
                 ? <Link className="ui-button ui-button--secondary" to="/sign-in">Sign in to contact seller</Link>
-                : <span className="discovery-action-note">Contact requires an eligible regular account.</span>}
+                : <span className="discovery-action-note">Sign in to contact the seller.</span>}
           </>} />
       ) : (
         <WantedBrowse />

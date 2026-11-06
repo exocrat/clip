@@ -39,12 +39,12 @@ describe('mode and relevance controls', () => {
     const html = renderToStaticMarkup(createElement(MemoryRouter, null,
       createElement(SaleListingCard, { listing })));
     expect(html).toContain('<span class="discovery-negotiability">Negotiable</span>');
-    expect(html).toContain('Condition: Good');
+    expect(html).toContain('<strong>Condition:</strong> Good');
   });
-  it('reserves the original-price row when a listing has no original price', () => {
+  it('omits the original-price row when a listing has no original price', () => {
     const html = renderToStaticMarkup(createElement(MemoryRouter, null,
       createElement(SaleListingCard, { listing })));
-    expect(html).toContain('class="discovery-card-meta discovery-card__original-price" aria-hidden="true"></p>');
+    expect(html).not.toContain('discovery-card__original-price');
   });
   it('accepts the eligible seller creation action above the search controls', () => {
     const html = renderToStaticMarkup(createElement(MemoryRouter, null,

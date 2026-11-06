@@ -105,3 +105,27 @@ it('keeps the opening unread divider stable after acknowledgement and arrivals',
   expect(screen.getByText('1 unread messages')).toBeTruthy();
   expect(list.scrollTop).toBe(37);
 });
+
+it('follows incoming messages at the bottom, preserves a reader in history, and returns without losing a draft', () => {
+  const value = props();
+  const entry = (sequence: number) => ({ entry_id: `live-${sequence}`, sequence, sender_user_id: 'seller',
+    created_at: '2026-11-06T00:00:00Z', text: `Live ${sequence}`, content_deleted: false });
+  const { rerender } = render(<ConversationThread {...value} entries={[entry(1)]} />);
+  const list = screen.getByRole('list');
+  Object.defineProperty(list, 'clientHeight', { configurable: true, value: 200 });
+  Object.defineProperty(list, 'scrollHeight', { configurable: true, value: 500 });
+  list.scrollTop = 300;
+  fireEvent.scroll(list);
+  Object.defineProperty(list, 'scrollHeight', { configurable: true, value: 600 });
+  rerender(<ConversationThread {...value} entries={[entry(1), entry(2)]} />);
+  expect(list.scrollTop).toBe(600);
+  list.scrollTop = 20;
+  fireEvent.scroll(list);
+  rerender(<ConversationThread {...value} entries={[entry(1), entry(2), entry(3)]} viewing_history />);
+  expect(list.scrollTop).toBe(20);
+  fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'Unsent draft' } });
+  rerender(<ConversationThread {...value} entries={[entry(2), entry(3)]} latest_view_revision={1} />);
+  expect(list.scrollTop).toBe(600);
+  expect((screen.getByLabelText('Message') as HTMLTextAreaElement).value).toBe('Unsent draft');
+  expect(value.onAcknowledgeDisplayed).not.toHaveBeenCalled();
+});

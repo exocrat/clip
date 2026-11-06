@@ -260,8 +260,12 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
   const [ready, setReady] = useState<ReadyConversation | null>(null);
   const [authorizedSummary, setAuthorizedSummary] = useState<ConversationSummary | null>(null);
   const [entries, setEntries] = useState<ConversationDisplayEntry[]>([]);
-  const entryCount = useRef(0);
-  entryCount.current = entries.length;
+  // Keep receiving into a bounded recent window even while an older page is
+  // being viewed. A full transcript must never disable the network poll.
+  const recentEntries = useRef<ConversationDisplayEntry[]>([]);
+  const browsingHistory = useRef(false);
+  const [showingHistory, setShowingHistory] = useState(false);
+  const [latestViewRevision, setLatestViewRevision] = useState(0);
   const [historyBusy, setHistoryBusy] = useState(false);
   const [historyError, setHistoryError] = useState(false);
   const decryptionFailureIds = useRef(new Set<string>());
@@ -372,7 +376,7 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
       }
       return;
     }
-    if (!runtime || !conversationId || !ready?.session.history || keyState.kind !== 'ready' || entryCount.current > 380) return;
+    if (!runtime || !conversationId || !ready?.session.history || keyState.kind !== 'ready') return;
     // A response may arrive after logout/navigation closed this session. Do not
     // read its history or process protocol traffic after that boundary changes.
     const token = generation.current;
@@ -413,8 +417,8 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
       if (!page.has_more) break;
     }
     decryptionFailureIds.current = observedDecryptionFailureIds;
-    setEntries((current) => {
-      const byId = new Map(current.map((item) => [item.entry_id, item]));
+    {
+      const byId = new Map(recentEntries.current.map((item) => [item.entry_id, item]));
       for (const item of visible) byId.set(item.entry_id, item);
       for (const id of observedDecryptionFailureIds) {
         const original = byId.get(id);
@@ -422,8 +426,14 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
           byId.set(id, { ...original, delivery_notice: 'recipient_unable_to_decrypt' });
         }
       }
-      return [...byId.values()].sort((a, b) => a.sequence - b.sequence).slice(0, 400);
-    });
+      recentEntries.current = [...byId.values()].sort((a, b) => a.sequence - b.sequence).slice(-400);
+      // Historical pages remain stable until the reader explicitly returns to
+      // the latest messages. Their arrival still advances the verified cursor.
+      if (!browsingHistory.current) setEntries(recentEntries.current);
+      else setEntries((current) => current.map((item) =>
+        observedDecryptionFailureIds.has(item.entry_id) && item.sender_user_id === runtime.userId
+          ? { ...item, delivery_notice: 'recipient_unable_to_decrypt' } : item));
+    }
   }, [conversationId, initialize, keyState.kind, ready, runtime]);
 
   const send = useCallback(async (text: string, operationId: string) => {
@@ -515,17 +525,23 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
             (context) => ready.session.crypto.receiveContactShare(context, history));
           if (display) older.push(display);
         }
-        if (token === generation.current) setEntries((current) => [...older, ...current].slice(0, 400));
+        if (token === generation.current && older.length) {
+          browsingHistory.current = true;
+          setShowingHistory(true);
+          setEntries((current) => [...older, ...current].slice(0, 400));
+        }
       } catch { if (token === generation.current) setHistoryError(true); }
       finally { if (token === generation.current) setHistoryBusy(false); }
     }}>Load earlier messages</Button>}
-    {entries.length > 380 && <Button variant="secondary" onClick={() => {
-      const tail = entries.slice(-20);
-      cursor.current = tail.at(-1)?.sequence ?? 0;
-      setEntries(tail);
-    }}>Load newer messages</Button>}
+    {showingHistory && <Button variant="secondary" onClick={() => {
+      browsingHistory.current = false;
+      setShowingHistory(false);
+      setEntries(recentEntries.current);
+      setLatestViewRevision((value) => value + 1);
+    }}>Return to latest messages</Button>}
     <ConversationThread current_user_id={runtime.userId} entries={entries} key_state={keyState}
       opening_read_sequence={pageSummary?.own_last_read_sequence} opening_unread_count={pageSummary?.unread_count ?? 0}
+      viewing_history={showingHistory} latest_view_revision={latestViewRevision}
       last_read_sequence={readSequence} loading={loading} onRefresh={refresh} onSend={send} onRetry={retry}
       recoveredPending={recoveredPending}
       onAcknowledgeDisplayed={acknowledge} onAcknowledgeKeyRegistration={() => initialize(true)}
