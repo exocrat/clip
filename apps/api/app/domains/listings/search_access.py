@@ -98,6 +98,21 @@ class ListingsSearchAccess(ListingsPublic):
             raise PublicError(ERRORS[503])
         return tuple(CategoryDisplay.model_validate(row) for row in rows)
 
+    @asynccontextmanager
+    async def conversation_write_guard(
+        self, caller: CallerContext, listing_id: UUID
+    ) -> AsyncIterator[bool]:
+        """Keep live availability stable until the caller finishes its write."""
+        await self.authorize(caller)
+        async with self.store.listing_offer_guard(listing_id) as listing:
+            now = self.clock()
+            yield bool(
+                listing is not None
+                and listing.availability == "available"
+                and listing.available_from <= now
+                and (listing.available_until is None or now < listing.available_until)
+            )
+
     async def read_save_target(
         self, caller: CallerContext, listing_id: UUID
     ) -> SaveTargetResult:

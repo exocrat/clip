@@ -40,6 +40,8 @@ export type ConversationThreadProps = {
   /** Changes only the privacy/call-to-action copy for a loopback synthetic demo. */
   presentationMode?: 'live' | 'local-demo';
   loading?: boolean;
+  /** A closed listing keeps its conversation readable but prevents new messages. */
+  readOnly?: boolean;
   recoveredPending?: { operationId: string; text: string } | null;
   onRefresh: () => Promise<void>;
   onSend: (text: string, operationId: string) => Promise<void>;
@@ -71,6 +73,7 @@ export function ConversationThread({
   latest_view_revision = 0,
   presentationMode = 'live',
   loading = false,
+  readOnly = false,
   recoveredPending = null,
   onRefresh,
   onSend,
@@ -130,7 +133,7 @@ export function ConversationThread({
     scrollToBottomAfterSend.current = false;
   }, [entries, pending]);
   const sendLock = useRef(false);
-  const canSend = key_state.kind === 'ready' && !pending && !actionBusy;
+  const canSend = !readOnly && key_state.kind === 'ready' && !pending && !actionBusy;
 
   useEffect(() => {
     if (!pending && recoveredPending) setPending({ ...recoveredPending, state: 'failed' });
@@ -352,7 +355,7 @@ export function ConversationThread({
             ) : (
               <div className="conversation-thread__retry-row">
                 <span role="status">Message not sent.</span>
-                <Button disabled={actionBusy} onClick={() => void retry()} variant="secondary">
+                <Button disabled={actionBusy || readOnly} onClick={() => void retry()} variant="secondary">
                   {actionBusy ? 'Retrying…' : 'Retry'}
                 </Button>
               </div>

@@ -558,6 +558,17 @@
             "title": "Last Activity At",
             "type": "string"
           },
+          "origin_available": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin Available"
+          },
           "origin_id": {
             "format": "uuid",
             "title": "Origin Id",

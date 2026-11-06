@@ -58,6 +58,15 @@ Same-pair retries and concurrent creates resolve to the unique existing thread
 and never create a second one. The stable origin uniqueness record remains
 after content cleanup while its approved lifetime applies.
 
+For sale listings, ordinary unavailability keeps the existing participant thread
+readable but blocks new user messages and offer submission or revision. Offer
+withdrawal remains allowed. Reopening restores writes. Listings supplies a
+server-authorized availability guard held across the independent Conversations
+message transaction; it serializes with availability changes and fails closed
+on missing state. A participant-scoped summary reports the current listing
+availability so the client can disable writes and explain the reason. Protocol
+recovery traffic needed to read existing encrypted history remains permitted.
+
 An unavailable/closed origin blocks new threads but does not revoke the
 existing participants' thread access. Existing listing/request threads remain
 participant-authorized subject to current account eligibility and independent

@@ -98,6 +98,7 @@ function summary(value: unknown): boolean {
   const offer = value.current_offer;
   return uuid(value.conversation_id) && uuid(value.origin_id) &&
     ['sale_listing', 'wanted_request'].includes(String(value.origin_kind)) &&
+    (value.origin_available == null || typeof value.origin_available === 'boolean') &&
     uuid(value.initiator_user_id) && uuid(value.counterparty_user_id) &&
     ['initiator', 'origin_owner'].includes(String(value.caller_role)) &&
     instant(value.last_activity_at) && natural(value.own_last_read_sequence) && natural(value.unread_count) &&

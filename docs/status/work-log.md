@@ -1,5 +1,8 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### Unavailable-listing conversation behavior — 2026-11-06 16:51:42 UTC
+Aditya approved read-only existing sale conversations while unavailable, blocking messages and offer submission while permitting withdrawal and reopening writes when available. Added the shared contract and participant summary availability, Listings-owned lock held over message/contact-share writes, and browser notice/disabled controls. Contract artifacts regenerated; frontend typecheck and diff whitespace check passed. Runtime and concurrency tests were not run; human visual verification and Listings/Conversations owner review remain pending. No cloud actions.
+
 ### Deployment documentation audit — 2026-11-06 06:08:18 UTC
 Aditya requested a check against pre-cleanup deployment records. Compared changed and deleted deployment, DNS, notification and data-handoff guidance with retained plans, Terraform and runtime configuration. Added an operator reading order and runtime limitations, restored the cloud dataset loader invocation forms with fresh-approval and partial-failure conditions, corrected stale DNS/notification statements and reconciled the two-task experiment capacity guidance. Local relative Markdown targets in the inspected deployment directories resolved. No cloud access or deployment performed; live configuration, S3 enforcement and a complete deployment rehearsal remain unverified.
 
@@ -1532,6 +1535,7 @@ evidence](../evaluation/README.md).
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
+| Unavailable listing conversations | Aditya; Listings and Conversations owners | in progress | Verify read-only behavior, reopen and race handling | performed locally | pending | `task/unavailable-listing-conversations`; uncommitted changes | Runtime/concurrency verification and affected-owner review pending | 2026-11-06 16:51:42 UTC |
 | Security hardening | Aditya; Listings owner review | in progress | Verify signed-length uploads and configurable API limits | performed | pending | task/repo-documentation-cleanup; local changes | Browser/S3 enforcement and affected-owner review pending; no cloud access | 2026-11-05 22:06:35 UTC |
 | EXP-02 |  | in progress | Existing integrated tools plus revised request correlation, fresh-runtime gate and coverage-first repetition policy implemented locally. | Evaluation450passed/11skipped;30focused checks,18Node files, actualk6initialization and immutable pilot provenance pass. |  | [Runtime tools](../evaluation/runtime-measurements.md); [pilot evidence](../evaluation/deployment-20261103/functional-audit/startup-pilot-results-20261104.md) |  | 2026-11-04 19:54:35 UTC |
 | EXP-03 |  | in progress | Deployed app/build source ed0a6aa and optimization history prepared on task/deployed-runtime-integration; reusable tooling repairs included. | Local regression, native pool, contract/type, frontend, database, secret and 36 Terraform mock checks passed. Application files match the deployed source. |  | [Runtime/tooling integration](../evaluation/runtime-measurements.md#integration-of-reusable-measurement-tools); app ed0a6aa; branch task/deployed-runtime-integration |  | 2026-11-05 10:35:11 UTC |
