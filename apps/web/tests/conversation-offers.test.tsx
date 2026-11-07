@@ -9,7 +9,7 @@ vi.mock('../src/shared/http/sessionFetch', () => ({ sessionFetch: mocks.fetch })
 const current = { offer_id: '33333333-3333-4333-8333-333333333333', revision: 2, amount_paise: 50000, status: 'submitted', updated_at: '2026-10-28T00:00:00Z', note_envelope: null };
 beforeEach(() => {
   vi.clearAllMocks();
-  mocks.summary.mockResolvedValue({ origin_id: 'listing', origin_kind: 'sale_listing', caller_role: 'initiator' });
+  mocks.summary.mockResolvedValue({ origin_id: 'listing', origin_kind: 'sale_listing', caller_role: 'initiator', origin_available: true });
   mocks.fetch.mockImplementation(async () => new Response(JSON.stringify(current)));
   mocks.submit.mockResolvedValue({ ...current, revision: 3 });
   mocks.withdraw.mockResolvedValue({ ...current, status: 'withdrawn', revision: 3 });
@@ -35,6 +35,17 @@ describe('connected sale offer actions', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Retry offer change' }));
     await waitFor(() => expect(mocks.submit).toHaveBeenCalledTimes(2));
     expect(mocks.submit.mock.calls[0]).toEqual(mocks.submit.mock.calls[1]);
+  });
+  it.each([false, null])('blocks new offers when listing availability is %s but allows withdrawal', async (availability) => {
+    mocks.summary.mockResolvedValue({ origin_id: 'listing', origin_kind: 'sale_listing', caller_role: 'initiator', origin_available: availability });
+    render(<ConversationOffers conversationId="chat" />);
+    const update = await screen.findByRole('button', { name: 'Update offer' });
+    expect((update as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByLabelText('Offer amount (₹)') as HTMLInputElement).disabled).toBe(true);
+    fireEvent.click(update);
+    expect(mocks.submit).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Withdraw offer' }));
+    await waitFor(() => expect(mocks.withdraw).toHaveBeenCalledTimes(1));
   });
   it('shows seller read access and no buyer command, and hides offers for Wanted', async () => {
     mocks.summary.mockResolvedValue({ origin_kind: 'sale_listing', caller_role: 'origin_owner' });

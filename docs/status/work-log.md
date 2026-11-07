@@ -1,5 +1,8 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### PR 40 frontend CI correction — 2026-11-07 05:25:23 UTC
+CI on `56b1528` passed Python and failed two offer UI checks because their sale-conversation fixture omitted the required available state. Updated the fixture and added checks that false/unknown availability blocks new offers while permitting withdrawal. `npm run check` passed: lint, 515 tests (3 skipped), typecheck and production build; Vite reported its existing large-chunk warning. New-head CI remains pending.
+
 ### PR 40 rate-limit CI correction — 2026-11-07 05:13:39 UTC
 CI on `eafe84e` reported 1 failure, 2579 passed and 188 skipped: the default rate-limit test still expected 60 reads after Aditya changed the default to 100. Updated the expected default and the boundary check to exercise 100 accepted reads followed by 429. Focused rate-limit suite: 5 passed; `git diff --check` passed. Remaining CI gates await the updated PR run.
 
