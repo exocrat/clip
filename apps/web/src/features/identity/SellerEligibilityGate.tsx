@@ -1,6 +1,5 @@
 import { Fragment, type PropsWithChildren } from 'react';
 import { Link } from 'react-router';
-import { Button } from '../../shared/ui';
 import { useIdentity } from './session';
 
 /** Mount seller UI only for a current regular session from the public /me result.
@@ -9,13 +8,13 @@ import { useIdentity } from './session';
  */
 export function SellerEligibilityGate({ children, action = 'create' }: PropsWithChildren<{ action?: 'create' | 'manage' }>) {
   const verb = action === 'create' ? 'create' : 'manage';
-  const { status, user, refresh } = useIdentity();
+  const { status, user } = useIdentity();
   if (status === 'loading') return <p role="status">Checking seller eligibility…</p>;
   if (status === 'unavailable')
     return (
       <section>
-        <p role="alert">We could not check your account. Try again before managing sale listings.</p>
-        <Button onClick={() => { void refresh(); }}>Check account again</Button>
+        <p role="alert">Please sign in again to continue.</p>
+        <Link to="/sign-in">Sign in</Link>
       </section>
     );
   if (status !== 'ready' || !user || Date.parse(user.valid_until) <= Date.now())

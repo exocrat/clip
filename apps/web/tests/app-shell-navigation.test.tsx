@@ -33,7 +33,7 @@ describe('marketplace shell navigation', () => {
     identityState.value = { status: 'anonymous', user: null };
     renderShell();
     const nav = screen.getByRole('navigation', { name: 'Marketplace' });
-    for (const label of ['Sign in', 'Discover', 'New Wanted Request', 'My Listings', 'Saved', 'Conversations', 'Account']) {
+    for (const label of ['Sign in', 'Discover', 'My Wanted Requests', 'My Listings', 'Saved', 'Conversations', 'Account']) {
       expect(nav.textContent).toContain(label);
     }
     expect(nav.textContent).not.toContain('Auth callback');
@@ -61,6 +61,6 @@ describe('marketplace shell navigation', () => {
     renderShell();
     const nav = screen.getByRole('navigation', { name: 'Marketplace' });
     expect(nav.textContent).not.toContain('New Listing');
-    expect(nav.textContent).toContain('New Wanted Request');
+    expect(nav.textContent).toContain('My Wanted Requests');
   });
 });

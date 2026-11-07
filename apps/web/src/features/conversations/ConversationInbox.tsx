@@ -150,13 +150,15 @@ export function ConversationInbox({
                   ? renderOriginContext?.(group.conversations[0].origin_kind, group.conversations[0].origin_id)
                   : null}
                 {filters?.group_by !== "person" && group.conversations[0].origin_id ? <Link className="ui-button ui-button--secondary conversation-inbox__origin-link" to={`${group.conversations[0].origin_kind === 'sale_listing' ? '/listings/' : '/wanted/'}${encodeURIComponent(group.conversations[0].origin_id)}`}>Open {group.conversations[0].origin_kind === 'sale_listing' ? 'listing' : 'Wanted Request'}</Link> : null}
+                <div className="conversation-inbox__group-actions">
                 {filters?.group_by !== 'person' && group.conversations.some((item) => item.role === 'seller' && item.origin_kind === 'sale_listing') &&
-                  group.conversations[0].origin_id && renderSellerListingAction?.(group.conversations[0].origin_id)}
+                  group.conversations[0].origin_id && <div className="conversation-inbox__seller-action">{renderSellerListingAction?.(group.conversations[0].origin_id)}</div>}
                 <span className="conversation-inbox__group-count">{group.conversations.length}{group.conversations.some((item) => item.group_has_more) ? '+' : ''} conversations</span>
                 <Button variant="secondary" aria-expanded={!hidden} onClick={() => {
                   setHiddenGroups((current) => ({ ...current, [group.key]: !hidden }));
                   if (hidden) setVisibleCounts((current) => ({ ...current, [group.key]: 5 }));
                 }}>{hidden ? 'Show conversations' : 'Hide conversations'}</Button>
+                </div>
               </header>
               {!hidden && <ul className="conversation-inbox__list">
                 {visibleConversations.map((conversation) => (

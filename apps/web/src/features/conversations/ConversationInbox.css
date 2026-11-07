@@ -253,3 +253,18 @@
   .conversation-inbox__group-header > .conversation-inbox__group-count { flex: 1 1 100%; }
   .conversation-inbox__group-header > button { flex: 0 0 auto; }
 }
+
+/* Keep listing details and conversation actions aligned as their content varies. */
+.conversation-inbox__group-header { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); }
+.conversation-inbox__group-header .conversation-inbox__origin-context { min-width: 0; }
+.conversation-inbox__group-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); min-width: 0; }
+.conversation-inbox__seller-action { flex: 1 1 20rem; min-width: 0; }
+.conversation-inbox__group-actions .conversation-inbox__group-count { margin-inline-start: auto; }
+.conversation-inbox__group-actions > button { flex: 0 0 auto; }
+@media (max-width: 38rem) {
+  .conversation-inbox__group-header { grid-template-columns: minmax(0, 1fr) auto; }
+  .conversation-inbox__heading { grid-column: 1 / -1; }
+  .conversation-inbox__group-actions { align-items: center; }
+  .conversation-inbox__seller-action { flex-basis: 100%; }
+  .conversation-inbox__group-actions .conversation-inbox__group-count { margin-inline-start: 0; flex: 1 1 auto; }
+}

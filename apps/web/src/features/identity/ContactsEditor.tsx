@@ -56,14 +56,8 @@ export function ContactsEditor() {
   if (identity.status === 'unavailable' || !identity.user)
     return (
       <section className="identity-card">
-        <p role="alert">Session status is unavailable. Contact details are hidden.</p>
-        <Button
-          onClick={() => {
-            void identity.refresh();
-          }}
-        >
-          Retry session check
-        </Button>
+        <p role="alert">Please sign in again to open Account.</p>
+        <Link to="/sign-in">Sign in</Link>
       </section>
     );
   return (

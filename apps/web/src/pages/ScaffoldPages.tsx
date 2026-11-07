@@ -154,21 +154,7 @@ export function MyListingsPage() {
     setParams(next, { replace: true });
   }, [startCreatingWanted, params, setParams]);
   return (
-    <RoutePage title="My listings">
-      <SegmentedControl
-        label="My listings view"
-        options={[
-          { value: 'sales', label: 'Sale Listings' },
-          { value: 'wanted', label: 'Wanted Requests' },
-        ]}
-        value={view}
-        onValueChange={(nextView) => {
-          const next = new URLSearchParams(params);
-          next.set('view', nextView);
-          next.delete('create');
-          setParams(next);
-        }}
-      />
+    <RoutePage title={view === 'wanted' ? "My wanted requests" : "My listings"}>
       {view === 'sales' ? (
         <SellerEligibilityGate action="manage"><MyListings renderListingCard={(listing, ownerActions) => (
           <SaleListingCard
