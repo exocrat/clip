@@ -358,7 +358,7 @@ export function SignIn() {
 
 /** Shell connection exposes session status without source contacts or credentials. */
 export function IdentitySessionControl() {
-  const { status, user, clear, refresh } = useIdentity();
+  const { status, user, clear } = useIdentity();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   async function logout() {
@@ -394,15 +394,6 @@ export function IdentitySessionControl() {
         </>
       ) : status === 'loading' ? (
         <span role="status">Checking session…</span>
-      ) : status === 'unavailable' ? (
-        <Button
-          variant="secondary"
-          onClick={() => {
-            void refresh();
-          }}
-        >
-          Retry session check
-        </Button>
       ) : (
         <Link to="/sign-in">Sign in</Link>
       )}

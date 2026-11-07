@@ -60,3 +60,15 @@
 .wanted-matches > summary { cursor: pointer; padding-block: var(--space-2); font-weight: 600; }
 .wanted-matches .discovery-grid { grid-template-columns: minmax(0, 1fr); }
 .wanted-card { padding: var(--space-4); }
+
+/* Match the sale listing form while keeping Wanted-owned styling. */
+.wanted-editor { padding: 0; border: 0; background: transparent; }
+.wanted-editor form { display: grid; gap: var(--space-4); }
+.wanted-feature .wanted-editor fieldset { display: block; min-width: 0; padding: 1.4rem; border: 1px solid var(--color-border); border-radius: .9rem; background: var(--color-surface); box-shadow: 0 3px 14px var(--color-shadow); }
+.wanted-editor legend { padding-inline: var(--space-2); font-weight: 650; }
+.wanted-feature .wanted-editor label:not(.ui-multi-choice__option) { display: block; margin-block: var(--space-4) var(--space-2); }
+.wanted-editor label span, .wanted-feature .wanted-editor p { color: var(--color-muted); font-size: var(--font-size-small); }
+.wanted-editor input:not([type="checkbox"]), .wanted-editor select, .wanted-editor textarea { display: block; width: 100%; min-width: 0; min-height: 2.75rem; padding: var(--space-3); border: 1px solid var(--color-border); border-radius: .6rem; color: var(--color-text); background: var(--color-surface); }
+.wanted-editor textarea { resize: vertical; }
+.wanted-editor .ui-button { margin: var(--space-3) var(--space-2) 0 0; }
+.wanted-feature .wanted-editor [role="alert"] { color: var(--color-danger); }

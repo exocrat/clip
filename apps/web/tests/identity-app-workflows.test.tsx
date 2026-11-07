@@ -28,7 +28,7 @@ function Navigation() {
       <Link to="/sign-in">Sign in</Link>
       <Link to="/listings/new">New listing</Link>
       <Link to="/my/listings">My listings</Link>
-      <Link to="/my/listings?view=wanted&create=wanted">New Wanted Request</Link>
+      <Link to="/my/listings?view=wanted">My Wanted Requests</Link>
     </nav>
   );
 }
@@ -112,12 +112,10 @@ describe('app-level identity and seller workflows with synthetic HTTP fixtures',
     expect(requests.some(({ path }) => path === '/api/catalogue')).toBe(false);
 
     await user.click(screen.getByRole('link', { name: 'My listings' }));
-    await screen.findByRole('button', { name: 'Sale Listings' });
-    await user.click(screen.getByRole('button', { name: 'Wanted Requests' }));
-    expect(await screen.findByRole('button', { name: 'Create wanted request' })).toBeTruthy();
-    await user.click(screen.getByRole('link', { name: 'New Wanted Request' }));
-    expect(await screen.findByRole('heading', { name: 'Create wanted request' })).toBeTruthy();
-    expect(await screen.findByLabelText('Title')).toBeTruthy();
+    await user.click(screen.getByRole('link', { name: 'My Wanted Requests' }));
+    await user.click(await screen.findByRole('button', { name: 'Create wanted request' }));
+    expect(await screen.findByText('Describe your request')).toBeTruthy();
+    expect(await screen.findByLabelText(/^Title/)).toBeTruthy();
 
     const registration = requests.find(({ path }) => path.endsWith('/registration-challenges'));
     expect(registration?.init.body).toContain('synthetic@example.invalid');

@@ -56,16 +56,14 @@ describe('Real create-page composition with public Identity eligibility', () => 
     await screen.findByRole('link', { name: 'Sign in with your IISc Microsoft account' });
     expect(fetcher.mock.calls.map(([path]) => path)).toEqual(['/api/me']);
   });
-  it('fails closed during dependency failure and mounts only after a successful retry', async () => {
-    let available = false;
-    const fetcher = setup(() => available ? response(regular) : response({}, 503));
+  it('fails closed during session verification failure and directs the user to sign in', async () => {
+    const fetcher = setup(() => response({}, 503));
     view();
     await screen.findByRole('alert');
     expect(fetcher.mock.calls.map(([path]) => path)).toEqual(['/api/me']);
-    available = true;
-    fireEvent.click(screen.getByRole('button', { name: 'Check account again' }));
-    await screen.findByLabelText(/Title/);
-    expect(fetcher.mock.calls.map(([path]) => path)).toEqual(['/api/me', '/api/me', '/api/catalogue']);
+    expect(screen.getByRole('link', { name: 'Sign in' }).getAttribute('href')).toBe('/sign-in');
+    expect(screen.queryByLabelText(/Title/)).toBeNull();
+    expect(fetcher.mock.calls.map(([path]) => path)).toEqual(['/api/me']);
   });
   it('mounts the real regular-seller form and discards drafts across actor switches', async () => {
     const fetcher = setup(() => response(regular));

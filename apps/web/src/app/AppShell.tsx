@@ -8,7 +8,7 @@ import { HandleSetup, IdentitySessionControl, useIdentity } from '../features/id
 const productRoutes = [
   { to: '/', label: 'Discover' },
   { to: '/listings/new', label: 'New Listing', sellerOnly: true },
-  { to: '/my/listings?view=wanted&create=wanted', label: 'New Wanted Request' },
+  { to: '/my/listings?view=wanted', label: 'My Wanted Requests' },
   { to: '/my/listings', label: 'My Listings' },
   { to: '/saved', label: 'Saved' },
   { to: '/my/conversations', label: 'Conversations' },
@@ -42,7 +42,11 @@ export function AppShell() {
           <div className="app-shell__navigation">
             <button className="app-shell__menu" aria-expanded={menuOpen} aria-controls="marketplace-navigation" onClick={() => setMenuOpen(!menuOpen)} type="button">Menu <ConversationUnreadBadge count={unreadCount} /></button>
             <nav id="marketplace-navigation" aria-label="Marketplace" className={`app-shell__nav${menuOpen ? " app-shell__nav--open" : ""}`}>
-              {routes.filter((route) => !('sellerOnly' in route) || !route.sellerOnly || seller).map(({ to, label }) => (
+              {routes.filter((route) => !('sellerOnly' in route) || !route.sellerOnly || seller).map(({ to, label }) => to.startsWith('/my/listings') ? (() => {
+                const isWanted = new URLSearchParams(location.search).get('view') === 'wanted' || new URLSearchParams(location.search).get('create') === 'wanted';
+                const active = location.pathname === '/my/listings' && (to.includes('view=wanted') ? isWanted : !isWanted);
+                return <Link key={to} to={to} onClick={() => setMenuOpen(false)} aria-current={active ? 'page' : undefined} className={active ? 'app-shell__link app-shell__link--active' : 'app-shell__link'}>{label}</Link>;
+              })() : (
                 <NavLink
                   onClick={() => setMenuOpen(false)}
                   key={to}

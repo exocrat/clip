@@ -397,17 +397,17 @@ function WantedEditor({
   }
   return (
     <section className="wanted-editor">
-      <h3>{initial ? 'Edit wanted request' : 'Create wanted request'}</h3>
       <form onSubmit={submit}>
         <fieldset disabled={busy}>
+          <legend>{initial ? 'Edit wanted request' : 'Describe your request'}</legend>
           <label>
-            Title
+            Title <span>(required)</span>
             <input value={title} maxLength={240} onChange={(e) => setTitle(e.target.value)} required aria-describedby="wanted-title-count" />
           </label>
           <p id="wanted-title-count" className="wanted-discovery__hint">{[...title.trim()].length}/120 characters</p>
           <details open className="wanted-matches"><summary>Possible campus matches — show or hide</summary><DraftSuggestions title={title} /></details>
           <label>
-            Description
+            Description <span>(required)</span>
             <textarea
               value={description}
               maxLength={10000}
@@ -419,7 +419,7 @@ function WantedEditor({
           </label>
           <p id="wanted-description-count" className="wanted-discovery__hint">{[...description.trim()].length}/5,000 characters</p>
           <label>
-            Category
+            Item category <span>(required)</span>
             <select value={category} onChange={(e) => setCategory(e.target.value)} required>
               <option value="">Choose a category</option>
               {initial &&
@@ -439,7 +439,7 @@ function WantedEditor({
             {categories.data && <span />}
           </ReadState>
           <label>
-            Optional budget (whole ₹)
+            Budget <span>(optional, whole ₹)</span>
             <input
               inputMode="numeric"
               maxLength={8}
@@ -485,7 +485,6 @@ export function MyWantedRequests(props: { startCreating?: boolean } = {}) {
   return (
     <section className="wanted-feature">
       <PreviewNotice />
-      <h2>My wanted requests</h2>
       <p>Only you can edit these requests or change their availability.</p>
       {message && <p role="status">{message}</p>}
       {creating || editing ? (

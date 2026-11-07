@@ -1,5 +1,7 @@
 # CLIP — Campus Listing and Item Platform
 
+The site is live at [clip-iisc.site](https://clip-iisc.site).
+
 CLIP is an IISc-focused marketplace for finding and listing items, posting wanted requests, and communicating privately with other members. It supports seller-controlled availability, saved listings, offers, and deliberate contact sharing. The platform does not process payments or verify item quality, delivery, or handover.
 
 The repository contains the React web client, FastAPI service, PostgreSQL migrations, infrastructure and evaluation tooling. Some features require configured external providers; a successful local startup or synthetic preview does not establish production readiness. See the [work log](docs/status/work-log.md) for current evidence.

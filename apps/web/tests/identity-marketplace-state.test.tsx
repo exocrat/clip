@@ -43,7 +43,7 @@ function setup(mode: 'sales' | 'wanted' | 'saved', initial = session()) {
   });
   vi.stubGlobal('fetch', fetcher);
   const page = mode === 'saved' ? <SavedListingsPage /> : <MyListingsPage />;
-  const view = () => render(<MemoryRouter><IdentityProvider><Controls switchActor={() => { current = session(idB); return current; }} />{page}</IdentityProvider></MemoryRouter>);
+  const view = () => render(<MemoryRouter initialEntries={[mode === 'wanted' ? '/my/listings?view=wanted' : '/my/listings']}><IdentityProvider><Controls switchActor={() => { current = session(idB); return current; }} />{page}</IdentityProvider></MemoryRouter>);
   return { fetcher, view, fail: () => { failSession = true; }, delay: () => { delayed = true; }, resolveLate: () => hold?.(response({ items: [{ listing_id: listingId, saved_at: stamp, listing: listing('Synthetic private late A'), retired: false }], page: 1, page_size: 20, has_next: false })) };
 }
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
@@ -52,7 +52,6 @@ describe('Private marketplace state across Identity transitions', () => {
   it.each(['sales', 'wanted', 'saved'] as const)('removes prior %s content on logout and reloads only the next actor', async (mode) => {
     const state = setup(mode);
     state.view();
-    if (mode === 'wanted') fireEvent.click(await screen.findByRole('button', { name: 'Wanted Requests' }));
     await screen.findByText('Synthetic private A');
     if (mode === 'sales') expect(screen.getByText('Original price (Seller Provided): ₹125')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'End local session' }));
@@ -96,15 +95,14 @@ describe('Private marketplace state across Identity transitions', () => {
   });
   it('preserves a Wanted draft on same-actor refresh and discards it on actor switch', async () => {
     const state = setup('wanted'); state.view();
-    fireEvent.click(await screen.findByRole('button', { name: 'Wanted Requests' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Create wanted request' }));
-    const title = await screen.findByLabelText('Title');
+    const title = await screen.findByLabelText(/^Title/);
     fireEvent.change(title, { target: { value: 'Synthetic private draft A' } });
     fireEvent.click(screen.getByRole('button', { name: 'Refresh session' }));
     await waitFor(() => expect(state.fetcher.mock.calls.filter(([path]) => path === '/api/me')).toHaveLength(2));
-    expect(screen.getByLabelText('Title').getAttribute('value')).toBe('Synthetic private draft A');
+    expect(screen.getByLabelText(/^Title/).getAttribute('value')).toBe('Synthetic private draft A');
     fireEvent.click(screen.getByRole('button', { name: 'Switch actor' }));
-    expect(screen.queryByLabelText('Title')).toBeNull();
+    expect(screen.queryByLabelText(/^Title/)).toBeNull();
     await screen.findByText('Synthetic private B');
   });
   it('unmounts private content at session expiry', async () => {
@@ -116,7 +114,6 @@ describe('Private marketplace state across Identity transitions', () => {
   it('blocks temporary editing/navigation while keeping Wanted creation available', async () => {
     const state = setup('wanted', session(idA, 'temporary'));
     state.view();
-    fireEvent.click(await screen.findByRole('button', { name: 'Wanted Requests' }));
     await screen.findByRole('button', { name: 'Create wanted request' });
     cleanup();
     render(<MemoryRouter><IdentityProvider><AppShell /><ListingEditPage /></IdentityProvider></MemoryRouter>);

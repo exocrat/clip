@@ -1,5 +1,20 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### Full local branch check — 2026-11-07 14:52:31 UTC
+Full `make check` passed on branch head `5a03002` plus the current test correction: Python 2,580 passed/188 skipped; data 331 passed; web 515 passed/3 skipped with lint, typecheck and production build; Black left 519 files unchanged; eight contract artifacts current; contract types passed; boundaries reported zero violations; database safety 35 passed; PostgreSQL 18.6 lifecycle passed; focused Conversations operations 186 passed; Gitleaks 8.30.1 passed. The first full run exposed a stale Identity seller-gate test expecting the removed retry button; it now asserts sign-in navigation and that seller content/catalogue remain unavailable. Vite emitted its existing large-chunk warning. Visual verification and affected-owner/independent review remain pending; no cloud action.
+
+### Microsoft callback and Conversations alignment — 2026-11-07 13:47:34 UTC
+Aditya requested automatic Discover navigation after Microsoft sign-in, removal of the provider explanation and improved My Conversations alignment. Added callback navigation after successful or recovered session, removed enabled-state copy, and arranged listing details and card actions into consistent responsive rows. Frontend lint, typecheck and diff whitespace checks passed; automated tests and human visual verification remain pending. No cloud change.
+
+### Session verification sign-in prompt — 2026-11-07 13:36:34 UTC
+Aditya requested sign-in instead of session-check retry controls when the server cannot verify a session. Updated shared account/seller gates, account contacts and header control to link to sign-in while preserving the unavailable state and hiding private data. Frontend lint and whitespace checks passed; tests and browser verification remain pending. Local default API is not configured for real sign-in.
+
+### Chat alignment clarification — 2026-11-07 13:29:42 UTC
+Aditya clarified that the chat issue is centered date, time and message text inside containers that fit their content. Adjusted conversation bubble and date-label alignment, margins and sizing; the earlier row-stretch correction is retained. Human visual inspection remains pending.
+
+### Chat and Wanted visual correction — 2026-11-07 13:27:05 UTC
+Aditya reported the deployed site at clip-iisc.site and supplied chat/Wanted screenshots. Separated My Listings and My Wanted Requests navigation, removed the owner-page view toggle, aligned the Wanted form with the sale form and prevented chat rows stretching. Updated existing navigation/identity fixtures and README. Frontend lint and TypeScript checks passed; visual inspection and tests remain pending. Affected Search, Listings and Conversations owner review remains pending. No cloud action.
+
 ### Project documentation verification — 2026-11-06 20:15:44 UTC
 At Rahul's request, checked the root README, PRD and developer guide against the submitted PRD, current code and command sources. Local links and anchors resolved; the pinned frontend build passed. The documented synthetic launcher initially hit the default shared rate limit, so the README now supplies process-only test overrides. Its `--check-only` action sweep passed, and a separate instance served its inspection page on port 5176 and shut down cleanly; port 5174 was already occupied and left untouched. A fresh dependency installation and real-provider integration were not exercised. Human document review remains pending.
 
@@ -1585,6 +1600,7 @@ evidence](../evaluation/README.md).
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
+| Chat and Wanted visual correction | Aditya; affected Search, Listings and Conversations owners | in progress | Complete desktop/phone visual verification and obtain required peer/owner reviews | Full `make check` passed: Python 2,580/188 skipped; data 331; web 515/3 skipped; all remaining aggregate checks passed | pending | `task/visual-navigation-wanted-chat`; head `5a03002` plus uncommitted test update | Visual verification, affected-owner/independent review, commit approval, PR/CI and deployment remain | 2026-11-07 14:52:31 UTC |
 | Approved marketplace redesign | Rahul; Aditya, Suraj and Mohit affected-owner review | in progress | Complete aggregate CI, visual inspection and review | Final rate-limit and affected integration suite 56 passed; frontend 513 passed/3 skipped; local aggregate timed out during Python tests | Original preview design and Handle button approved | `task/mobile-menu-checkbox`; [feedback plan](../tasks/next-03-visual-feedback-plan.md) | Full aggregate/CI, visual verification and affected-owner/security and independent review pending | 2026-11-06 19:50:28 UTC |
 | API default rate limits | Rahul; Aditya affected-owner reviewer | in progress | Review defaults and affected workloads | Defaults and settings guide updated; diff check passed | pending | `task/mobile-menu-checkbox`; local changes | Independent review, PR and deployment gates remain | 2026-11-06 17:03:07 UTC |
 | Mobile menu and checkbox correction | Rahul; Aditya affected-owner reviewer | in progress | Obtain independent review and complete normal PR process | CSS changes implemented; web build/typechecks and diff check passed | Rahul verified local preview | `task/mobile-menu-checkbox`; [feedback plan](../tasks/next-03-visual-feedback-plan.md) | Affected-owner and independent review, PR and merge gates remain | 2026-11-06 17:02:08 UTC |

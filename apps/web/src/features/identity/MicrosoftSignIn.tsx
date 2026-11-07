@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { Button } from '../../shared/ui';
 import { completeMicrosoft, microsoftEnabled, MicrosoftSignInError } from './microsoft';
 import { useIdentity } from './session';
@@ -18,11 +18,7 @@ export function MicrosoftSignInButton({
       <Button disabled={disabled || !enabled} onClick={onClick}>
         Continue with Microsoft
       </Button>
-      <p className="identity-muted">
-        {enabled
-          ? 'Use your IISc Microsoft account. Eligibility is checked securely by CLIP.'
-          : 'Microsoft sign-in is currently unavailable.'}
-      </p>
+      {!enabled && <p className="identity-muted">Microsoft sign-in is currently unavailable.</p>}
     </div>
   );
 }
@@ -33,6 +29,7 @@ export function MicrosoftSignInButton({
  */
 export function MicrosoftCallback() {
   const { accept, refresh } = useIdentity();
+  const navigate = useNavigate();
   const [phase, setPhase] = useState<'pending' | 'success' | 'recovered' | 'error'>('pending');
   const [error, setError] = useState('');
   const [checking, setChecking] = useState(false);
@@ -59,6 +56,10 @@ export function MicrosoftCallback() {
       active = false;
     };
   }, [accept]);
+  // Replace the callback URL after Identity has accepted or recovered the session.
+  useEffect(() => {
+    if (phase === 'success' || phase === 'recovered') navigate('/', { replace: true });
+  }, [navigate, phase]);
   async function checkSession() {
     if (checking) return;
     setChecking(true);
