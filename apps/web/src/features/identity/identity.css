@@ -4,8 +4,11 @@
 .identity-eyebrow { color: var(--color-primary); font-weight: 700; font-size: var(--font-size-small); }
 .identity-card { min-width: 0; padding: var(--space-5); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
 .identity-card form { display: grid; gap: var(--space-4); }
+.identity-handle-form > button { justify-self: start; }
 .identity-card label { display: grid; gap: var(--space-2); font-weight: 600; }
 .identity-card input { width: 100%; min-width: 0; min-height: 2.8rem; padding: var(--space-3); color: var(--color-text); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-control); }
+.identity-card label:has(input[type="checkbox"]) { display: flex; align-items: center; gap: var(--space-2); }
+.identity-card input[type="checkbox"] { width: 1.25rem; height: 1.25rem; min-height: 0; flex: 0 0 1.25rem; margin: 0; padding: 0; accent-color: var(--color-primary); }
 .identity-card input:disabled { background: var(--color-disabled); }
 .identity-muted { color: var(--color-muted); font-size: var(--font-size-small); }
 .identity-error { padding: var(--space-3); border-left: 3px solid #b42318; background: #fff3f1; color: #8a1c13; }

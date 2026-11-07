@@ -15,7 +15,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import Settings
-from app.domains.listings.s3_storage import MAX_IMAGE_SIZE_BYTES, _sniff_image_type
+from app.domains.listings.s3_storage import MAX_NEW_IMAGE_SIZE_BYTES, _validate_image
 from app.domains.listings.service import InvalidImageContent, StoredImageMetadata
 
 ORIGIN = "http://127.0.0.1:5174"
@@ -51,7 +51,7 @@ class LocalPreviewStorage:
         if stored is None:
             return None
         content, declared_type = stored
-        detected_type = _sniff_image_type(content)
+        detected_type = _validate_image(content)
         if detected_type is None or detected_type != declared_type:
             raise InvalidImageContent
         return StoredImageMetadata(media_type=detected_type, size_bytes=len(content))
@@ -97,7 +97,7 @@ def install_image_preview(
         content = bytearray()
         async for chunk in request.stream():
             content.extend(chunk)
-            if len(content) > MAX_IMAGE_SIZE_BYTES:
+            if len(content) > MAX_NEW_IMAGE_SIZE_BYTES:
                 raise HTTPException(status_code=413)
         if not content:
             raise HTTPException(status_code=422)

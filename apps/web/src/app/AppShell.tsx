@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useConversationUnreadCount, ConversationUnreadBadge, ConversationKeySetup } from '../features/conversations';
 import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import './AppShell.css';
+import { ThemeToggle } from './ThemeToggle';
 import { HandleSetup, IdentitySessionControl, useIdentity } from '../features/identity';
 
 const productRoutes = [
@@ -29,8 +30,11 @@ export function AppShell() {
     <div className="app-shell">
       <header className="app-shell__header">
         <div className="app-shell__top">
-          <Link className="app-shell__brand" to="/">Campus Marketplace</Link>
-          {status !== 'anonymous' ? <div className="app-shell__account"><IdentitySessionControl /></div> : null}
+          <Link className="app-shell__brand" to="/">CLIP</Link>
+          <div className="app-shell__header-actions">
+            <ThemeToggle />
+            {status !== 'anonymous' ? <div className="app-shell__account"><IdentitySessionControl /></div> : null}
+          </div>
         </div>
       </header>
       <ConversationKeySetup userId={status === 'ready' ? user?.user_id ?? null : null}>

@@ -1,5 +1,19 @@
 # NEXT-03 — visual feedback and agreed correction scope
 
+**2026-11-06 rate-limit correction:** Rahul authorized keeping 60 reads/10 writes per minute while separating authenticated users. The limiter uses verified account identities, anonymous transport peers, and an additional broader peer ceiling before authentication; cross-domain fixtures explicitly raise limits. The final targeted integration suite passed 56 tests; the local aggregate timed out during Python tests and CI and review remain pending.
+
+**2026-11-06 sign-in alignment:** Rahul requested a better aligned sign-in page. The title, intro and form now share a bounded layout, with a stacked mobile layout and CLIP branding; visual review remains pending.
+
+**2026-11-06 Handle button feedback:** Rahul requested that Save Handle no longer stretch across the card. The Handle form now keeps the button at its natural width; Rahul reported it looks good.
+
+**2026-11-06 frontend recheck:** Pinned frontend lint, 513 tests (3 skipped), typecheck and build passed; Python boundary checks found no violations. The real client-to-API integration check still fails in the rapid save/unsave flow under the requested shared rate limit. Browser visual automation was unavailable; affected-owner and independent review remain pending.
+
+**2026-11-06 alignment feedback:** Rahul requested consistent account-card, listing-action and discovery-filter alignment, clearer light/dark icons, and native dropdowns that follow the selected theme. The adjustments are implemented on `task/mobile-menu-checkbox`; local and LAN preview rebuilds and pinned frontend checks passed. Rahul's visual review of these five corrections, including the browser-native dropdown, remains pending.
+
+**2026-11-06 approved redesign:** Rahul approved the separate green marketplace preview and requested integration across existing pages with dark mode, then requested the title CLIP. Rahul is the sole current writer on `task/mobile-menu-checkbox` for the shared shell, page composition and shared presentation styles; Aditya (shell/Identity), Suraj (Listings), Mohit (Search/Wanted/Saved), and Rahul (Conversations) are affected owners. The shared palette, responsive navigation, discovery presentation and persistent theme switch are implemented without changing domain behavior; the LAN-only synthetic chat bypass stays outside the repository. Pinned frontend checks passed and the local inspection preview is available. Human visual inspection in both themes, affected-owner and independent PR review remain pending. The broader Python gate is blocked by the separately requested shared rate limits; see the work log.
+
+**2026-11-06 mobile feedback:** Rahul is the sole current writer on `task/mobile-menu-checkbox` for the mobile navigation background and Identity email checkbox styles. Rahul verified both changes visually in the local preview. Aditya owns the shared shell and Identity and must review the bounded changes; prior NEXT-03 completion is not reclassified.
+
 **Current disposition (2026-11-05 15:26:56 UTC): Aditya marks NEXT-03 complete. Earlier pending/checkpoint statements below are historical; this status update records his direction and does not add new execution evidence.**
 
 **Source:** Suraj's desktop inspection feedback, including four screenshots and
@@ -97,6 +111,7 @@ each row when work begins and when it is complete.
 | D12 | Start item/person conversation groups collapsed | implemented, locally checked, and visually verified by Suraj | Groups default closed; the header remains visible, and opening one starts with five rows. The inbox UI tests cover the default and expansion. |
 | D13 | Show each group’s total unread messages while collapsed | implemented, locally checked, and visually verified by Suraj | The summary contract returns the authorized group aggregate across all conversations before the per-group 20-row display cap. A fresh PostgreSQL regression seeds 21 unread conversation rows and verifies all 20 returned rows report the full total of 21. The inbox badge stays in the visible header when collapsed. |
 | D14 | Scroll the thread to a newly sent message | implemented, locally checked, and visually verified by Suraj | A successful send scrolls the transcript to its bottom after updated entries render; the same is done after a successful retry. Failed sends keep the draft/position and existing retry behavior. A focused UI test verifies the new entry is in view; after integration it waits for the React scroll effect instead of asserting before that effect has run. |
+| D15 | Make chats read-only while their sale listing is unavailable | implemented locally; verification pending | Aditya approved retaining history, blocking all new entries including recovery controls and offer submission, permitting offer withdrawal and restoring writes on reopen. Recovery-dependent history may remain unreadable until reopening. Local PostgreSQL suite passed; owner review and full integration remain pending. |
 | E1 | Keep search qualification stable under sort and verify cutoff behavior | done | Existing tests and programmatic search checks passed. |
 | E2 | Search relevance refinement/common-word tuning | deferred | OPT-05 is unselected; fix only a demonstrated correctness defect. |
 | G1 | Cloud deployment/readiness actions | deferred | User explicitly said leave cloud deployment now. |

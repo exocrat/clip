@@ -47,7 +47,7 @@ describe('marketplace shell navigation', () => {
       account_class: 'regular', valid_until: '2100-01-01T00:00:00.000000Z', display_name: 'Seller',
     } };
     renderShell();
-    const top = screen.getByRole('link', { name: 'Campus Marketplace' }).parentElement;
+    const top = screen.getByRole('link', { name: 'CLIP' }).parentElement;
     expect(top?.className).toBe('app-shell__top');
     expect(top?.querySelector('.app-shell__account')?.textContent).toContain('Sign out');
     expect(screen.queryByRole('link', { name: 'Sign in' })).toBeNull();

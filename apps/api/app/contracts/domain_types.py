@@ -514,7 +514,7 @@ class ImageUploadRequest(ContractModel):
     """Metadata and stable idempotency key for a pending image upload."""
 
     media_type: Literal["image/jpeg", "image/png", "image/webp"]
-    size_bytes: int = Field(ge=1, le=10_485_760)
+    size_bytes: int = Field(ge=1, le=5_242_880)
     operation_id: OperationId
 
 
@@ -823,6 +823,7 @@ class ConversationSummary(ContractModel):
     conversation_id: ConversationId
     origin_kind: OriginKind
     origin_id: UUID
+    origin_available: bool | None = None
     initiator_user_id: UserId
     caller_role: Literal["initiator", "origin_owner"]
     counterparty_user_id: UserId

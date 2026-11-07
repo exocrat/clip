@@ -184,7 +184,7 @@ export function SignIn() {
   return (
     <div className="identity-layout">
       <section className="identity-intro">
-        <p className="identity-eyebrow">Campus Marketplace</p>
+        <p className="identity-eyebrow">CLIP</p>
         <h2>A place for the campus to exchange.</h2>
         <p>Sign in to save finds, post wanted requests, and talk privately with other members.</p>
         <p>

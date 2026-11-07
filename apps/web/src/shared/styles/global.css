@@ -57,8 +57,7 @@ a.ui-button { text-decoration: none; }
 /* Navigation remains anchors, with the same readable target treatment as actions. */
 a:not(.app-shell__brand):not(.discovery-card h2 a):not(.wanted-card h3 a) { text-decoration: none; }
 main a:not(.ui-button):not(.discovery-card h2 a):not(.wanted-card h3 a) { display: inline-flex; align-items: center; gap: .4rem; min-height: 2.75rem; padding: .5rem .75rem; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-text); }
-@media (prefers-color-scheme: dark) {
-  [role="alert"], .discovery-error, .wanted-discovery__error, .listings-error { color: #fca5a5; }
-  .conversation-thread__key-state, .discovery-preview { background: #422006; color: #fde68a; }
-  .discovery-sensitive, .conversation-inbox__notice { color: #fcd34d; }
-}
+/* Shared semantic colors follow the selected theme, including status content. */
+.discovery-error, .wanted-discovery__error, .listings-error { color: var(--color-danger); }
+.conversation-thread__key-state, .discovery-preview { background: var(--color-warning-background); color: var(--color-warning); }
+.discovery-sensitive, .conversation-inbox__notice { color: var(--color-warning); }

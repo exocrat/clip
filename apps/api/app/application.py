@@ -20,6 +20,7 @@ from app.core.config import ConfigurationError, Settings, load_settings
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestLoggingMiddleware
 from app.core.rate_limit import ApiRateLimitMiddleware
+from app.core.request_size import ApiRequestSizeMiddleware
 from app.core.database import PoolFactory, create_async_connection_pool
 from app.core.database_transport import (
     uses_proxy,
@@ -355,6 +356,13 @@ def create_app(
 
     install_error_handlers(app)
     path_prefix = "/api" if settings.serve_web_app or listings_read_only else ""
+    # Identity middleware must authenticate before the limiter selects a user key.
+    app.add_middleware(
+        ApiRateLimitMiddleware,
+        read_limit=settings.api_read_requests_per_minute,
+        write_limit=settings.api_write_requests_per_minute,
+        api_prefix_only=settings.serve_web_app or listings_read_only,
+    )
     if identity is not None:
         install_identity_http(
             app,
@@ -364,11 +372,20 @@ def create_app(
     if identity_reads is not None:
         install_identity_reads(app, identity_reads)
     app.add_middleware(
-        ApiRateLimitMiddleware,
-        read_limit=settings.api_read_requests_per_minute,
-        write_limit=settings.api_write_requests_per_minute,
+        ApiRequestSizeMiddleware,
         api_prefix_only=settings.serve_web_app or listings_read_only,
     )
+    # A separate peer ceiling protects session validation before authenticated limits.
+    # Retain the former 600/120 defaults while allowing explicitly higher test limits.
+    if identity is not None or identity_reads is not None:
+        app.add_middleware(
+            ApiRateLimitMiddleware,
+            read_limit=max(600, settings.api_read_requests_per_minute),
+            write_limit=max(120, settings.api_write_requests_per_minute),
+            api_prefix_only=settings.serve_web_app or listings_read_only,
+            peer_only=True,
+        )
+
     app.add_middleware(RequestLoggingMiddleware)
 
     if settings.isolated_listings_test_caller:

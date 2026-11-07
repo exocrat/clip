@@ -48,6 +48,7 @@ export class ListingsApiError extends Error {
       403: 'This account is not allowed to perform this action.',
       404: 'This listing is missing or is not available to this account.',
       409: 'The listing or request has changed. Reload its current state before continuing.',
+      413: 'This request is too large. Reduce its contents and try again.',
       422: 'Use a title up to 120 characters, description up to 5,000, and pickup area up to 120; enter whole-rupee prices up to ₹1,00,00,000 and check dates and photos.',
       429: 'Too many requests. Wait a moment, then retry.',
       503: 'A required service is unavailable. Your form has been kept; try again later.',
@@ -262,7 +263,7 @@ async function confirmUploadedImage(uploadId: string, signal?: AbortSignal) {
     return await confirmImageUpload(uploadId, signal);
   } catch (error) {
     if (error instanceof ListingsApiError && error.status === 422) {
-      throw new ListingImageFinalError('This file could not be verified as a valid JPEG, PNG, or WebP photo of 10 MiB or smaller. Remove it and choose another photo.');
+      throw new ListingImageFinalError('This file could not be verified as a valid JPEG, PNG, or WebP photo of 5 MiB or smaller. Remove it and choose another photo.');
     }
     if (error instanceof ListingsApiError && error.status === 409) {
       throw new ListingImageFinalError('This photo upload expired or is no longer usable. Remove it and choose the photo again.');

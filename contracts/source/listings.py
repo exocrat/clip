@@ -1,6 +1,6 @@
 """Reviewed Listings HTTP operations and internal declaration-only callables."""
 
-from typing import Protocol
+from typing import AsyncContextManager, Protocol
 
 from app.core.auth import CallerContext
 from app.core.pagination import Page
@@ -48,6 +48,12 @@ class ListingsPublic(Protocol):
         self, caller: CallerContext, request: AvailableListingQuery
     ) -> Page[ListingSummary]:
         """Read the authoritative currently available listing page."""
+        ...
+
+    def conversation_write_guard(
+        self, caller: CallerContext, listing_id: ListingId
+    ) -> AsyncContextManager[bool]:
+        """Hold the listing availability lock across a conversation write."""
         ...
 
     async def read_save_target(

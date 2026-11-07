@@ -1,0 +1,109 @@
+/* Shared visual treatment for the existing marketplace routes and controls. */
+body { line-height: 1.55; }
+h1, h2, h3, legend { letter-spacing: -.035em; }
+h1 { font-size: clamp(1.9rem, 3vw, 2.4rem); font-weight: 800; line-height: 1.15; margin: 1.6rem 0 1.1rem; }
+button, input, select, textarea { font-family: inherit; }
+input, select, textarea { accent-color: var(--color-primary); }
+
+.app-shell__header { background: var(--color-surface); padding: 1rem max(1.25rem, calc((100vw - var(--content-width)) / 2)); border-bottom: 1px solid var(--color-border); }
+.app-shell__top { flex-wrap: wrap; }
+.app-shell__brand { display: inline-flex; align-items: center; gap: .7rem; font-size: 1.2rem; font-weight: 800; letter-spacing: -.04em; }
+.app-shell__brand::before { content: '✳'; display: grid; place-items: center; flex: 0 0 2.3rem; width: 2.3rem; height: 2.3rem; border-radius: .65rem; color: var(--color-primary-contrast); background: var(--color-primary); font-size: 1.35rem; line-height: 1; }
+.app-shell__header-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); min-width: 0; margin-left: auto; }
+.app-shell__theme { display: inline-grid; place-items: center; flex: 0 0 2.75rem; width: 2.75rem; min-height: 2.75rem; padding: 0; border: 1px solid var(--color-border); border-radius: .65rem; color: var(--color-text); background: var(--color-surface); font-size: 1.35rem; cursor: pointer; }
+.app-shell__theme:hover { background: var(--color-surface-muted); }
+.app-shell__theme svg { display: block; width: 1.25rem; height: 1.25rem; }
+.app-shell__account .identity-session { font-size: var(--font-size-small); color: var(--color-muted); }
+.app-shell__navigation { background: transparent; border-bottom: 1px solid var(--color-border); }
+.app-shell__nav { justify-content: flex-start; gap: .45rem; margin: .8rem 0; padding: 0; }
+.app-shell__link { border: 1px solid transparent; border-radius: .6rem; color: var(--color-muted); background: transparent; font-size: .88rem; font-weight: 650; min-height: 2.75rem; padding: .55rem .85rem; }
+.app-shell__link--active { background: var(--color-surface-muted); color: var(--color-text); }
+.app-shell__link:hover { background: var(--color-surface-muted); color: var(--color-text); border-color: var(--color-border); }
+.app-shell > :not(header) { width: min(calc(100% - 2.5rem), var(--content-width)); }
+.route-page { padding-bottom: 5rem; }
+.route-page > h1 { margin-bottom: 1.5rem; }
+.route-page--sign-in { max-width: 62rem; }
+.route-page--sign-in .identity-layout { margin: 0; }
+.route-page--sign-in .identity-intro { padding-top: 1.4rem; }
+
+.ui-button { border-radius: .65rem; font-size: .88rem; letter-spacing: .005em; padding: .7rem 1rem; }
+.ui-button--primary { box-shadow: 0 2px 4px var(--color-shadow); }
+.ui-button--secondary { background: var(--color-surface); border-color: var(--color-border); color: var(--color-text); }
+.segmented-control { background: var(--color-surface-muted); border-radius: .75rem; padding: .3rem; gap: .2rem; max-width: 100%; flex-wrap: wrap; }
+.segmented-control__option[aria-pressed='true'] { color: var(--color-text); background: var(--color-surface); border-color: var(--color-border); box-shadow: 0 2px 6px var(--color-shadow); }
+.segmented-control__option { border-radius: .55rem; font-weight: 700; }
+.search-controls > summary { border-radius: .7rem; border-color: var(--color-border); background: var(--color-surface); font-weight: 650; }
+.search-controls > summary:hover { border-color: var(--color-focus); }
+
+.discovery-welcome { position: relative; overflow: hidden; background: var(--color-hero); border: 1px solid var(--color-border); border-radius: 1rem; padding: 1.5rem 1.8rem; margin: 0 0 1.6rem; }
+.discovery-welcome::after { content: '✳'; position: absolute; right: 1rem; top: -2.9rem; color: var(--color-hero-accent); font-size: 9rem; line-height: 1; pointer-events: none; }
+.discovery-welcome__label { display: block; position: relative; z-index: 1; font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--color-muted); margin-bottom: .45rem; }
+.discovery-welcome h2 { position: relative; z-index: 1; margin: 0 0 .35rem; font-size: 1.25rem; }
+.discovery-welcome p { position: relative; z-index: 1; margin: 0; color: var(--color-muted); font-size: .9rem; max-width: 29rem; }
+.discovery-form, .discovery-state, .discovery-card, .wanted-discovery__form, .wanted-discovery__state, .wanted-card, .identity-card, .listings-card, .listings-form fieldset, .listings-list-card, .listings-empty { border-color: var(--color-border); border-radius: .9rem; background: var(--color-surface); box-shadow: 0 3px 14px var(--color-shadow); }
+.discovery-form, .wanted-discovery__form { padding: 1.35rem; }
+.discovery-filters { align-items: start; }
+.discovery-filters .ui-multi-choice > summary { min-height: 0; gap: var(--space-2); padding: 0; border: 0; background: transparent; }
+.discovery-filters .ui-multi-choice__selection { position: relative; display: block; min-width: 0; min-height: 2.75rem; padding: .625rem 2rem .625rem .75rem; border: 1px solid var(--color-border); border-radius: .6rem; background: var(--color-surface); line-height: 1.5; }
+.discovery-filters .ui-multi-choice__selection::after { content: '⌄'; position: absolute; right: .75rem; top: 50%; transform: translateY(-50%); color: var(--color-text); }
+select { color-scheme: inherit; }
+select option { color: var(--color-text); background-color: var(--color-surface); }
+.discovery input:not([type='checkbox']), .discovery select, .wanted-feature input:not([type='checkbox']), .wanted-feature select, .identity-card input:not([type='checkbox']), .listings-form input:not([type='checkbox']), .listings-form select, .listings-form textarea { border-color: var(--color-border); border-radius: .6rem; background: var(--color-surface); color: var(--color-text); }
+.discovery input:focus, .identity-card input:focus, .listings-form input:focus, .listings-form textarea:focus { border-color: var(--color-focus); }
+.discovery-grid, .wanted-grid { gap: 1rem; }
+.discovery-card, .wanted-card { padding: .85rem; gap: .85rem; }
+.discovery-card__photo, .discovery-card__photo .listings-image-preview { background: var(--color-surface-muted); border-radius: .7rem; }
+.discovery-card__badges .discovery-category, .discovery-card__badges .discovery-negotiability { background: var(--color-surface-muted); color: var(--color-muted); font-size: .75rem; letter-spacing: .025em; }
+.discovery-card .discovery-card__body > .discovery-price { font-size: 1.12rem; color: var(--color-text); }
+.discovery-card h2 { font-size: 1rem; line-height: 1.3; }
+.discovery-detail { border-color: var(--color-border); border-radius: .55rem; color: var(--color-text); font-size: .84rem; }
+.discovery-card__actions { border-color: var(--color-border); }
+.discovery-card__actions > .listings-owner-actions { margin: 0; }
+.discovery-card__actions .ui-button, .discovery-card__actions .discovery-detail { min-height: 2.75rem; padding: .5rem .75rem; align-items: center; }
+.identity-card, .listings-card, .listings-form fieldset { padding: 1.4rem; }
+.account-settings { display: grid; gap: var(--space-5); min-width: 0; }
+.account-settings > a { justify-self: start; }
+.account-settings .identity-contacts { max-width: none; margin-inline: 0; }
+.account-settings .identity-contacts > .identity-card:first-child { margin-bottom: var(--space-5); }
+.identity-contact-grid > .identity-card { display: grid; grid-template-rows: auto 1.5rem 1fr; }
+.identity-contact-grid form > p.identity-muted { min-height: 3em; margin: 0; }
+.identity-contact-grid > .identity-card > h2 { grid-row: 1; }
+.identity-contact-grid > .identity-card > p.identity-muted { grid-row: 2; margin: 0; }
+.identity-contact-grid > .identity-card > form { grid-row: 3; align-content: start; }
+.identity-error { border-color: var(--color-danger); background: var(--color-danger-background); color: var(--color-danger); }
+.discovery-error, .wanted-discovery__error, .wanted-card__actions .wanted-save-compact p, .wanted-save-card .wanted-save-card__error, .listings-error { color: var(--color-danger); }
+.wanted-save-card .wanted-save-card__success { color: var(--color-success); }
+.discovery-sensitive, .conversation-inbox__notice, .listings-owner-detail-actions[role='alert'] { color: var(--color-warning); }
+.discovery-preview, .conversation-thread__key-state, .conversation-thread__error { border-color: var(--color-warning); background: var(--color-warning-background); color: var(--color-warning); }
+.conversation-thread, .conversation-inbox__group, .conversation-inbox__item, .conversation-thread__messages { border-color: var(--color-border); border-radius: .85rem; }
+.conversation-thread__privacy { background: var(--color-surface-muted); color: var(--color-muted); border-radius: .65rem; }
+.conversation-thread__composer textarea { border-color: var(--color-border); border-radius: .65rem; }
+
+@media (max-width: 60rem) {
+  .identity-contact-grid > .identity-card { display: block; }
+  .identity-contact-grid form > p.identity-muted { min-height: 0; }
+}
+
+@media (max-width: 42rem) {
+  .route-page--sign-in .identity-intro { padding-top: 0; }
+}
+
+@media (max-width: 38rem) {
+  .app-shell__header { padding: .85rem 1rem; }
+  .app-shell__brand { font-size: 1.05rem; }
+  .app-shell__brand::before { flex-basis: 2rem; width: 2rem; height: 2rem; font-size: 1.1rem; }
+  .app-shell__navigation { position: static; padding-inline: 0; border: 0; background: transparent; }
+  .app-shell__menu { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: .65rem; padding: .55rem .9rem; color: var(--color-text); min-height: 2.75rem; font-weight: 650; }
+  .app-shell__nav--open { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: .8rem; padding: .55rem; box-shadow: 0 12px 30px var(--color-shadow); }
+  .app-shell > :not(header) { width: calc(100% - 2rem); }
+  .route-page > h1 { margin-top: 1.4rem; }
+  .discovery-welcome { padding: 1.1rem 1.2rem; margin-bottom: 1.2rem; }
+  .discovery-welcome::after { font-size: 6.5rem; top: -1.4rem; right: -.3rem; }
+  .discovery-welcome h2 { font-size: 1.05rem; max-width: 80%; }
+  .discovery-welcome p { font-size: .85rem; max-width: 80%; }
+  .discovery-card, .wanted-card { border-radius: .8rem; }
+  .identity-card, .listings-card, .listings-form fieldset { padding: 1.1rem; }
+}
+
+:root[data-theme='light'] select { color-scheme: light; }
+:root[data-theme='dark'] select { color-scheme: dark; }

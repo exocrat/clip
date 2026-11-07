@@ -24,6 +24,7 @@ ERRORS = {
     403: ErrorSpec(403, "forbidden", "Action not permitted"),
     404: ErrorSpec(404, "not_found", "Resource not found"),
     405: ErrorSpec(405, "method_not_allowed", "Method not allowed"),
+    413: ErrorSpec(413, "payload_too_large", "Request body too large"),
     409: ErrorSpec(409, "conflict", "Resource state conflict"),
     422: ErrorSpec(422, "validation_error", "Request validation failed"),
     429: ErrorSpec(429, "rate_limited", "Request rate limit reached"),
