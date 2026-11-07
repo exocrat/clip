@@ -1,5 +1,10 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### Project documentation verification — 2026-11-06 20:15:44 UTC
+At Rahul's request, checked the root README, PRD and developer guide against the submitted PRD, current code and command sources. Local links and anchors resolved; the pinned frontend build passed. The documented synthetic launcher initially hit the default shared rate limit, so the README now supplies process-only test overrides. Its `--check-only` action sweep passed, and a separate instance served its inspection page on port 5176 and shut down cleanly; port 5174 was already occupied and left untouched. A fresh dependency installation and real-provider integration were not exercised. Human document review remains pending.
+
+### Project documentation refresh — 2026-11-06 19:04:44 UTC
+Rahul requested installation and usage documentation, an original-plan PRD, and a codebase guide on `finsihing-touches`. Rewrote the root README and added `PRD.md` and `dev.md`, tracing requirements to the submitted PDF and accepted product clarifications, and distinguishing local synthetic inspection from real provider integration. Local document targets exist and `git diff --check` passed; commands were inspected but not executed as a fresh installation. Human verification remains pending; no application behavior or cloud resources changed.
 ### PR 40 frontend CI correction — 2026-11-07 05:25:23 UTC
 CI on `56b1528` passed Python and failed two offer UI checks because their sale-conversation fixture omitted the required available state. Updated the fixture and added checks that false/unknown availability blocks new offers while permitting withdrawal. `npm run check` passed: lint, 515 tests (3 skipped), typecheck and production build; Vite reported its existing large-chunk warning. New-head CI remains pending.
 
