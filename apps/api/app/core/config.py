@@ -24,9 +24,9 @@ class ConfigurationError(RuntimeError):
     """Report invalid startup settings without echoing supplied values."""
 
 
-# Default aggregate API requests per process in a rolling minute.
-DEFAULT_API_READ_REQUESTS_PER_MINUTE = 600
-DEFAULT_API_WRITE_REQUESTS_PER_MINUTE = 120
+# Default API requests per client and process in a rolling minute.
+DEFAULT_API_READ_REQUESTS_PER_MINUTE = 60
+DEFAULT_API_WRITE_REQUESTS_PER_MINUTE = 10
 
 ISOLATED_LISTINGS_TEST_DATABASE = "clip_test_listings"
 ISOLATED_LISTINGS_TEST_BUCKET = "clip-test-listings-images-ap-south-1-li02"
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
 
     environment: Literal["local", "test", "production"] = "local"
     debug: bool = False
-    # Per-process caps; deployments with multiple replicas enforce each cap separately.
+    # Per-client caps per process; replicas enforce each cap separately.
     api_read_requests_per_minute: int = Field(
         default=DEFAULT_API_READ_REQUESTS_PER_MINUTE, ge=1, le=100000
     )

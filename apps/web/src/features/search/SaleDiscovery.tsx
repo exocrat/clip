@@ -156,13 +156,12 @@ export function SaleDiscovery({
               onChange={(event) => change('max_rupees', event.target.value)} />
           </label>
           <label htmlFor="discovery-sort">Sort by
-            <select id="discovery-sort" aria-describedby="discovery-sort-help"
+            <select id="discovery-sort"
               value={draft.sort}
               onChange={(event) => change('sort', event.target.value as DiscoveryForm['sort'])}>
               {draft.q.trim() && <option value="relevance">Best Match</option>}
               <option value="created_desc">Newest first</option><option value="price_asc">Price: low to high</option><option value="price_desc">Price: high to low</option>
             </select>
-            <span id="discovery-sort-help" className="discovery-hint">Text searches default to Best Match: direct matches first, expanded or typo matches next, and meaning-based matches after. Browsing defaults to newest first.</span>
           </label>
           <label htmlFor="discovery-size">Listings per page
             <select id="discovery-size" value={draft.page_size} onChange={(event) => change('page_size', Number(event.target.value) as DiscoveryForm['page_size'])}>
