@@ -1,5 +1,11 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### Project documentation verification — 2026-11-06 20:15:44 UTC
+At Rahul's request, checked the root README, PRD and developer guide against the submitted PRD, current code and command sources. Local links and anchors resolved; the pinned frontend build passed. The documented synthetic launcher initially hit the default shared rate limit, so the README now supplies process-only test overrides. Its `--check-only` action sweep passed, and a separate instance served its inspection page on port 5176 and shut down cleanly; port 5174 was already occupied and left untouched. A fresh dependency installation and real-provider integration were not exercised. Human document review remains pending.
+
+### Project documentation refresh — 2026-11-06 19:04:44 UTC
+Rahul requested installation and usage documentation, an original-plan PRD, and a codebase guide on `finsihing-touches`. Rewrote the root README and added `PRD.md` and `dev.md`, tracing requirements to the submitted PDF and accepted product clarifications, and distinguishing local synthetic inspection from real provider integration. Local document targets exist and `git diff --check` passed; commands were inspected but not executed as a fresh installation. Human verification remains pending; no application behavior or cloud resources changed.
+
 ### Deployment documentation audit — 2026-11-06 06:08:18 UTC
 Aditya requested a check against pre-cleanup deployment records. Compared changed and deleted deployment, DNS, notification and data-handoff guidance with retained plans, Terraform and runtime configuration. Added an operator reading order and runtime limitations, restored the cloud dataset loader invocation forms with fresh-approval and partial-failure conditions, corrected stale DNS/notification statements and reconciled the two-task experiment capacity guidance. Local relative Markdown targets in the inspected deployment directories resolved. No cloud access or deployment performed; live configuration, S3 enforcement and a complete deployment rehearsal remain unverified.
 
