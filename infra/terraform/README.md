@@ -27,14 +27,13 @@ related cloud checks where practical. Confirm rollback, ownership, retention and
 cleanup before starting. The operator must determine actual values from the
 current target; this guide does not supply or authorize credentials.
 
-The API rate limits default to 600 reads and 120 writes per minute per process.
+The API rate limits default to 60 reads and 10 writes per minute per authenticated account or anonymous transport peer, per process. A separate per-peer ceiling of at least 600 reads and 120 writes per minute protects session authentication.
 Their `CLIP_API_READ_REQUESTS_PER_MINUTE` and
 `CLIP_API_WRITE_REQUESTS_PER_MINUTE` overrides are documented in the
 [API settings](../../apps/api/README.md#startup-settings). The shared Terraform
 task definition currently does not expose these overrides as variables; changing
-them there requires a reviewed task-definition/configuration change. The limits
-are shared by all clients of each process, reset on restart, and are independent
-across ECS tasks and Lambda instances. Confirm the selected values do not
+them there requires a reviewed task-definition/configuration change. The peer ceiling is shared by clients with the same transport address. Counters
+reset on restart and are independent across ECS tasks and Lambda instances. Confirm the selected values do not
 invalidate a planned experiment.
 
 The existing browser-to-S3 signed-length upload change has not yet been verified

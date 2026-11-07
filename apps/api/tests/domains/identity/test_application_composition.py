@@ -55,7 +55,13 @@ def compose(state, signed_tokens):
         signed_tokens.validator(),
         lambda: state.clock[0],
     )
-    settings = Settings(environment="test", database_url=SecretStr(dsn))
+    # This fixture exercises cross-domain workflows; rate enforcement has dedicated tests.
+    settings = Settings(
+        environment="test",
+        database_url=SecretStr(dsn),
+        api_read_requests_per_minute=10000,
+        api_write_requests_per_minute=10000,
+    )
     return create_app(settings, identity=bindings), settings, bindings
 
 

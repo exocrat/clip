@@ -54,9 +54,10 @@ function localConversationDemoEnabled(search: string): boolean {
 
 export function SignInPage() {
   return (
-    <RoutePage title="Sign in" sessionScoped={false}>
+    <PageFrame className="route-page route-page--sign-in">
+      <h1>Sign in</h1>
       <SignIn />
-    </RoutePage>
+    </PageFrame>
   );
 }
 
@@ -76,6 +77,11 @@ export function DiscoveryPage() {
   const [view, setView] = useState<View>('sales');
   return (
     <RoutePage title="Discover">
+      <section className="discovery-welcome" aria-label="Campus marketplace">
+        <span className="discovery-welcome__label">The campus marketplace</span>
+        <h2>A little less new. A lot more local.</h2>
+        <p>Give good things a second life, right here on campus.</p>
+      </section>
       <SegmentedControl
         label="Discovery view"
         options={[
@@ -263,9 +269,11 @@ export function AccountContactsPage() {
     ? `/my/conversations/${conversation}` : null;
   return (
     <RoutePage title="Account">
-      <HandleEditor />
-      <ContactsEditor />
-      {returnPath ? <Link className="ui-button ui-button--secondary" to={returnPath}>Back to conversation</Link> : null}
+      <div className="account-settings">
+        <HandleEditor />
+        <ContactsEditor />
+        {returnPath ? <Link className="ui-button ui-button--secondary" to={returnPath}>Back to conversation</Link> : null}
+      </div>
     </RoutePage>
   );
 }

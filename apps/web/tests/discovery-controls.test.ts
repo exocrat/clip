@@ -26,13 +26,13 @@ describe('mode and relevance controls', () => {
     expect(html).toContain('<option value="created_desc" selected="">Newest first</option>');
     expect(html).not.toContain('<option value="relevance"');
     expect(html).not.toContain('>Best Match</option>');
-    expect(html).toContain('aria-describedby="discovery-sort-help"');
+    expect(html).not.toContain('discovery-sort-help');
   });
   it.each(['keyword', 'hybrid'])('restores a %s/relevance bookmark without a mode selector', (mode) => {
     const html = render(`/?q=vehicle&search_mode=${mode}&sort=relevance`);
     expect(html).not.toContain('id="discovery-mode"');
     expect(html).toContain('<option value="relevance" selected="">Best Match</option>');
-    expect(html).toContain('Text searches default to Best Match');
+    expect(html).not.toContain('Text searches default to Best Match');
     expect(html).not.toContain('Hybrid takes effect when search text is entered.');
   });
   it('shows the complete negotiability state as a card badge', () => {

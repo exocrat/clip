@@ -50,8 +50,8 @@ The API reads these values from the process environment at startup:
 | Variable | Type and local default | Behavior |
 |---|---|---|
 | `CLIP_ENVIRONMENT` | `local`, `test`, or `production`; default `local` | Rejects unsupported or empty values. This labels configuration mode, not deployment readiness. |
-| `CLIP_API_READ_REQUESTS_PER_MINUTE` | Integer 1–100000; default `600` | Aggregate rolling read limit per API process. |
-| `CLIP_API_WRITE_REQUESTS_PER_MINUTE` | Integer 1–100000; default `120` | Aggregate rolling write limit per API process; counters reset on restart and are not shared across replicas. |
+| `CLIP_API_READ_REQUESTS_PER_MINUTE` | Integer 1–100000; default `60` | Rolling read limit per authenticated account or anonymous transport peer, per API process. |
+| `CLIP_API_WRITE_REQUESTS_PER_MINUTE` | Integer 1–100000; default `10` | Rolling write limit per authenticated account or anonymous transport peer, per API process; counters reset on restart and are not shared across replicas. |
 | `CLIP_DEBUG` | Boolean; default `false` | Controls FastAPI debug responses; production rejects `true`. Invalid or empty boolean values fail startup. |
 | `CLIP_IDENTITY_PROVIDER` | `disabled`, `fake`, or `microsoft`; default `disabled` | `microsoft` permits private local/test validator construction; production rejects this incomplete integration and all fake auth. No sign-in route/session is installed. |
 | `CLIP_EMAIL_PROVIDER` | `disabled`, `fake`, `ses`, or `dual`; default `disabled` | Explicit provider selection; the notification worker requires controlled test-mode `dual`. |
@@ -92,6 +92,8 @@ placeholder credential or fake service is required to start locally. PD-06 imple
 startup never installs. Unknown provider names fail startup, and the API never
 falls back to fake success. Do not treat production configuration mode alone
 as evidence of a working or safe cloud deployment.
+
+Before session authentication, an additional per-peer ceiling of at least 600 reads and 120 writes per minute protects the identity boundary. It uses the server-provided transport peer (subject to the deployment’s trusted-proxy configuration), applies across users sharing that peer, and is also per process.
 
 ## Tests
 

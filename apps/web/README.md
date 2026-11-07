@@ -16,6 +16,11 @@ Open `http://127.0.0.1:5173`. The page header links to each approved route;
 dynamic routes use the sample identifier `example`. Stop the foreground server
 with Ctrl+C. Vite binds to loopback and fails if its configured port is busy.
 
+The header's theme button switches between light and dark palettes. The initial
+choice follows the browser's color scheme; an explicit choice is stored locally
+in that browser when storage is available. The control still works for the
+current page when browser storage is blocked.
+
 ## Run checks
 
 ```bash
