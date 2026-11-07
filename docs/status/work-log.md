@@ -1,5 +1,8 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### API read rate default — 2026-11-07 05:02:57 UTC
+Aditya changed the default read limit from 60 to 100 requests per minute per client and asked to commit the change. Updated the API and Terraform guides to match; no runtime or cloud verification was performed.
+
 ### Main integration — 2026-11-07 05:00:00 UTC
 Merged updated main into the unavailable-listing branch. Preserved the per-account limiter and outer peer ceiling from main alongside the branch's request-size guard and both work-log histories. Updated the Terraform guide to match the resulting limits. Merge verification and existing runtime/owner-review gates remain pending.
 
