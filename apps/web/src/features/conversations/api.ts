@@ -36,7 +36,7 @@ export type ContactField = ContactPreparationRequest['fields'][number];
 export class ConversationApiError extends Error {
   constructor(readonly status: number, readonly kind: 'http' | 'transport' | 'invalid_response',
     readonly reason?: 'peer_key_not_registered') {
-    super('Conversation request could not be completed');
+    super(status === 413 ? 'This request is too large. Reduce its contents and try again.' : 'Conversation request could not be completed');
     this.name = 'ConversationApiError';
   }
 }
@@ -98,6 +98,7 @@ function summary(value: unknown): boolean {
   const offer = value.current_offer;
   return uuid(value.conversation_id) && uuid(value.origin_id) &&
     ['sale_listing', 'wanted_request'].includes(String(value.origin_kind)) &&
+    (value.origin_available == null || typeof value.origin_available === 'boolean') &&
     uuid(value.initiator_user_id) && uuid(value.counterparty_user_id) &&
     ['initiator', 'origin_owner'].includes(String(value.caller_role)) &&
     instant(value.last_activity_at) && natural(value.own_last_read_sequence) && natural(value.unread_count) &&

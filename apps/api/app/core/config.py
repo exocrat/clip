@@ -25,7 +25,7 @@ class ConfigurationError(RuntimeError):
 
 
 # Default API requests per client and process in a rolling minute.
-DEFAULT_API_READ_REQUESTS_PER_MINUTE = 60
+DEFAULT_API_READ_REQUESTS_PER_MINUTE = 100
 DEFAULT_API_WRITE_REQUESTS_PER_MINUTE = 10
 
 ISOLATED_LISTINGS_TEST_DATABASE = "clip_test_listings"

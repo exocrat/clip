@@ -558,6 +558,17 @@
             "title": "Last Activity At",
             "type": "string"
           },
+          "origin_available": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin Available"
+          },
           "origin_id": {
             "format": "uuid",
             "title": "Origin Id",
@@ -1118,7 +1129,7 @@
             "type": "string"
           },
           "size_bytes": {
-            "maximum": 10485760.0,
+            "maximum": 5242880.0,
             "minimum": 1.0,
             "title": "Size Bytes",
             "type": "integer"

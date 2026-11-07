@@ -249,6 +249,8 @@ type ReadyConversation = { summary: ConversationSummary; session: ConversationSe
 
 export function ConversationDetailPage({ conversationId, renderOriginContext }: { conversationId: string | undefined; renderOriginContext?: (kind: "sale_listing" | "wanted_request", originId: string) => ReactNode }) {
   const runtime = useContext(RuntimeContext);
+
+
   if (!runtime) return <p role="status">Sign in to view this conversation. The authenticated session is not connected here yet.</p>;
   // Remount on account/thread change to discard decrypted UI state, drafts and
   // late asynchronous updates. Session cleanup closes crypto; stored keys remain.
@@ -498,6 +500,21 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
     setKeyState({ kind: 'ready' });
   }, [conversationId, ready, runtime]);
 
+  useEffect(() => {
+    if (!runtime || !conversationId || authorizedSummary?.origin_kind !== 'sale_listing') return;
+    let active = true;
+    const update = async () => {
+      try {
+        const current = await runtime.api.readSummary(conversationId);
+        if (active) setAuthorizedSummary(current);
+      } catch {
+        if (active) setAuthorizedSummary((current) => current ? { ...current, origin_available: null } : current);
+      }
+    };
+    const timer = setInterval(() => { if (document.visibilityState === 'visible') void update(); }, 2000);
+    return () => { active = false; clearInterval(timer); };
+  }, [runtime, conversationId, authorizedSummary?.origin_kind]);
+
   if (!runtime) return <p role="status">Sign in to view this conversation. The authenticated session is not connected here yet.</p>;
   if (!conversationId) return <p role="alert">This conversation link is invalid.</p>;
   const pageSummary = authorizedSummary ?? ready?.summary ?? null;
@@ -505,6 +522,7 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
     <p><Link to="/my/conversations">Back to conversations</Link></p>
     {pageSummary ? <Link className="ui-button ui-button--secondary" to={`${pageSummary.origin_kind === 'sale_listing' ? '/listings/' : '/wanted/'}${pageSummary.origin_id}`}>Open {pageSummary.origin_kind === 'sale_listing' ? 'listing' : 'Wanted Request'}</Link> : null}
     {pageSummary && renderOriginContext?.(pageSummary.origin_kind, pageSummary.origin_id)}
+    {pageSummary?.origin_kind === 'sale_listing' && pageSummary.origin_available !== true && <p role="status">{pageSummary.origin_available === false ? 'This listing is unavailable. You can read this conversation, but cannot send messages or new offers.' : 'Checking listing availability. Sending is paused.'}</p>}
     <h2>{pageSummary?.origin_kind === 'sale_listing' ? 'Sale listing conversation' : pageSummary ? 'Wanted request conversation' : 'Private conversation'}</h2>
     {pageSummary && <p>{pageSummary.counterparty_handle ? `@${pageSummary.counterparty_handle}` : 'Member completing setup'}{pageSummary.counterparty_account_class === 'temporary' ? ' · Temporary account' : ''}</p>}
     {keyState.kind === 'error' ? <Button disabled={loading} onClick={() => void initialize().catch(() => undefined)} variant="secondary">Retry loading conversation</Button> : null}
@@ -544,11 +562,12 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
       viewing_history={showingHistory} latest_view_revision={latestViewRevision}
       last_read_sequence={readSequence} loading={loading} onRefresh={refresh} onSend={send} onRetry={retry}
       recoveredPending={recoveredPending}
+      readOnly={pageSummary?.origin_kind === 'sale_listing' && pageSummary.origin_available !== true}
       onAcknowledgeDisplayed={acknowledge} onAcknowledgeKeyRegistration={() => initialize(true)}
       onAcceptChangedKey={keyState.kind === 'key_change' ? acceptChangedKey : undefined} />
     {authorizedSummary && <details className="conversation-thread__tools"><summary>Share contact details</summary>
     {authorizedSummary ? <ConversationContactPreparation key={conversationId} conversationId={conversationId} api={runtime.api}
-      canShare={keyState.kind === 'ready' && ready !== null} onShare={shareContacts} onRetry={retryContactShare} /> : null}
+      canShare={keyState.kind === 'ready' && ready !== null && (authorizedSummary.origin_kind !== 'sale_listing' || authorizedSummary.origin_available === true)} onShare={shareContacts} onRetry={retryContactShare} /> : null}
     </details>}
     {authorizedSummary && isSellerSaleListingConversation(authorizedSummary) && <details className="conversation-thread__tools"><summary>Buyer tracking</summary>
     {authorizedSummary && isSellerSaleListingConversation(authorizedSummary) ? (

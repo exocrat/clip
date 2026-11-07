@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import asyncio
+from io import BytesIO
+
+from PIL import Image
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
@@ -15,7 +18,15 @@ from app.domains.listings.s3_storage import (
 )
 from app.domains.listings.service import InvalidImageContent, StoredImageMetadata
 
-PNG = b"\x89PNG\r\n\x1a\n" + b"\x00\x00\x00\x0dIHDRsynthetic"
+
+def _png() -> bytes:
+    """Build a real small image for successful structure validation."""
+    output = BytesIO()
+    Image.new("RGB", (2, 2)).save(output, format="PNG")
+    return output.getvalue()
+
+
+PNG = _png()
 
 
 class _Body:
@@ -222,3 +233,29 @@ def test_delete_targets_only_the_configured_bucket_key(monkeypatch):
 def test_adapter_rejects_missing_or_traversing_key_prefix(monkeypatch, bad_prefix):
     with pytest.raises(ValueError, match="configuration is invalid"):
         S3ListingsImageStorage("private-bucket", "ap-south-1", bad_prefix)
+
+
+@pytest.mark.parametrize("content", [b"\xff\xd8\xff", b"\x89PNG\r\n\x1a\n0000IHDR"])
+def test_inspection_rejects_fake_image_headers(monkeypatch, content):
+    storage, client, _ = _storage(monkeypatch)
+    client.get_response = {
+        "Body": _Body(content),
+        "ContentLength": len(content),
+        "ContentType": "image/jpeg" if content.startswith(b"\xff") else "image/png",
+    }
+    with pytest.raises(InvalidImageContent):
+        asyncio.run(storage.inspect_object("test/run-1/key"))
+
+
+def test_inspection_rejects_excessive_dimensions(monkeypatch):
+    import app.domains.listings.s3_storage as storage_module
+
+    monkeypatch.setattr(storage_module, "MAX_IMAGE_PIXELS", 3)
+    storage, client, _ = _storage(monkeypatch)
+    client.get_response = {
+        "Body": _Body(PNG),
+        "ContentLength": len(PNG),
+        "ContentType": "image/png",
+    }
+    with pytest.raises(InvalidImageContent):
+        asyncio.run(storage.inspect_object("test/run-1/key"))

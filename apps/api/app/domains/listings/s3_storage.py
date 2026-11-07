@@ -3,18 +3,22 @@
 from __future__ import annotations
 
 import asyncio
+from io import BytesIO
 from datetime import UTC, datetime
 from math import floor
 from typing import Any, Literal, cast
 
 import boto3  # type: ignore[import-untyped]
 from botocore.config import Config as BotoConfig  # type: ignore[import-untyped]
-from botocore.exceptions import ClientError  # type: ignore[import-untyped]
+from botocore.exceptions import ClientError
+from PIL import Image, UnidentifiedImageError  # type: ignore[import-untyped]
 
 from app.contracts.domain_types import ImageId
 from app.domains.listings.service import InvalidImageContent, StoredImageMetadata
 
 MAX_IMAGE_SIZE_BYTES = 10_485_760
+MAX_NEW_IMAGE_SIZE_BYTES = 5_242_880
+MAX_IMAGE_PIXELS = 40_000_000
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
 
@@ -42,7 +46,7 @@ class S3ListingsImageStorage:
         self, object_key: str, media_type: str, expires_at: datetime, size_bytes: int
     ) -> str:
         """Bind the create-only PUT to its declared content type and exact length."""
-        if not 1 <= size_bytes <= MAX_IMAGE_SIZE_BYTES:
+        if not 1 <= size_bytes <= MAX_NEW_IMAGE_SIZE_BYTES:
             raise ValueError("Invalid upload size")
         remaining = floor((expires_at - datetime.now(UTC)).total_seconds())
         if remaining < 1:
@@ -111,7 +115,7 @@ class S3ListingsImageStorage:
         content = await asyncio.to_thread(read_bounded_body)
         if len(content) != size_bytes or len(content) > MAX_IMAGE_SIZE_BYTES:
             raise InvalidImageContent
-        media_type = _sniff_image_type(content)
+        media_type = await asyncio.to_thread(_validate_image, content)
         if media_type is None or response.get("ContentType") != media_type:
             raise InvalidImageContent
         return StoredImageMetadata(media_type=media_type, size_bytes=len(content))
@@ -123,14 +127,26 @@ class S3ListingsImageStorage:
         )
 
 
-def _sniff_image_type(
+def _validate_image(
     content: bytes,
 ) -> Literal["image/jpeg", "image/png", "image/webp"] | None:
-    """Recognize only the three contract formats from their file signatures."""
-    if content.startswith(b"\xff\xd8\xff"):
-        return "image/jpeg"
-    if content.startswith(b"\x89PNG\r\n\x1a\n") and content[12:16] == b"IHDR":
-        return "image/png"
-    if content.startswith(b"RIFF") and content[8:12] == b"WEBP":
-        return "image/webp"
-    return None
+    """Verify supported image structure and bound dimensions without decoding pixels."""
+    formats = {"JPEG": "image/jpeg", "PNG": "image/png", "WEBP": "image/webp"}
+    try:
+        with Image.open(BytesIO(content), formats=("JPEG", "PNG", "WEBP")) as image:
+            width, height = image.size
+            if width < 1 or height < 1 or width * height > MAX_IMAGE_PIXELS:
+                return None
+            media_type = formats.get(image.format or "")
+            image.verify()
+            return cast(
+                Literal["image/jpeg", "image/png", "image/webp"] | None, media_type
+            )
+    except (
+        UnidentifiedImageError,
+        Image.DecompressionBombError,
+        OSError,
+        SyntaxError,
+        ValueError,
+    ):
+        return None

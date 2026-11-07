@@ -59,6 +59,9 @@ from app.domains.listings.hybrid_snapshot import (
     score_snapshot,
 )
 
+# Bound total reserved bytes until corresponding storage objects are cleaned.
+MAX_ACCOUNT_IMAGE_BYTES = 200 * 1024 * 1024
+
 # This projection keeps list/detail reads to one SQL query per request. The
 # threshold is injected from typed API settings so every read uses the same
 # approved, configurable Listings value.
@@ -329,6 +332,23 @@ class PostgresListingsStore:
                         raise _conflict()
                     return intent
 
+                # Serialize all new reservations for this owner so concurrent
+                # distinct operation IDs cannot overrun the account budget.
+                await connection.execute(
+                    "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))",
+                    (f"listings-image-quota:{owner_id}",),
+                )
+                cursor = await connection.execute(
+                    "SELECT COALESCE(SUM(COALESCE(requested_size_bytes, confirmed_size_bytes, 10485760)), 0) AS reserved "
+                    "FROM listings.image_uploads WHERE owner_id = %s",
+                    (owner_id,),
+                )
+                usage = await cursor.fetchone()
+                if (
+                    usage is None
+                    or usage["reserved"] + request.size_bytes > MAX_ACCOUNT_IMAGE_BYTES
+                ):
+                    raise PublicError(ERRORS[409])
                 expires_at = now + timedelta(hours=24)
                 cursor = await connection.execute(
                     """

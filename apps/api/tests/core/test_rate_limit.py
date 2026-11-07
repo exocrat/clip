@@ -11,7 +11,7 @@ from app.core.config import Settings
 from app.core.rate_limit import ApiRateLimitMiddleware
 
 
-def client_for(*, read_limit=60, write_limit=10):
+def client_for(*, read_limit=100, write_limit=10):
     """Install a controlled trusted caller boundary ahead of the real limiter."""
     app = FastAPI()
     users = {
@@ -46,7 +46,7 @@ def test_default_limits_and_separate_authenticated_users():
     assert (
         settings.api_read_requests_per_minute,
         settings.api_write_requests_per_minute,
-    ) == (60, 10)
+    ) == (100, 10)
     with client_for() as client:
         one = {"x-test-identity": "one"}
         two = {"x-test-identity": "two"}
@@ -56,7 +56,7 @@ def test_default_limits_and_separate_authenticated_users():
         assert limited.status_code == 429
         assert int(limited.headers["retry-after"]) > 0
         assert client.post("/resource", headers=two).status_code == 200
-        for _ in range(60):
+        for _ in range(100):
             assert client.get("/resource", headers=one).status_code == 200
         assert client.get("/resource", headers=one).status_code == 429
         assert client.get("/resource", headers=two).status_code == 200

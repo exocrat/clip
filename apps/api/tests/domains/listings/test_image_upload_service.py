@@ -273,7 +273,7 @@ def test_valid_upload_intent_is_owner_bound_and_url_expires_within_five_minutes(
     "values",
     [
         {"size_bytes": 0},
-        {"size_bytes": 10_485_761},
+        {"size_bytes": 5_242_881},
         {"media_type": "image/gif"},
     ],
     ids=["empty", "too-large", "unsupported-type"],

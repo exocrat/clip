@@ -51,8 +51,23 @@ export function ConversationOffers({ conversationId }: { conversationId: string 
     return () => { alive.current = false; controller.abort(); };
   }, [refresh]);
 
+  useEffect(() => {
+    if (!conversationId || summary?.origin_kind !== 'sale_listing') return;
+    let active = true;
+    const update = async () => {
+      try {
+        const current = await api.readSummary(conversationId);
+        if (active) setSummary(current);
+      } catch {
+        if (active) setSummary((current) => current ? { ...current, origin_available: null } : current);
+      }
+    };
+    const timer = setInterval(() => { if (document.visibilityState === 'visible') void update(); }, 2000);
+    return () => { active = false; clearInterval(timer); };
+  }, [conversationId, summary?.origin_kind]);
+
   async function write(withdraw = false) {
-    if (!summary || !conversationId || busy) return;
+    if (!summary || !conversationId || busy || (!withdraw && summary.origin_available !== true)) return;
     let command = pending;
     if (!command) {
       if (withdraw && offer) command = { kind: 'withdraw', body: { offer_id: offer.offer_id, expected_revision: offer.revision, operation_id: crypto.randomUUID() } };
@@ -87,9 +102,9 @@ export function ConversationOffers({ conversationId }: { conversationId: string 
     <h3>Offer</h3>
     {offer ? <p>₹{(offer.amount_paise / 100).toLocaleString('en-IN')} · {offer.status === 'submitted' ? 'Submitted' : 'Withdrawn'}</p> : <p>No offer yet.</p>}
     {summary.caller_role === 'initiator' && loaded ? <>
-      <label className="conversation-offers__amount">Offer amount (₹)<input inputMode="numeric" value={amount} disabled={busy || pending !== null} onChange={(event) => setAmount(event.target.value)} /></label>
+      <label className="conversation-offers__amount">Offer amount (₹)<input inputMode="numeric" value={amount} disabled={busy || pending !== null || summary.origin_available !== true} onChange={(event) => setAmount(event.target.value)} /></label>
       <div className="conversation-offers__actions">
-        <Button disabled={busy} onClick={() => void write()}>{busy ? 'Updating…' : pending ? 'Retry offer change' : offer ? 'Update offer' : 'Submit offer'}</Button>
+        <Button disabled={busy || summary.origin_available !== true} onClick={() => void write()}>{busy ? 'Updating…' : pending ? 'Retry offer change' : offer ? 'Update offer' : 'Submit offer'}</Button>
         {offer?.status === 'submitted' && !pending ? <Button variant="secondary" disabled={busy} onClick={() => void write(true)}>Withdraw offer</Button> : null}
       </div>
     </> : null}

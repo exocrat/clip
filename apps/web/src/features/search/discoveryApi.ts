@@ -9,6 +9,7 @@ export class DiscoveryApiError extends Error {
   constructor(public readonly status: number) {
     super(({ 401: 'Your session is missing or expired. Sign in to browse listings.',
       403: 'This account is not currently eligible to browse listings.',
+      413: 'This request is too large. Reduce its contents and try again.',
       422: 'Some filters were rejected. Check them and apply again.',
       429: 'Too many requests. Wait a moment, then retry.',
       503: 'Listings are temporarily unavailable. Your filters have been kept.' } as Record<number, string>)[status]

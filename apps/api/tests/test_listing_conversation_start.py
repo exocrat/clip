@@ -21,6 +21,7 @@ import pytest
 from app.contracts.domain_types import (
     AvailabilityChange,
     ExistingListingConversationLookup,
+    ImageUploadRequest,
 )
 from app.core.auth import require_caller
 from app.core.errors import PublicError, install_error_handlers
@@ -30,7 +31,10 @@ from app.domains.identity.capabilities import PostgresCapabilities
 from app.domains.listings.integrations import PublicListingsIdentity
 from app.domains.listings.postgres_store import PostgresListingsStore
 from app.domains.listings.routes import router
+from app.domains.listings.search_access import ListingsSearchAccess
 from app.domains.listings.service import ListingsService
+from app.domains.conversations.routes import router as conversation_router
+from test_conversation_messages import message_request
 from test_thread_creation import (
     TEST_DATABASE_DSN,
     caller,
@@ -72,6 +76,8 @@ async def environment(
         install_error_handlers(app)
         app.include_router(router)
         app.state.listings_store = store
+        # Mirror production: Conversations uses this real Listings guard.
+        app.state.listings_public = ListingsSearchAccess(origin_pool, store, 10000)
         app.state.listings_identity = PublicListingsIdentity()
         app.state.listings_conversations = provider
         app.dependency_overrides[require_caller] = lambda: actor
@@ -245,5 +251,69 @@ def test_closed_first_never_creates_and_revoked_buyer_is_denied():
             assert (
                 await state.client.post(url, json={"operation_id": str(uuid4())})
             ).status_code == 403
+
+    run_scenario(scenario)
+
+
+def test_unavailable_sale_rejects_recovery_controls():
+    """A member cannot send legacy recovery controls while a sale is unavailable."""
+
+    async def scenario(pool):
+        async with environment(pool) as state:
+            state.app.include_router(conversation_router)
+            state.app.state.database_pool = pool
+            opened = await state.client.post(
+                f"/listings/{state.listing}/conversations",
+                json={"operation_id": str(uuid4())},
+            )
+            thread = opened.json()["conversation_id"]
+            await close(state)
+            payload = message_request(
+                sdk_type="retry_request", sender_version=None, recipient_version=None
+            )
+            denied = await state.client.post(
+                f"/conversations/{thread}/messages",
+                json=payload.model_dump(mode="json"),
+            )
+            assert denied.status_code == 409
+
+    run_scenario(scenario)
+
+
+def test_upload_quota_serializes_concurrent_reservations(monkeypatch):
+    """Two simultaneous reservations cannot exceed the same owner's budget."""
+    import app.domains.listings.postgres_store as storage
+
+    monkeypatch.setattr(storage, "MAX_ACCOUNT_IMAGE_BYTES", 10)
+
+    async def scenario(pool):
+        async with environment(pool) as state:
+            now = datetime.now(UTC)
+            requests = [
+                ImageUploadRequest(
+                    media_type="image/png", size_bytes=6, operation_id=uuid4()
+                )
+                for _ in range(2)
+            ]
+
+            async def reserve(request):
+                image_id = uuid4()
+                return await state.store.create_image_upload(
+                    state.owner, request, image_id, f"test/{image_id}", now
+                )
+
+            results = await asyncio.gather(
+                *(reserve(item) for item in requests), return_exceptions=True
+            )
+            success = [item for item in results if not isinstance(item, Exception)]
+            rejected = [item for item in results if isinstance(item, PublicError)]
+            assert len(success) == len(rejected) == 1 and rejected[0].spec.status == 409
+            original = (
+                requests[0]
+                if requests[0].operation_id == success[0].operation_id
+                else requests[1]
+            )
+            replay = await reserve(original)
+            assert replay.upload_id == success[0].upload_id
 
     run_scenario(scenario)

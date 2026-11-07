@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../shared/ui';
 import { createDisplayedReadAcknowledger } from './read-state';
+import { ConversationApiError } from './api';
 import {
   KEY_REGISTRATION_WARNING,
   PEER_KEY_CHANGE_WARNING,
@@ -40,6 +41,8 @@ export type ConversationThreadProps = {
   /** Changes only the privacy/call-to-action copy for a loopback synthetic demo. */
   presentationMode?: 'live' | 'local-demo';
   loading?: boolean;
+  /** A closed listing keeps its conversation readable but prevents new messages. */
+  readOnly?: boolean;
   recoveredPending?: { operationId: string; text: string } | null;
   onRefresh: () => Promise<void>;
   onSend: (text: string, operationId: string) => Promise<void>;
@@ -71,6 +74,7 @@ export function ConversationThread({
   latest_view_revision = 0,
   presentationMode = 'live',
   loading = false,
+  readOnly = false,
   recoveredPending = null,
   onRefresh,
   onSend,
@@ -81,7 +85,7 @@ export function ConversationThread({
 }: ConversationThreadProps) {
   const [draft, setDraft] = useState('');
   const [pending, setPending] = useState<PendingSend | null>(null);
-  const [sendError, setSendError] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const [refreshError, setRefreshError] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
   const [acknowledgedRegistration, setAcknowledgedRegistration] = useState(false);
@@ -130,7 +134,7 @@ export function ConversationThread({
     scrollToBottomAfterSend.current = false;
   }, [entries, pending]);
   const sendLock = useRef(false);
-  const canSend = key_state.kind === 'ready' && !pending && !actionBusy;
+  const canSend = !readOnly && key_state.kind === 'ready' && !pending && !actionBusy;
 
   useEffect(() => {
     if (!pending && recoveredPending) setPending({ ...recoveredPending, state: 'failed' });
@@ -214,15 +218,17 @@ export function ConversationThread({
     const text = draft;
     setDraft('');
     setPending({ operationId, text, state: 'sending' });
-    setSendError(false);
+    setSendError(null);
     try {
       await onSend(text, operationId);
       scrollToBottomAfterSend.current = true;
       setPending(null);
       setShowOpeningUnreadBoundary(false);
-    } catch {
+    } catch (error) {
       setPending({ operationId, text, state: 'failed' });
-      setSendError(true);
+      setSendError(error instanceof ConversationApiError && error.status === 413
+        ? 'This request is too large. Reduce its contents and try again.'
+        : 'The action did not finish. Retry it or refresh before sending another message.');
     } finally {
       sendLock.current = false;
     }
@@ -247,9 +253,9 @@ export function ConversationThread({
       await onRetry(pending.operationId);
       scrollToBottomAfterSend.current = true;
       setPending(null);
-      setSendError(false);
+      setSendError(null);
     } catch {
-      setSendError(true);
+      setSendError('The action did not finish. Retry it or refresh before sending another message.');
     } finally {
       setActionBusy(false);
     }
@@ -270,7 +276,7 @@ export function ConversationThread({
     try {
       await action();
     } catch {
-      setSendError(true);
+      setSendError('The action did not finish. Retry it or refresh before sending another message.');
     } finally {
       setActionBusy(false);
     }
@@ -352,7 +358,7 @@ export function ConversationThread({
             ) : (
               <div className="conversation-thread__retry-row">
                 <span role="status">Message not sent.</span>
-                <Button disabled={actionBusy} onClick={() => void retry()} variant="secondary">
+                <Button disabled={actionBusy || readOnly} onClick={() => void retry()} variant="secondary">
                   {actionBusy ? 'Retrying…' : 'Retry'}
                 </Button>
               </div>
@@ -362,7 +368,7 @@ export function ConversationThread({
       </ol>
       {sendError ? (
         <p className="conversation-thread__error" role="status">
-          The action did not finish. Retry it or refresh before sending another message.
+          {sendError}
         </p>
       ) : null}
       <form className="conversation-thread__composer" onSubmit={(event) => void submit(event)}>

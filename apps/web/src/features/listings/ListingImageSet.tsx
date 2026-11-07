@@ -9,7 +9,7 @@ import { newOperationId } from './operationId';
 export type ListingImageChoice = ExistingListingImage | NewListingImage;
 
 const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const maximumBytes = 10 * 1024 * 1024;
+const maximumBytes = 5 * 1024 * 1024;
 
 type PendingPhoto = {
   localId: string;
@@ -184,7 +184,7 @@ export function ListingImageSet({
         continue;
       }
       if (file.size < 1 || file.size > maximumBytes) {
-        messages.push(`${file.name || 'This photo'} was not added. Each photo must be 10 MiB or smaller and not empty.`);
+        messages.push(`${file.name || 'This photo'} was not added. Each photo must be 5 MiB or smaller and not empty.`);
         continue;
       }
       try {
@@ -246,7 +246,7 @@ export function ListingImageSet({
   return (
     <fieldset id="listing-images" disabled={disabled} className="listings-image-picker">
       <legend>Listing photos</legend>
-      <p>Choose 1–8 photos. JPEG, PNG, or WebP; each photo must be 10 MiB or smaller.</p>
+      <p>Choose 1–8 photos. JPEG, PNG, or WebP; each photo must be 5 MiB or smaller.</p>
       <p role="status">{occupiedSlots} of 8 photos selected · {images.length} ready</p>
       <input
         ref={galleryInput}

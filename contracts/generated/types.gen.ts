@@ -328,6 +328,10 @@ export type ConversationSummary = {
      */
     last_activity_at: string;
     /**
+     * Origin Available
+     */
+    origin_available?: boolean | null;
+    /**
      * Origin Id
      */
     origin_id: string;

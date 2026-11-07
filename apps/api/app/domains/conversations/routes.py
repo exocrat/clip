@@ -1,6 +1,7 @@
 """Public HTTP router adapter for the Conversations-owned entry operations."""
 
 import re
+from contextlib import asynccontextmanager
 from typing import Annotated, Any
 from uuid import UUID
 
@@ -36,7 +37,7 @@ from app.contracts.domain_types import (
     SelectedOwnContacts,
 )
 from app.core.auth import CallerContext, require_caller
-from app.core.errors import ERRORS, PublicError
+from app.core.errors import ERRORS, FieldError, PublicError
 from app.domains.conversations.messages import PostgresMessageOperations
 from app.domains.conversations.queries import PostgresConversationQueries
 from app.domains.conversations.key_directory import PostgresKeyDirectory
@@ -141,6 +142,28 @@ async def prepare_own_contacts(
     )
 
 
+@asynccontextmanager
+async def _listing_write_guard(
+    request: Request, caller: CallerContext, conversation_id: UUID
+):
+    """Authorize membership, then serialize a sale write with listing availability."""
+    summary = await PostgresConversationQueries(_pool(request)).read_summary(
+        caller, conversation_id
+    )
+    if summary.origin_kind != "sale_listing":
+        yield
+        return
+    listings = getattr(request.app.state, "listings_public", None)
+    if listings is None:
+        raise PublicError(ERRORS[503])
+    async with listings.conversation_write_guard(
+        caller, summary.origin_id
+    ) as available:
+        if not available:
+            raise PublicError(ERRORS[409], (FieldError("listing_id", "unavailable"),))
+        yield
+
+
 @router.post(
     "/conversations/{conversation_id}/messages",
     response_model=ConversationEntry,
@@ -157,7 +180,11 @@ async def submit_message(
     caller: CallerContext = Depends(require_caller),
 ) -> ConversationEntry:
     """Submit one ciphertext/control envelope and return 200 only for exact retry."""
-    result = await _operations(request).submit_message(caller, conversation_id, payload)
+    # Unavailable sale listings reject all entries, including opaque controls.
+    async with _listing_write_guard(request, caller, conversation_id):
+        result = await _operations(request).submit_message(
+            caller, conversation_id, payload
+        )
     if result.replayed:
         response.status_code = 200
     return result.entry
@@ -179,9 +206,10 @@ async def submit_contact_share(
     caller: CallerContext = Depends(require_caller),
 ) -> ConversationEntry:
     """Store a member's ciphertext-only selected-contact entry."""
-    result = await _operations(request).submit_contact_share(
-        caller, conversation_id, payload
-    )
+    async with _listing_write_guard(request, caller, conversation_id):
+        result = await _operations(request).submit_contact_share(
+            caller, conversation_id, payload
+        )
     if result.replayed:
         response.status_code = 200
     return result.entry
@@ -294,9 +322,18 @@ async def read_summary(
     caller: CallerContext = Depends(require_caller),
 ) -> ConversationSummary:
     """Resolve thread metadata only for an authenticated participant."""
-    return await PostgresConversationQueries(_pool(request)).read_summary(
+    summary = await PostgresConversationQueries(_pool(request)).read_summary(
         caller, conversation_id
     )
+    if summary.origin_kind == "sale_listing":
+        listings = getattr(request.app.state, "listings_public", None)
+        if listings is None:
+            raise PublicError(ERRORS[503])
+        async with listings.conversation_write_guard(
+            caller, summary.origin_id
+        ) as available:
+            summary = summary.model_copy(update={"origin_available": available})
+    return summary
 
 
 @router.get(
