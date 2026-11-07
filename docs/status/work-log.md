@@ -1,5 +1,8 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### PR 40 rate-limit CI correction — 2026-11-07 05:13:39 UTC
+CI on `eafe84e` reported 1 failure, 2579 passed and 188 skipped: the default rate-limit test still expected 60 reads after Aditya changed the default to 100. Updated the expected default and the boundary check to exercise 100 accepted reads followed by 429. Focused rate-limit suite: 5 passed; `git diff --check` passed. Remaining CI gates await the updated PR run.
+
 ### API read rate default — 2026-11-07 05:02:57 UTC
 Aditya changed the default read limit from 60 to 100 requests per minute per client and asked to commit the change. Updated the API and Terraform guides to match; no runtime or cloud verification was performed.
 
