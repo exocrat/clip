@@ -80,3 +80,12 @@ make check            # full local CI-equivalent gates and disposable DB checks
 ```
 
 `make check` requires the tools and local Docker described in the [command index](docs/environment/commands.md). Skips, missing prerequisites, and failures are not passing evidence. See [dev.md](dev.md) for focused commands, provider boundaries, and review requirements.
+
+## Red-team testing baseline
+
+- Baseline tag: `rt-baseline`
+- Baseline commit: `acb449366b881127677740111146297c5f2cd62b`
+- [View baseline code](https://github.com/exocrat/clip/tree/rt-baseline)
+
+Report original findings against `rt-baseline`.
+For retests, identify the specific fix commit or pull request tested.
