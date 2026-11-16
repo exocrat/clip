@@ -29,7 +29,7 @@ run "disabled_defaults_preserve_no_proxy_or_runtime_command" {
     error_message = "Default settings must create no proxy ingress resources."
   }
   assert {
-    condition     = try(jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].command, null) == null
+    condition     = try(jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0].command, null) == null
     error_message = "Disabled Identity must retain the image's default command."
   }
 }
@@ -52,7 +52,7 @@ run "enabled_proxy_pins_private_peer_and_safe_api_command" {
     error_message = "Proxy must use the exact private peer and bounded test instance."
   }
   assert {
-    condition     = contains(jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].command, "--no-access-log") && contains(jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].command, "10.64.0.10") && !contains(jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].command, "*")
+    condition     = contains(jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0].command, "--no-access-log") && contains(jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0].command, "10.64.0.10") && !contains(jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0].command, "*")
     error_message = "API command must suppress raw access logs and restrict forwarded headers to the exact proxy."
   }
 }

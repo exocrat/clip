@@ -54,10 +54,11 @@ resource "aws_iam_role_policy" "db_probe_secret" {
   })
 }
 
-resource "aws_ecs_task_definition" "api" {
+resource "aws_ecs_task_definition" "api_release" {
   count = local.service_enabled ? 1 : 0
 
   family                   = "clip-test-api-${local.region}-pd16"
+  skip_destroy             = true
   requires_compatibilities = ["EC2"]
   network_mode             = "bridge"
   cpu                      = tostring(var.api_task_cpu)
@@ -178,7 +179,7 @@ resource "aws_ecs_service" "api" {
 
   name            = "clip-test-api-${local.region}-pd16"
   cluster         = aws_ecs_cluster.shared[0].id
-  task_definition = aws_ecs_task_definition.api[0].arn
+  task_definition = aws_ecs_task_definition.api_release[0].arn
   desired_count   = var.api_service_enabled ? var.api_service_desired_count : 0
 
   lifecycle {

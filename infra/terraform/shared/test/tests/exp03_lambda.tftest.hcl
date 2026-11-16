@@ -100,7 +100,7 @@ run "enabled_a_defaults_to_ecs_and_bounds_lambda" {
     error_message = "A must not create Lambda network access rules."
   }
   assert {
-    condition     = contains(jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].command, "10.64.0.0/24,10.64.3.0/24") && aws_vpc_security_group_ingress_rule.exp03_ecs_from_alb[0].from_port == 18000 && aws_vpc_security_group_ingress_rule.exp03_ecs_from_alb[0].to_port == 18000
+    condition     = contains(jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0].command, "10.64.0.0/24,10.64.3.0/24") && aws_vpc_security_group_ingress_rule.exp03_ecs_from_alb[0].from_port == 18000 && aws_vpc_security_group_ingress_rule.exp03_ecs_from_alb[0].to_port == 18000
     error_message = "ECS must trust only the ALB subnets and permit only the ALB API host port."
   }
 }
@@ -160,7 +160,7 @@ run "b_routes_selected_reads_with_weighted_alb_targets" {
     error_message = "Lambda must use restricted network access and fixed secret references without email or DB secret environment values."
   }
   assert {
-    condition     = !anytrue([for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : startswith(item.name, "CLIP_EXP03_")])
+    condition     = !anytrue([for item in jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0].environment : startswith(item.name, "CLIP_EXP03_")])
     error_message = "ECS must not contain configuration for the retired Lambda router."
   }
 }
@@ -299,7 +299,7 @@ run "restore_smoke_stopped_and_isolated" {
     error_message = "Restore smoke must disable asynchronous database writers."
   }
   assert {
-    condition     = contains([for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT") && !contains([for item in jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT")
+    condition     = contains([for item in jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT") && !contains([for item in jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT")
     error_message = "Source pool routing must remain enabled while restored smoke cannot inherit it."
   }
 }
@@ -442,7 +442,7 @@ run "restore_preserves_idle_lambda_without_selected_rule" {
     error_message = "Restore smoke must disable asynchronous database writers."
   }
   assert {
-    condition     = contains([for item in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT") && !contains([for item in jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT")
+    condition     = contains([for item in jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT") && !contains([for item in jsondecode(aws_ecs_task_definition.nfr07_smoke[0].container_definitions)[0].environment : item.name], "CLIP_DATABASE_PROXY_ENDPOINT")
     error_message = "Source pool routing must remain enabled while restored smoke cannot inherit it."
   }
   assert {
