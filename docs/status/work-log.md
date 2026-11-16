@@ -10,6 +10,10 @@ Aditya ran `uv run --locked pytest -q -W error`: 2,580 passed and 188 skipped. S
 
 Updated current contracts, setup and evaluation guidance against source, corrected the catalogue output and set default per-process limits to 3,600 reads/200 writes per minute. The PRD and recorded peak use 50 requests/s (3,000/min); the mixed NFR-03 workload averages 30 writes/min. The defaults allow 20% read headroom on one key, but do not establish traffic distribution, capacity or historical deployment settings. Documentation link-target and whitespace checks passed; focused rate-limit test execution remains unverified. Changes await human review; no cloud actions.
 
+### Issue 53 temporary-account guidance — 2026-11-16 19:20:25 UTC
+
+Added registration and verification guidance for existing temporary-account users, with a direct password-reset action. Generic challenge response remains unchanged to avoid revealing account existence. Frontend lint, TypeScript checks and diff whitespace check passed; human verification pending. No deployment or issue changes.
+
 ### Documentation consistency audit — 2026-11-16 17:15:28 UTC
 
 Reviewed tracked Markdown links and current setup/source references. Clarified historical API/data/command checkpoints and corrected the document index. Seventeen unresolved relative links are inside a frozen evidence snapshot and retain their original locations; the review now explains this. Human verification pending. No cloud or issue changes.

@@ -209,6 +209,11 @@ export function SignIn() {
                 ? 'Enter the email you used for your temporary account.'
                 : 'Enter the six-digit code and choose your password.'}
         </p>
+        {(mode === 'register' || mode === 'verify') && (
+          <p className="identity-muted">
+            Already have a temporary account? Sign in with your password, or reset it if you forgot it.
+          </p>
+        )}
         {mode === 'login' && (
           <MicrosoftSignInButton
             disabled={busy || status === 'loading'}
@@ -328,6 +333,11 @@ export function SignIn() {
           ) : (
             <Button variant="secondary" disabled={busy} onClick={() => change('login')}>
               Back to sign in
+            </Button>
+          )}
+          {(mode === 'register' || mode === 'verify') && (
+            <Button variant="secondary" disabled={busy} onClick={() => change('forgot')}>
+              Forgot password
             </Button>
           )}
           {creatingPassword && (
