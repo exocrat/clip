@@ -28,6 +28,9 @@ own assigned procedures. A valid freeze is not permission to run them.
 
 ## Reproducibility and operational handoff
 
+The retained `transfer/dataset-snapshot-20261031/approved-source` files are frozen evidence copied from their original locations. Their relative links reflect those original locations and may not resolve inside the snapshot; consult the current repository contracts and decisions for navigation. Do not edit the frozen snapshot to repair links.
+
+
 [frozen-dataset.json](frozen-dataset.json) is the immutable content manifest.
 [The label adapter binding](transfer/final-label-binding.json) joins original
 truthful generated-only manifests to real load/vector/rebuild evidence. Input

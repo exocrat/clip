@@ -4,6 +4,8 @@
 
 Linux is the supported development environment. Platform-specific commands in historical checkpoints below record past work and are not current setup instructions.
 
+The initial command tables link current entry points. Numbered task checkpoints below record their historical scope and pending state; do not interpret them as current status or copy machine-specific paths without checking the current tool and environment. The current migration head is `20261029182500` (32 migrations).
+
 This file lists the common project commands and points to the current owner
 guides for specialized workflows. Keep command-specific inputs, effects, safety
 limits and recovery beside the tool or feature they operate. The work log keeps

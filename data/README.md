@@ -4,6 +4,8 @@
 
 ## SE-01 isolated schema-shaped corpus
 
+This section records the original SE-01 checkpoint. Its pending statements describe that checkpoint, not current DATA-READY status; see the current review linked above. The separate PD-09 preview loader still deliberately refuses to load.
+
 `data.generators.search_preview` reuses PD-09 IDs, hashing and private named-run
 IO for the reviewed user/listing fields. Existing PD-09 commands and their
 load refusal are unchanged. See [the Search preview format](formats/search-preview.md).

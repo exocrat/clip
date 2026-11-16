@@ -1,5 +1,7 @@
 # Combined API: Identity, Listings, Search and Conversations
 
+Sections describing numbered domain-task checkpoints below preserve historical implementation and test scope; their statements that later tasks are pending do not describe current project status. Use the [work log](../../docs/status/work-log.md) and current source for status and behavior.
+
 SE-01 Steps 3–6 add authenticated `GET /listings` collection browse/search with stable
 numbered pages over currently available records. Both eligible account classes
 are supported through a separate public Identity read adapter. Explicit Identity

@@ -2,6 +2,10 @@
 
 > **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
 
+### Documentation consistency audit — 2026-11-16 17:15:28 UTC
+
+Reviewed tracked Markdown links and current setup/source references. Clarified historical API/data/command checkpoints and corrected the document index. Seventeen unresolved relative links are inside a frozen evidence snapshot and retain their original locations; the review now explains this. Human verification pending. No cloud or issue changes.
+
 ### Historical platform clarification — 2026-11-16 17:06:34 UTC
 
 Added a historical-evidence notice to every tracked Markdown file mentioning the former platform. Repository scan found no matching tracked Markdown file without the notice; `git diff --check` passed. Documentation awaits human verification.
