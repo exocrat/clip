@@ -26,9 +26,7 @@ Run `uv sync --locked`, root `npm ci`, then `make check` before review. The
 [command registry](docs/environment/commands.md#shared-aggregate--pd-12-step-6)
 describes prerequisites and effects. Workflow **CI**, job **Foundation quality
 gates**, runs the same ordered checks on PRs only: parity,
-Black, Python/data tests, domain boundaries, contract freshness, web
-lint/tests/types/build, database-wrapper safety, clean PostgreSQL migrations/schema
-and secret scanning. This job is the intended required GitHub Actions check;
+Black, Python/data tests, domain boundaries, contract freshness and consumer types, web lint/tests/types/build, database-wrapper safety, clean PostgreSQL migrations/schema, Conversations retirement checks and secret scanning. This job is the intended required GitHub Actions check;
 the displayed job name is confirmed by the hosted PR run below.
 
 **Current status:** local aggregate and [hosted run 39164957563](https://github.com/exocrat/clip/actions/runs/39164957563)
@@ -149,7 +147,7 @@ make check-python-format
 
 The equivalent direct commands are `uv run --locked black .` and `uv run --locked black --check --diff .`. To inspect installed versions, run `uv run --locked black --version` and `uv run --locked pytest --version`.
 
-The pinned test runner is pytest 9.1.1; run `uv run --locked pytest` to execute all configured tests, or `uv run --locked pytest apps/api/tests -q -W error` for the API/configuration suite supplied by PD-05. Root `pyproject.toml` is its sole configuration. Root pytest includes PD-11 generation/TypeScript consumer tests and requires `npm ci` with the pinned Node toolchain; the API-only suite needs no Node. Exit 5 means no tests collected and must not be reported as a passing suite. Additional shared-core/fixture tests remain PD-06/10 outputs. Python lint/static type tools are deferred; see the [tooling decision](docs/decisions/python-test-tooling.md). Full command effects, prerequisites, failure recovery and current readiness are in the [command registry](docs/environment/commands.md).
+The pinned test runner is pytest 9.1.1; run `uv run --locked pytest` to execute all configured tests, or `uv run --locked pytest apps/api/tests -q -W error` for the API/configuration suite supplied by PD-05. Root `pyproject.toml` is its sole configuration. Root pytest includes PD-11 generation/TypeScript consumer tests and requires `npm ci` with the pinned Node toolchain; the API suite also requires Node and npm for its browser transport tests. Exit 5 means no tests collected and must not be reported as a passing suite. Additional shared-core/fixture tests remain PD-06/10 outputs. The contract consumer check runs targeted mypy; this does not imply whole-repository Python typing coverage. See the [tooling decision](docs/decisions/python-test-tooling.md). Full command effects, prerequisites, failure recovery and current readiness are in the [command registry](docs/environment/commands.md).
 
 ## Black pre-commit hook (PD-12)
 

@@ -1,5 +1,7 @@
 # NEXT-06 Step 3 — exact ephemeral-loader and S3/SQL load package
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 Prepared and locally tested, not approved or executed in AWS. Both resources were
 last verified stopped at2026-10-30 19:20:00UTC. Existing isolated database29is
 prepared; both dataset roles are NOLOGIN and business tables are empty as of setup.

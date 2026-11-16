@@ -6,9 +6,7 @@ authorize provisioning, deployment, traffic or measurement.
 **Latest user direction:** Route selected reads directly through the ALB. In A,
 all requests go to ECS. In B, an ALB listener rule matches only the selected
 Listing GET routes and forwards them between ECS and a Lambda target group at
-the configured fixed weight. Other routes remain on ECS. The pilot tests
-Lambda/ECS weights 100/0, 75/25, 50/50 and 25/75 before choosing the main-run
-weight. Weighted forwarding is not capacity-aware: a request sent to a throttled
+the configured fixed weight. Other routes remain on ECS. The approved 2026-11-04 amendment limits the pilot to the ECS baseline and Lambda/ECS 100/0 candidate; other weights are historical. Weighted forwarding is not capacity-aware: a request sent to a throttled
 or unhealthy Lambda target is not automatically retried on ECS. Record the
 result as a Lambda failure. The prior ECS-hosted Lambda router and fallback
 implementation are superseded and must not be enabled or deployed.

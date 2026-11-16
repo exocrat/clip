@@ -1,5 +1,7 @@
 # PD-08 unfinished work moves to pre-domain integration
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 **Date:** 2026-10-18
 
 **Origin:** PD-09 local closeout; Mohit's explicit phase-transfer instruction.
@@ -22,7 +24,7 @@ smoke/down-up/inventory checks and Step 7 documentation are human-verified.
 
 The table below records the original transfer plan. The user later confirmed
 the transferred PD-08 platform, runtime, SQL, affected-owner, CI and final
-acceptance gates complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence).
+acceptance gates complete on 2026-10-19; see the [work-log reconciliation](../status/foundation-handoff.md).
 Domain workloads, application races, NFRs and DATA-READY remain with their
 owning domain tasks.
 
@@ -71,7 +73,7 @@ publication, peer approval or merge is authorized merely by this phase transfer.
 Mohit (C), explicit instruction to move unfinished PD-08 tasks to pre-domain
 integration. The user later confirmed the transferred PD-08/09 platform, runtime,
 owner, upstream and acceptance gates complete on 2026-10-19; see the [work-log
-reconciliation](../status/work-log.md#resolved-integration-evidence). Future
+reconciliation](../status/foundation-handoff.md). Future
 domain-specific workloads, NFRs and DATA-READY remain with their task owners.
 
 ## Supersedes

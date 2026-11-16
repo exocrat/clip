@@ -1,7 +1,8 @@
 # Isolated semantic-inference feasibility probe
 
-SE-01 hybrid checkpoint 4. These tools prepare and measure a CPU model on this
-Mac; they do not install into the API environment, activate HTTP search, implement
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
+SE-01 hybrid checkpoint 4 documents a historical machine-specific probe. It is not supported setup guidance. These tools prepare and measure a CPU model; they do not install into the API environment, activate HTTP search, implement
 production helper IPC or create evaluation relevance labels. The
 [feasibility plan](../../../docs/architecture/semantic-search-feasibility.md)
 records limits, actual results, failed runs and pending native/Linux/production gates.

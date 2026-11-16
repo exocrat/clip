@@ -1,5 +1,7 @@
 # NEXT-06 private administrative inventory — exact next-window proposal
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 State: prepared locally, not approved or executed in AWS. Both resources were
 last verified stopped at 2026-10-30 18:20:36 UTC. This is the next part of original
 Step 3; no DATA-READY or real-load gate is waived.

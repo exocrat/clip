@@ -46,10 +46,7 @@ The launch template gets an additional temporary ECS ingress group; this does
   and the declared run/budget/runtime/expiry inputs. Configuration B also needs
   an immutable project ECR Lambda image digest, Lambda memory, reviewed reserved
   concurrency and `exp03_selected_reads_lambda_weight_percent` from 0 to 100.
-  The Lambda timeout is fixed at five seconds; the design ceiling is 2 GiB and
-  20 reserved executions. Those maxima are not proof of memory fit or safe
-  database capacity. Use `null` weight for A; the pilot's B weights are 100, 75,
-  50 and 25 percent Lambda.
+  The Lambda timeout is fixed at five seconds. The source permits an approved trial up to 4096 MiB and an explicit unreserved-account-limit mode; the recorded account diagnostic reached 3008 MiB after a 4096 MiB quota failure. Neither value establishes a different target’s quota or safe capacity. Use `null` weight for A; the 2026-11-04 amendment permits only the 100% Lambda candidate for B.
 - The existing shared root's full reviewed inputs, including real Identity and
   Hybrid ECS settings, its image digest and safe access to existing secret
   references. Do not put secret values or real contacts into source, logs or

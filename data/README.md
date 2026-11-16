@@ -4,6 +4,8 @@
 
 ## SE-01 isolated schema-shaped corpus
 
+This section records the original SE-01 checkpoint. Its pending statements describe that checkpoint, not current DATA-READY status; see the current review linked above. The separate PD-09 preview loader still deliberately refuses to load.
+
 `data.generators.search_preview` reuses PD-09 IDs, hashing and private named-run
 IO for the reviewed user/listing fields. Existing PD-09 commands and their
 load refusal are unchanged. See [the Search preview format](formats/search-preview.md).
@@ -31,8 +33,7 @@ available. Then supply its real canonical Unix-socket directory:
 CLIP_ENVIRONMENT=test uv run --locked python -m data.generators.search_loader --name search-preview-42 --socket-dir /absolute/local/socket/directory --isolated-preview
 ```
 
-The socket path must not traverse symlinks (use `/private/tmp` on macOS rather
-than `/tmp`). Unset ambient `CLIP_DATABASE_URL`, `DATABASE_URL` and `PG*`
+The socket path must not traverse symlinks. Unset ambient `CLIP_DATABASE_URL`, `DATABASE_URL` and `PG*`
 overrides; never supply application credentials to this fixture route. The
 loader verifies fixed database/role/Unix transport, migration versions and active
 catalogue, locks/checks empty tables, and inserts in one transaction. Deferred

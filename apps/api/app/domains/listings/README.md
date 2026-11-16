@@ -18,7 +18,7 @@ linked task/evaluation records.
   operations and must not query Listings tables directly.
 - `postgres_store.py` and the focused store modules implement Listings-owned SQL.
   `s3_storage.py` signs private-bucket upload and short-lived delivery requests.
-- `cleanup.py` contains bounded object cleanup; it is an internal worker operation,
+- `service.py` contains bounded object cleanup, backed by candidate/defer/finish persistence in `postgres_store.py`; it is an internal worker operation,
   not an HTTP endpoint or an installed schedule.
 
 ## Behavior and boundaries

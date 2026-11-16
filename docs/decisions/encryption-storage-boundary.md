@@ -22,7 +22,7 @@ The database can associate ciphertext with reviewed public-key versions without 
 The approved database representation is constrained by the established protocol. CN-01 records the authenticated key distribution, protocol/library, serialization, key-change/tampering behavior and security checks. Task acceptance is in the work log; encoded-byte ceilings do not select algorithm key sizes, and this decision does not invent recovery or rotation policy.
 
 ## Approver
-Mohit (C), explicit Step 1 boundary approval followed by Step 2 representation/size-limit approval. The user later confirmed the PD-08 affected-owner/security gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). Implementation-specific security checks remain with the domain tasks.
+Mohit (C), explicit Step 1 boundary approval followed by Step 2 representation/size-limit approval. The user later confirmed the PD-08 affected-owner/security gate complete on 2026-10-19; see the [work-log reconciliation](../status/foundation-handoff.md). Implementation-specific security checks remain with the domain tasks.
 
 ## Supersedes
 None; refines the existing PRD E2EE storage boundary.

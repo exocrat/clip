@@ -1,5 +1,7 @@
 # Listings-owned semantic storage and write plan
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 **Origin:** SE-01 hybrid amendment checkpoint 4, following the
 [isolated Mac probe](semantic-search-feasibility.md).
 **Status:** Mohit approved all presented plan and derived-content deletion

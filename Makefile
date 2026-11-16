@@ -55,7 +55,7 @@ migration-status:
 # The catalogue is a versioned migration: reusing migrate is repeat-safe and
 # never creates synthetic users/listings or rewrites an applied migration.
 seed: migrate
-	@printf '%s\n' 'Foundation seed: existing eight categories/four conditions applied through migrations.'
+	@printf '%s\n' 'Catalogue migrations applied; current catalogue has nine categories and four conditions.'
 
 # Export input values rather than inserting them into shell source. All inputs
 # remain mandatory and are validated by the existing PD-09 command.

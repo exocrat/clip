@@ -1,5 +1,7 @@
 # Local k6 load-runner preparation — SE-01 Step10
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 ## EXP-02 local comparison preparation
 
 For offline ordered-reference binding and telemetry metadata validation, see
@@ -17,7 +19,7 @@ timer extension. Install the custom k6 binary with the pinned builder:
 
 This records the k6/xk6/Go versions and hashes of the extension and resulting
 binary under the ignored `.tools/k6/v2.3.0-monotonic/` directory. It requires a
-local Go 1.26-or-later toolchain and builds only for Linux x86-64 or macOS ARM64.
+local Go 1.26-or-later toolchain. The supported development target is Linux x86-64.
 Comparison and NFR load runs must bind their captured manifest to this binary's
 hash. The official unextended k6 binary does not provide this timing interface.
 The build follows Grafana's [k6 extension quickstart](https://grafana.com/docs/k6/latest/extensions/create/quickstart/)
@@ -540,7 +542,7 @@ Output directory must be new; never overwrite prior evidence. Runner exits2for
 invalid workload/response/accounting, even when k6 itself returns0. Stop the owned
 native preview after the run; it reaps helper/closes DB and retains its evidence.
 No token/account/credential values are needed for the explicit local fixture.
-The canonical final label file remains absent and cannot be fabricated by tools.
+The accepted final labels are in `data/evaluation/query-labels.json`; this preview does not create or replace human judgments.
 
 `comparison_cost_preview.py` performs offline per-run cost arithmetic on
 operator-supplied values. Its input format and limits are documented in the

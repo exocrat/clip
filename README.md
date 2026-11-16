@@ -15,7 +15,7 @@ The repository contains the React web client, FastAPI service, PostgreSQL migrat
 
 ## Prerequisites
 
-Run commands from the repository root in Bash on a supported Linux or macOS setup. You need Git, GNU Make, Python 3.14, [uv](https://docs.astral.sh/uv/), Node.js 24 with npm 11 (CI uses Node 24.22.0 and npm 11.19.1), and a local Docker Engine with Compose v2 for database-dependent work. Internet access is needed to download dependencies and container images. See the [environment guide](docs/environment/README.md) for platform notes and troubleshooting; Windows users should follow the [WSL guide](docs/environment/wsl-and-first-session.md) when using WSL.
+Run commands from the repository root in Bash on a supported Linux setup. You need Git, GNU Make, Python 3.14, [uv](https://docs.astral.sh/uv/), Node.js 24 with npm 11 (CI uses Node 24.22.0 and npm 11.19.1), and a local Docker Engine with Compose v2 for database-dependent work. Internet access is needed to download dependencies and container images. See the [environment guide](docs/environment/README.md) for platform notes and troubleshooting; Windows users should follow the [WSL guide](docs/environment/wsl-and-first-session.md) when using WSL.
 
 ```bash
 # Clone if you do not already have the repository.
@@ -57,7 +57,7 @@ Reuse the initialization password when restarting an existing volume. `make stop
 
 ### Explore with synthetic accounts
 
-For a local walkthrough without real accounts, use the isolated inspection launcher. It requires the locked dependencies, local Docker, a built web bundle, and the local Hybrid interpreter and model at the paths documented in the [inspection command guide](docs/environment/commands.md#next-03-complete-local-inspection). It creates a disposable PostgreSQL database and synthetic users, mail, and photo storage; it does not send real mail or use AWS.
+For a local walkthrough without real accounts, use the isolated inspection launcher. It requires the locked dependencies, local Docker, a built web bundle, and the separately provisioned Hybrid interpreter `.tools/semantic/venv/bin/python` and model `.tools/semantic/model` (not installed by `make setup`; no tested Linux provisioning procedure is recorded) as described in the [inspection command guide](docs/environment/commands.md#next-03-complete-local-inspection). It creates a disposable PostgreSQL database and synthetic users, mail, and photo storage; it does not send real mail or use AWS.
 
 ```bash
 npm run build

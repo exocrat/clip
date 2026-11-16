@@ -10,8 +10,7 @@ document here for every task.
 
 - [Project task index](tasks/project-task-index.md) — phases, ownership,
   dependencies and readiness gates.
-- [Remaining-work plan](tasks/remaining-project-plan.md) — ordered NEXT-00–10
-  work.
+- [Remaining-work plan](tasks/remaining-project-plan.md) — current remaining experiment tasks.
 - Active task procedures: [domain](tasks/domain-task-list.md) and
   [final closeout](tasks/final-closeout-task-list.md). BOOT-00 and PRE-00 are
   complete; see the task index and work log for their accepted status.

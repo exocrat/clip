@@ -119,8 +119,7 @@ checks are small functional checks, not performance results.
 
 After smoke checks pass, give Suraj access to inspect the actual website and
 wait for that inspection before pilot traffic. The pilot then checks the ECS
-baseline and Lambda/ECS weights 100/0, 75/25, 50/50 and 25/75 with three
-repetitions per weight. Freeze a candidate only against reviewed criteria and
+baseline and Lambda/ECS 100/0 candidate with three repetitions each. Other weights are excluded by the 2026-11-04 amendment. Freeze a candidate only against reviewed criteria and
 actual database, generator, routing, telemetry and cost headroom. NFR-01/02/03
 then each run separately against A and B. NFR-04 scores the same reviewed
 queries on each applicable path; NFR-05 measures real message display; NFR-06

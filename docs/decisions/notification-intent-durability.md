@@ -33,7 +33,7 @@ atomic episode/lease/replay behavior and provider idempotency limits remain
 implementation/review gates; read-before-due suppression remains required.
 
 ## Approver
-Mohit (C), explicit approval in the execution session. The user later confirmed the PD-08 producer/notification-owner gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). Future producer and worker implementation checks remain in CN-01/CN-03.
+Mohit (C), explicit approval in the execution session. The user later confirmed the PD-08 producer/notification-owner gate complete on 2026-10-19; see the [work-log reconciliation](../status/foundation-handoff.md). Future producer and worker implementation checks remain in CN-01/CN-03.
 
 ## Supersedes
 None; selects the persistence direction under the shared async-failure convention.

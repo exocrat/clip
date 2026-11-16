@@ -1,9 +1,6 @@
 # Web application guide
 
-The web scaffold provides shared routes and UI primitives. Identity implements
-authentication/contact screens under its explicit local modes; Listings supplies
-its accepted lifecycle/image UI and isolated demo. Real combined auth/runtime
-integration is pending ID-READY. Both domains retain their documented test gates.
+The web application composes Identity, Listings, Search and Conversations. Real authentication, storage and providers require the configured API runtime; local startup alone does not establish live readiness. See the [Identity setup](../../docs/environment/identity-provider-setup.md).
 
 ## Install and run locally
 
@@ -12,8 +9,7 @@ npm ci
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173`. The page header links to each approved route;
-dynamic routes use the sample identifier `example`. Stop the foreground server
+Open `http://127.0.0.1:5173`. The workspace navigation offers Discover, listings, wanted requests, saved items, conversations and account pages as appropriate for the current session and eligibility. Use the synthetic inspection launcher for sample accounts and listings. Stop the foreground server
 with Ctrl+C. Vite binds to loopback and fails if its configured port is busy.
 
 The header's theme button switches between light and dark palettes. The initial

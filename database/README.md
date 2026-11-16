@@ -1,10 +1,6 @@
 # Coordinated database migrations
 
-**Current planning branch:** 21 previously published migrations, two prior
-forward corrections, NEXT-03 catalogue/search/amount migrations and CN-03's
-encrypted Identity destination, delivery-state and preference migrations: 32
-migrations, head `20261029182500`, 41 domain tables, 36 functions and 46 triggers. All 22
-previously published SQL files are unchanged. Older isolated
+**Current migration chain:** 32 migrations, head `20261029182500`, 41 domain tables, 36 functions and 46 triggers. Older isolated
 Identity/Listings sections below retain selected historical context; old PR10
 deferral/counts do not describe this combined checkout. See the [current work-log
 status](../docs/status/work-log.md); detailed old receipts are recoverable through
@@ -24,8 +20,7 @@ exact other-machine platform runs are described in the handoff and matrix below.
 pre-domain integration. The [handoff decision](../docs/decisions/database-integration-handoff.md)
 maps the original obligations and roles. The user later confirmed the carried
 PD-08 acceptance gates complete. On 2026-10-20, the user specifically confirmed
-that the previously deferred Linux AMD64 and macOS checks passed on other
-machine(s). The exact architecture, commands, and raw outputs are not retained
+that deferred checks passed on other machine(s). The exact architecture, commands, and raw outputs are not retained
 in this repository; this is a user-confirmed status, not a locally reproducible
 run record. PD-19/PRE-00 retain their separate review and merge gates. No
 installation, cleanup, or cloud action is authorized by this status update.
@@ -109,8 +104,7 @@ unrelated/later dependencies cause failure. No schema dump is hand-maintained.
 ## Local PostgreSQL configuration (PD-08 Step 4)
 
 [Root Compose](../docker-compose.yml) selects **PostgreSQL 18.6**, official image
-`postgres:18.6-bookworm`. The image publisher lists both arm64v8 (this Mac) and
-amd64; neither platform has been run here yet. This pins the database minor
+`postgres:18.6-bookworm`. The image supports arm64v8 and amd64; image availability alone does not establish runtime verification. This pins the database minor
 version and OS family, not an immutable image digest. See the
 [version decision](../docs/decisions/local-postgresql-version.md).
 
@@ -144,7 +138,7 @@ historical; the work-log status is authoritative for task completion.
 
 ## Local lifecycle commands (PD-08 Step 5)
 
-Run from the repository root on macOS/Linux with **Bash 3.2+**, Docker Engine
+Run from the repository root on Linux with **Bash 3.2+**, Docker Engine
 and the **Compose v2** plugin. A local Unix-socket context is mandatory; Docker
 Desktop's local context is compatible by design. No Python/Node/dbmate
 installation is required on the host. Docker may

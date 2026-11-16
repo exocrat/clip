@@ -1,5 +1,7 @@
 # PD-19 foundation handoff — accepted 2026-10-19
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 PD-19 Steps 1–9 were accepted; PR #8 merged at `2cd83e7` from reviewed head
 `18c966e`, and hosted quality gates passed for that revision. The user confirmed
 the other-machine Linux AMD64/macOS checks; exact commands and outputs are not in

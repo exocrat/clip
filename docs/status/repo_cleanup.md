@@ -1,5 +1,7 @@
 # Repository Markdown cleanup inventory
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 **Scope:** project Markdown inventory; this inventory and the pending-task register are excluded from the table. Both records are maintained under `docs/status/`. Ignored virtualenv/cache files, `.git`, and other worktrees are excluded. The initial inventory was read-only; this table was refreshed after cleanup, including removed files, edited summaries, exact sizes, and newly added Markdown documents. The Identity overview and integration handoff were combined, and eleven superseded NEXT-06 working documents were removed.
 
 **Review method:** for every file I recorded exact line/byte size, title, section structure, first content block, origin/purpose/date/task metadata where stated, and Markdown inbound links. I cross-checked explicit status/pending markers against the current task-status table and linked task indexes. The “actual contents” cell is a compact outline rather than a substitute for the source.

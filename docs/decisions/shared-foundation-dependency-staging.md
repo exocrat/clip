@@ -1,5 +1,7 @@
 # DEC-07 — Bounded shared-foundation dependency staging
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 **Date:** 2026-10-19
 
 **Origin:** PD-16 audit R02; approval of decision bundle B.
@@ -19,7 +21,7 @@ The already recorded base apply is historical evidence, not retrospectively auth
 
 ## PD-16 operational closeout and PD-17 documentation continuation — 2026-10-19
 
-The user explicitly accepted the current work as sufficient, directed closing PD-16 **for now**, committing it, and moving to PD-17. Accept the verified operational scope: image publication, private health/SQL checks, shutdown, operator/deadline and approximate cost review. At that point the original platform/affected-owner/upstream/independent/hosted/merge obligations had not passed. The user later confirmed the carried PD-08/09/12/13/15 acceptance gates complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). The combined PD-17–19 review/merge and PRE-00 were later completed; the work log
+The user explicitly accepted the current work as sufficient, directed closing PD-16 **for now**, committing it, and moving to PD-17. Accept the verified operational scope: image publication, private health/SQL checks, shutdown, operator/deadline and approximate cost review. At that point the original platform/affected-owner/upstream/independent/hosted/merge obligations had not passed. The user later confirmed the carried PD-08/09/12/13/15 acceptance gates complete on 2026-10-19; see the [work-log reconciliation](../status/foundation-handoff.md). The combined PD-17–19 review/merge and PRE-00 were later completed; the work log
 records current status.
 
 This explicitly permits **PD-17 documentation work only** against the recorded PD-14/15/16 artifacts despite deferred final acceptance. PD-17 may inspect/update the single domain task list, traceability and checklists. No domain implementation, new deployment, PRE-00/DL-00 acceptance or automatic approval of a PR/merge is granted. PD-18/19 retain their own selection/verification gates; PD-19/PRE-00 cannot pass until all carried required obligations close. Normal independent review and exact merge authorization still apply before publishing acceptance on main.
@@ -37,7 +39,7 @@ The following list preserves the original obligations and their owning tasks:
 - PD-15: independent peer review and accepted main handoff of backend/migration outputs.
 
 The user later confirmed these carried acceptance gates complete on 2026-10-19;
-the task evidence and confirmation are in the [work log](../status/work-log.md#resolved-integration-evidence).
+the task evidence and confirmation are in the [work log](../status/foundation-handoff.md).
 At the time, this did not pass the combined PD-17–19 review/merge or PRE-00;
 those were later completed as recorded in the work log.
 

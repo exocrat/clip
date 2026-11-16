@@ -714,7 +714,7 @@ not prove the clock and all boundaries were sound.
 Suraj confirmed the monotonic elapsed-duration rule: use a monotonic clock for
 durations and UTC only for event metadata. The current comparison workload now
 calls the repository's custom monotonic k6 extension around the full HTTP call.
-The custom binary has not yet been built or hash-bound to a run; verification of
+At this historical checkpoint the custom binary had not yet been built or hash-bound to a run; a later build and smoke check are recorded in [the runner design](comparison-runner-design.md). The current local executable and each run binding still require independent verification; verification of
 the exact runtime boundary remains a final tooling gate. NFR-01 and NFR-02 use
 the same elapsed-time rule under their own workloads. NFR-05 measures chat
 submission to recipient display and is not replaced by these HTTP phases.
@@ -738,8 +738,7 @@ the workload or current accounting report.
 
 The official unextended k6 binary did not provide the needed monotonic timer
 interface. The comparison workload now imports the repository extension, and a
-pinned custom-binary builder records source and binary hashes. This wiring has
-not yet been built or inspected. Before a real run, verify the custom binary,
+pinned custom-binary builder records source and binary hashes. This historical checkpoint predates the later documented build and smoke check. Before a real run, verify the custom binary,
 full-call boundary, phase coverage, failure accounting and manifest hash
 binding. The earlier inspect check does not establish run conditions or
 demonstrate performance.

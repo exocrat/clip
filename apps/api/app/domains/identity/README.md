@@ -191,7 +191,7 @@ app.main/runtime/provider/browser/cloud readiness gates remain unchanged.
 
 `contacts.py.PostgresContacts` locks the current user before own source fields,
 rechecks lifecycle/caller/capability and uses field-only upserts/deletes. Display
-name omission preserves, null clears and valid text trims. Syntax-only email,
+name omission preserves; null is rejected and a trimmed Handle must be 3–30 ASCII letters, digits or underscores, unique case-insensitively. Syntax-only email,
 E.164 phone and UPI validation never verifies ownership/payment or changes login.
 The HTTP factory exposes the reviewed own-profile PATCH and own-contact GET/PUT/
 DELETE routes with its existing session/origin/CSRF/no-store protections.

@@ -1,5 +1,7 @@
 # Combined API: Identity, Listings, Search and Conversations
 
+Sections describing numbered domain-task checkpoints below preserve historical implementation and test scope; their statements that later tasks are pending do not describe current project status. Use the [work log](../../docs/status/work-log.md) and current source for status and behavior.
+
 SE-01 Steps 3–6 add authenticated `GET /listings` collection browse/search with stable
 numbered pages over currently available records. Both eligible account classes
 are supported through a separate public Identity read adapter. Explicit Identity
@@ -10,9 +12,7 @@ recency or price ordering. Category, condition, inclusive price and negotiabilit
 filters are applied before paging. Runtime validation rejects malformed/range-
 reversed inputs through shared 422 errors; unknown/inactive catalogue codes are
 validated by the owned store. Discovery responses are `private, no-store` and
-each request rechecks eligibility/storage. Saved-item retrieval remains separate
-SE-02 work, including retained unavailable summaries and retired-content privacy.
-Isolated PostgreSQL checks are available; integrated hosted readiness and final Search acceptance remain separate gates. See the
+each request rechecks eligibility/storage. Saved-item retrieval is also implemented. Availability and readiness depend on the configured integrations and deployment. See the
 [browse implementation and current checks](app/domains/listings/README.md).
 
 The API serves process health and Listings create, detail, owner-list,
@@ -27,8 +27,7 @@ PostgreSQL-backed Listings store at startup; without it, feature routes fail
 closed. The combined factory also mounts Search/Wanted/Saved and Conversations
 routes and binds Conversations' real thread, message, key, read-state and retirement
 operations. Real Identity authentication requires explicit trusted composition;
-selecting a provider name alone does not enable it. CN-02 offer persistence and
-contact-sharing integration, and CN-03 recipient/delivery workers, remain pending.
+selecting a provider name alone does not enable it. CN-02 offer persistence and contact-sharing integration and CN-03 recipient/delivery workers are implemented; their runtime dependencies must be configured.
 The [shared-core boundary](app/core/README.md) and typed startup
 settings remain the foundation for the remaining domain tasks.
 
@@ -50,8 +49,8 @@ The API reads these values from the process environment at startup:
 | Variable | Type and local default | Behavior |
 |---|---|---|
 | `CLIP_ENVIRONMENT` | `local`, `test`, or `production`; default `local` | Rejects unsupported or empty values. This labels configuration mode, not deployment readiness. |
-| `CLIP_API_READ_REQUESTS_PER_MINUTE` | Integer 1–100000; default `100` | Rolling read limit per authenticated account or anonymous transport peer, per API process. |
-| `CLIP_API_WRITE_REQUESTS_PER_MINUTE` | Integer 1–100000; default `10` | Rolling write limit per authenticated account or anonymous transport peer, per API process; counters reset on restart and are not shared across replicas. |
+| `CLIP_API_READ_REQUESTS_PER_MINUTE` | Integer 1–100000; default `3600` | Rolling read limit per authenticated account or anonymous transport peer, per API process. |
+| `CLIP_API_WRITE_REQUESTS_PER_MINUTE` | Integer 1–100000; default `200` | Rolling write limit per authenticated account or anonymous transport peer, per API process; counters reset on restart and are not shared across replicas. |
 | `CLIP_DEBUG` | Boolean; default `false` | Controls FastAPI debug responses; production rejects `true`. Invalid or empty boolean values fail startup. |
 | `CLIP_IDENTITY_PROVIDER` | `disabled`, `fake`, or `microsoft`; default `disabled` | `microsoft` permits private local/test validator construction; production rejects this incomplete integration and all fake auth. No sign-in route/session is installed. |
 | `CLIP_EMAIL_PROVIDER` | `disabled`, `fake`, `ses`, or `dual`; default `disabled` | Explicit provider selection; the notification worker requires controlled test-mode `dual`. |
@@ -80,20 +79,17 @@ enabled only when `CLIP_STORAGE_PROVIDER=s3` and its bucket, region, and
 run-scoped prefix are configured; AWS credentials are never placed in these
 settings. The upload URL lasts at most five minutes, and its signed request
 requires the declared content type, exact content length and `If-None-Match: *`, so a replay cannot
-replace an object at that key. Confirmation currently checks S3-reported type
-and byte count; Step 5 will add actual file-content checks before the upload can
-be accepted as an image. Identity's public eligibility declaration is not
+replace an object at that key. Confirmation checks declared type and byte count against S3 metadata and inspects bounded object content with Pillow structural, format and dimension validation. This is not full pixel decoding. Identity's public eligibility declaration is not
 bound by default. Explicit Identity composition now supplies eligibility, and
 the configured Conversations provider supplies thread creation, exact-pair lookup,
-participant checks and retirement operations. CN-02 offer persistence remains
-unavailable. Requests needing an unbound dependency return the shared safe error. No
+participant checks and retirement operations. CN-02 offer persistence is implemented; its configured Conversations storage, Identity and Listings dependencies are required. Requests needing an unbound dependency return the shared safe error. No
 placeholder credential or fake service is required to start locally. PD-06 implements selection safeguards; PD-10 supplies
 [controlled test helpers](../../tests/fixtures/core/README.md) that normal API
 startup never installs. Unknown provider names fail startup, and the API never
 falls back to fake success. Do not treat production configuration mode alone
 as evidence of a working or safe cloud deployment.
 
-Before session authentication, an additional per-peer ceiling of at least 600 reads and 120 writes per minute protects the identity boundary. It uses the server-provided transport peer (subject to the deployment’s trusted-proxy configuration), applies across users sharing that peer, and is also per process.
+Before session authentication, an additional per-peer ceiling of at least 3,600 reads and 200 writes per minute protects the identity boundary. It uses the server-provided transport peer (subject to the deployment’s trusted-proxy configuration), applies across users sharing that peer, and is also per process.
 
 ## Tests
 
@@ -104,7 +100,7 @@ uv sync --locked
 uv run --locked pytest apps/api/tests -q -W error
 ```
 
-`uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. Foundation API tests start the real ASGI app in explicit test mode using FastAPI's TestClient without an HTTP listener/provider/cloud call. ID-01 Microsoft persistence tests additionally require local Docker: they create only their own tmpfs PostgreSQL18.6 database, private Unix socket and synthetic records, then remove the container; no retained database or host port is used. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
+`uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API suite also requires Node and npm for its browser transport tests. Foundation API tests start the real ASGI app in explicit test mode using FastAPI's TestClient without an HTTP listener/provider/cloud call. ID-01 Microsoft persistence tests additionally require local Docker: they create only their own tmpfs PostgreSQL18.6 database, private Unix socket and synthetic records, then remove the container; no retained database or host port is used. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
 
 The Listings store workflow also has a separate explicit runner. Run
 `uv run --locked python scripts/check_database.py

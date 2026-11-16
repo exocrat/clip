@@ -425,7 +425,7 @@ activation, existing/shared-data runs or real integration acceptance.
 
 ### CN-01 — Implement private conversations, message retrieval, and E2EE
 
-**Owner:** Conversations. **Reviewers:** Identity, Listings, and team security/design review. No independent reviewer is required.
+**Owner:** Conversations. **Reviewers:** Identity, Listings, and team security/design review. No additional external specialist is required; the designated independent teammate review remains required.
 **Early isolated start:** PRE-00/DL-00 under the stub guide. **CN-CORE acceptance after:** DL-00, ID-READY, LI-CORE for the core listing-origin conversation path. **Full request-response integration/acceptance additionally requires:** SE-02 and its real open-request read/state interfaces. A scoped real NFR-05 measurement may precede CN-03 delivery under Step 11; final CN-01/FR-13 acceptance requires CN-03 integration and affected rechecks.
 **FRs:** FR-10, FR-16. **NFR procedure:** NFR-05 after the integrated two-client path is accurate.  
 **Outputs:** Conversation/message/key metadata schema and migrations, cryptographic client integration, message APIs/UI, safe fixtures, owned message-retention implementation, tests, polling settings, a two-client latency harness under `scripts/evaluation/`, its workload profile under `data/evaluation/workloads/`, and evidence.

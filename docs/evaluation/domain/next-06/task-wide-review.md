@@ -1,5 +1,7 @@
 # NEXT-06 task-wide review — frozen data and reviewed labels
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 **Current disposition (2026-11-05 15:26:56 UTC): Aditya confirms NEXT-06/DATA-READY complete. The pending acceptance text below is historical and superseded; retained step evidence and stated limits remain unchanged.**
 
 All six canonical output/check groups are represented. Aditya later confirmed
@@ -25,6 +27,9 @@ Success@5, architectural experiment and broader domain acceptance retain their
 own assigned procedures. A valid freeze is not permission to run them.
 
 ## Reproducibility and operational handoff
+
+The retained `transfer/dataset-snapshot-20261031/approved-source` files are frozen evidence copied from their original locations. Their relative links reflect those original locations and may not resolve inside the snapshot; consult the current repository contracts and decisions for navigation. Do not edit the frozen snapshot to repair links.
+
 
 [frozen-dataset.json](frozen-dataset.json) is the immutable content manifest.
 [The label adapter binding](transfer/final-label-binding.json) joins original

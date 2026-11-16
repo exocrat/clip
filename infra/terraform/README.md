@@ -2,6 +2,12 @@
 
 This workflow applies to every Terraform change in `infra/terraform/`. It is a review and safety procedure, not an authorization to create or change AWS resources. All four team members may approve and apply an explicitly reviewed plan. Everyone shares cleanup responsibility; the person who starts the resources has first responsibility for cleanup.
 
+## Deploying into another AWS account
+
+The checked-in shared/test root targets the team's existing account and domain; it is not a portable, ready-to-apply template. To prepare a different account, review and adapt the account restrictions and remote-state backend, unique S3 and ECR names and image references, IAM permissions, networking and ingress, DNS/ACM certificate, and domain/origin settings. Some domain and identity restrictions also exist in application source and Lambda configuration, so replacing Terraform values alone is insufficient. Review Microsoft OAuth redirect/client configuration and SES identity/domain verification for the new origin.
+
+Create the required SSM SecureString parameters and database URLs in the target account using that account's own credentials; do not copy live secrets into Git or chat. Prepare the database, roles and grants and apply the current migration chain through the reviewed database procedure. Explicitly configure the Identity, API, image-storage and notification runtimes: the default disabled services and a passing health check do not establish a working marketplace. Inspect all target-specific settings and the complete plan, costs and exposure before applying. These are adaptation prerequisites, not an independently verified cross-account deployment procedure; source/configuration changes may be required and must be reviewed and tested.
+
 ## Deployment operator reading order
 
 The general Terraform workflow below is not a standalone production deployment
@@ -27,7 +33,7 @@ related cloud checks where practical. Confirm rollback, ownership, retention and
 cleanup before starting. The operator must determine actual values from the
 current target; this guide does not supply or authorize credentials.
 
-The API rate limits default to 100 reads and 10 writes per minute per authenticated account or anonymous transport peer, per process. A separate per-peer ceiling of at least 600 reads and 120 writes per minute protects session authentication.
+The API rate limits default to 3,600 reads and 200 writes per minute per authenticated account or anonymous transport peer, per process. A separate per-peer ceiling of at least 3,600 reads and 200 writes per minute protects session authentication.
 Their `CLIP_API_READ_REQUESTS_PER_MINUTE` and
 `CLIP_API_WRITE_REQUESTS_PER_MINUTE` overrides are documented in the
 [API settings](../../apps/api/README.md#startup-settings). The shared Terraform

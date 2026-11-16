@@ -1,5 +1,7 @@
 # NEXT-06 staged Step 4 — exact RDS vector-production window
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 Prepared/native-tested; cloud writes not approved or executed. The human verified
 the staged route after successful S3/RDS bulk load. Original Step3real app/auth/
 normal creation/signed media and final Linuxruntime checks remain pending.

@@ -4,13 +4,11 @@ This directory holds non-secret records for contributor workstations, commands, 
 
 ## Local foundation setup
 
-This is the common setup path for the current API/web shell and local database.
-Marketplace features and final domain datasets are not implemented. No AWS login,
-provider account or cloud deployment is needed for these commands.
+This is the common local setup path for the API, web application and database. Marketplace features are implemented, but a working end-to-end setup requires the applicable database, identity and provider configuration. No AWS login or cloud deployment is needed merely to start the local processes.
 
 ### Prerequisites
 
-Use the existing clone, with Git, GNU Make and Bash 3.2+ on Linux/macOS. Run the
+Use the existing clone, with Git, GNU Make and Bash 3.2+ on Linux. Run the
 examples in Bash from the clone root. Windows contributors use their existing
 [verified WSL route](wsl-and-first-session.md); native Windows is not this workflow.
 
@@ -23,13 +21,7 @@ examples in Bash from the clone root. Windows contributors use their existing
 - Optional, for Terraform targets only: Terraform **1.15.9**. Set `TERRAFORM_BIN`
   to its executable if PATH selects another version. No Terraform apply is needed.
 
-Current local runtime evidence covers Linux ARM64. On 2026-10-20 (Asia/Kolkata),
-the user confirmed that the previously deferred Linux AMD64 and macOS checks
-passed on other machine(s); the exact machine architecture, commands, and raw
-outputs are not retained in this checkout. See the
-[database platform record](../../database/README.md) for this reported status
-and its evidence limits. Provider checksums for four platforms do not establish
-native execution.
+Linux is the supported development environment; Windows contributors can use WSL. Historical platform checks are not a guarantee of support. Provider checksums do not establish native execution.
 Dependency/image/provider downloads need internet access; subsequent commands
 use local tools, caches and synthetic inputs.
 
@@ -61,13 +53,10 @@ make migration-status
 Reuse the initialization password when restarting an existing volume; changing
 the environment value does not rotate it. Preserve it privately. No `.env` file
 is sourced by these commands; copying `.env.example` is not setup. `seed` applies
-all pending migrations, including eight categories/four conditions, without fake
-accounts/listings. Status should show four applied migrations, none pending,
-head **20261018152702**. Never reset to fix an unknown authentication error.
+all pending migrations, including nine categories and four conditions, without fake accounts or listings. The current chain has 32 migrations with head **20261029182500**; check that none are pending. The original seed had eight categories; a later migration adds the ninth. Never reset to fix an unknown authentication error.
 
 In separate terminals, run `make start-api` and `make start-web`. They run in the
-foreground and fail on occupied ports. The API is health-only and does not yet
-use the database; the web shell does not yet call an application API.
+foreground and fail on occupied ports. The web application calls the API. Default API startup provides a health endpoint, but authenticated marketplace routes need explicit Identity, database and provider configuration; a healthy process alone does not establish feature readiness.
 
 | Service | Local address / success check |
 |---|---|
@@ -123,8 +112,7 @@ Detailed effects, failure behavior and target mappings are in the
 [command registry](commands.md). PD-13 Step 5 exercised this workflow in a fresh private local clone/home/cache
 on Linux ARM64, with the tested corrective source overlay recorded in the work
 log. Persistent database lifecycle was checked through its original owner clone;
-clean migrations used disposable containers. Native platform verification and
-final task review remain separate gates.
+clean migrations used disposable containers. These historical checks do not prove the current deployment is ready.
 
 ## Current records
 
