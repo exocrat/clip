@@ -1,5 +1,7 @@
 # Future database backup and restore
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 **Origin:** PD-08 Step 7, 2026-10-18. **State:** planning handoff only.
 
 This document specifies later work. No cloud backup, snapshot, export, restore,

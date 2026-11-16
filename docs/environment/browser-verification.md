@@ -36,7 +36,7 @@ numbered task order; these are checkpoints inside those steps.
 ## Firefox mobile layout inspection
 
 1. Open the running app, currently `http://localhost:5173` for this workstation.
-2. Press **Ctrl+Shift+M** on Windows/Linux, or **Cmd+Option+M** on macOS.
+2. Press **Ctrl+Shift+M** on Linux or Windows.
    Alternatively use Firefox menu → Browser Tools → Responsive Design Mode.
 3. Set the width/height above the page (for example 390 × 844), or select a
    device preset. Resize between narrow and wide screens and rotate the viewport.

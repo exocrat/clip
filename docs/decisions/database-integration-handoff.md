@@ -1,5 +1,7 @@
 # PD-08 unfinished work moves to pre-domain integration
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 **Date:** 2026-10-18
 
 **Origin:** PD-09 local closeout; Mohit's explicit phase-transfer instruction.

@@ -1,5 +1,7 @@
 # Experiment log
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 This log tracks detailed progress and decisions for the ECS-only versus ECS+Lambda
 comparison and related NFR measurements. The [project work log](../status/work-log.md)
 remains the task-status and verification record. Approved manifests, raw results,

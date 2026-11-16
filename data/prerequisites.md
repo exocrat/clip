@@ -1,5 +1,7 @@
 # Synthetic-data scope and later prerequisites
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 ## SE-01 Step 2 isolated checkpoint — 2026-10-24
 
 The schema-shaped [Search preview](formats/search-preview.md) and opt-in local

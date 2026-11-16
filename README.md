@@ -15,7 +15,7 @@ The repository contains the React web client, FastAPI service, PostgreSQL migrat
 
 ## Prerequisites
 
-Run commands from the repository root in Bash on a supported Linux or macOS setup. You need Git, GNU Make, Python 3.14, [uv](https://docs.astral.sh/uv/), Node.js 24 with npm 11 (CI uses Node 24.22.0 and npm 11.19.1), and a local Docker Engine with Compose v2 for database-dependent work. Internet access is needed to download dependencies and container images. See the [environment guide](docs/environment/README.md) for platform notes and troubleshooting; Windows users should follow the [WSL guide](docs/environment/wsl-and-first-session.md) when using WSL.
+Run commands from the repository root in Bash on a supported Linux setup. You need Git, GNU Make, Python 3.14, [uv](https://docs.astral.sh/uv/), Node.js 24 with npm 11 (CI uses Node 24.22.0 and npm 11.19.1), and a local Docker Engine with Compose v2 for database-dependent work. Internet access is needed to download dependencies and container images. See the [environment guide](docs/environment/README.md) for platform notes and troubleshooting; Windows users should follow the [WSL guide](docs/environment/wsl-and-first-session.md) when using WSL.
 
 ```bash
 # Clone if you do not already have the repository.

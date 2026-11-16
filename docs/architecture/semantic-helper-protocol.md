@@ -1,5 +1,7 @@
 # Listings private embedding helper boundary — protocol 1
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 **Origin:** SE-01 hybrid amendment, real-helper integration checkpoint after native
 bootstrap/switch verification. **Status:** private helper and local HTTP/browser checks verified; normal API
 opt-in read lifecycle is now implemented and checked, awaiting result verification.

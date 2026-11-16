@@ -1,5 +1,9 @@
 # Development Workstation Record
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
+Linux is the supported development environment. Earlier machine-specific records below are historical evidence, not supported setup instructions.
+
 ## Mohit's repository-local native SQL setup — SE-01, 2026-10-24
 
 PostgreSQL 18.6 was built with existing Clang 14/make and installed only under
@@ -77,7 +81,7 @@ This records the existing Linux WSL environment used for the documentation boots
 | GitHub client and credential route | `/usr/bin/gh`, version 2.46.0. Local `gh` sign-in is active and Git operations use HTTPS. Credential values are not recorded. |
 | Container route | `/usr/bin/docker`, version 29.1.3, using context `default`. The local engine responded as Ubuntu 26.04 LTS, version 29.1.3, with Docker root `/var/lib/docker`. No Podman executable was found. |
 
-## Current gaps
+## Historical BOOT-00 gaps
 
 - PD-07 Step 1 now supplies the web install/start/stop/typed-build path below. Database/migration/seed and combined setup remain with their creator tasks; PD-13 verifies the combined lifecycle.
 - Cloud account, role, region, and shared cloud resource facts have not been inspected. PD-14–PD-16 own those checks; this record does not imply cloud access or approval.
@@ -85,7 +89,7 @@ This records the existing Linux WSL environment used for the documentation boots
 
 These are workstation observations from BOOT-00, not a pinned team-wide toolchain or proof that project commands have been tested.
 
-## Current contributor check — PD-02 Step 1
+## Historical contributor check — PD-02 Step 1
 
 **Observed:** 2026-10-16 · **Recorded by:** kickoff owner (B) · **Repository revision:** `fb10d3d` on `task/pre-domain-foundation`
 
@@ -104,7 +108,7 @@ This is a fresh check of the current contributor's WSL workstation. It does not 
 
 No tools were installed or changed. These observations are for this contributor only; PD-02 must select and document team toolchain/platform support separately.
 
-## Current contributor setup — PD-07 Step 1
+## Historical contributor setup — PD-07 Step 1
 
 **Observed:** 2026-10-17 06:36:53 UTC · **Contributor:** Suraj (B), Stream 2 ·
 **Branch:** `task/pd-07-web-foundation`

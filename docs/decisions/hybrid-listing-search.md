@@ -1,5 +1,7 @@
 # DEC-13 — Hybrid listing search amendment
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 **Current disposition (2026-11-05 15:26:56 UTC): Aditya confirms the Hybrid search runtime/lifecycle/UI work is complete. Earlier pending activation and acceptance notes below are historical and superseded for task status.**
 
 **Date:** 2026-10-24
@@ -166,8 +168,7 @@ word pieces. Title/description coverage therefore requires reviewed token-based
 chunking/overlap and aggregation, rather than silently discarding long endings.
 Model quality for campus listings is unproven until evaluated.
 
-Amendment Step 4 must verify Python 3.14/macOS ARM64 and deployment Linux AMD64
-compatibility, pinned package/model revisions and checksums, licensing, download
+Amendment Step 4 originally examined local and deployment runtime compatibility, pinned package/model revisions and checksums, licensing, download
 and installed sizes, locked reproducibility, CPU/memory and concurrency needs.
 Inspect actual configured runtime resources; repository test definitions currently
 include 256 CPU units/512 MiB, not evidence that model inference will fit.

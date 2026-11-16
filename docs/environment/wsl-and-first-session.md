@@ -4,7 +4,7 @@
 
 ## What this setup does
 
-**Applicability:** This guide is for contributors working from Windows through WSL. It describes one contributor setup, not the team's shared workstation or a requirement for every contributor. Contributors using macOS or another Linux environment should not follow its Windows/WSL installation steps; use their actual environment and the project toolchain selected in PD-02. Agents must identify the current contributor's environment rather than assume WSL.
+**Applicability:** This guide is for contributors working from Windows through WSL. It describes one contributor setup, not the team's shared workstation or a requirement for every contributor. Contributors using another Linux environment should not follow its Windows/WSL installation steps; use their actual environment and the project toolchain selected in PD-02. Agents must identify the current contributor's environment rather than assume WSL.
 
 You already have WSL. Reuse it; do not reinstall or reset the distribution. The project repository already exists at **https://github.com/exocrat/clip**. The agent clones/preserves that repository; it does not create a second GitHub repository. This guide distinguishes the downloaded documentation bundle, the real Git clone and the later running application.
 

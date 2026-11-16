@@ -1,5 +1,7 @@
 # DEC-07 — Bounded shared-foundation dependency staging
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 **Date:** 2026-10-19
 
 **Origin:** PD-16 audit R02; approval of decision bundle B.

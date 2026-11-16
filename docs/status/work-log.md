@@ -1,5 +1,15 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
+### Historical platform clarification — 2026-11-16 17:06:34 UTC
+
+Added a historical-evidence notice to every tracked Markdown file mentioning the former platform. Repository scan found no matching tracked Markdown file without the notice; `git diff --check` passed. Documentation awaits human verification.
+
+### Documentation correction — 2026-11-16 16:53:58 UTC
+
+Corrected supported Linux setup guidance, current migration/seed and API prerequisites, local inspection and conversation walkthrough, and cross-account deployment limitations. Documentation-only; no cloud resources or issue changes.
+
 ### Full local branch check — 2026-11-07 14:52:31 UTC
 Full `make check` passed on branch head `5a03002` plus the current test correction: Python 2,580 passed/188 skipped; data 331 passed; web 515 passed/3 skipped with lint, typecheck and production build; Black left 519 files unchanged; eight contract artifacts current; contract types passed; boundaries reported zero violations; database safety 35 passed; PostgreSQL 18.6 lifecycle passed; focused Conversations operations 186 passed; Gitleaks 8.30.1 passed. The first full run exposed a stale Identity seller-gate test expecting the removed retry button; it now asserts sign-in navigation and that seller content/catalogue remain unavailable. Vite emitted its existing large-chunk warning. Visual verification and affected-owner/independent review remain pending; no cloud action.
 

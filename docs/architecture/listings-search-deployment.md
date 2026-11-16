@@ -1,5 +1,7 @@
 # Listings and Search deployment handoff
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 This is the merge-plan Step 7 handoff. The combined application uses the same
 PostgreSQL database and existing API process for Listings, Search, Wanted and
 Saved. The local walkthrough exercised real Listings/Search behavior with

@@ -1,5 +1,9 @@
 # Hybrid search — runtime and storage feasibility checkpoint
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
+This is a historical feasibility record, not platform support or current setup guidance. Linux is the supported development environment.
+
 **Origin:** SE-01 hybrid amendment checkpoint 4 / [DEC-13](../decisions/hybrid-listing-search.md).
 **Status:** Mohit verified the isolated helper approach. Repository-local helper
 installation and bounded Mac inference probe performed; result awaits verification.

@@ -1,5 +1,7 @@
 # Local and CI PostgreSQL version
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
 **Date:** 2026-10-18
 
 **Origin:** PD-08 Step 4.

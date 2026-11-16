@@ -51,9 +51,7 @@ stops rather than resetting an existing target. No live providers or email run.
 For CN-02 Step7, open the chat and choose **Choose contact details**. The helper
 uses Identity's real source-contact editing service to set a synthetic email on
 each fixed actor; no mail is sent. Only Email should be available. Select Email,
-review the field names and confirm. Expect **Selection checked. Nothing has been
-sent.** Cancel before confirmation should retrieve no values. Values never appear
-in the page; encrypted publication is the separate Step8 checkpoint. The
+review the field names and select **Confirm and send encrypted details** to send the selected synthetic contact information encrypted. Cancelling before confirmation does not send it. The
 normal application uses the same public contact endpoints with Identity's real
 session middleware, while this helper retains fixed synthetic authentication.
 
@@ -104,7 +102,7 @@ cross-browser result. Always use the exact `127.0.0.1` URLs, not `localhost`.
 8. Optionally test a failed send using the browser's offline control, then restore
    connectivity and use Retry. Expect no duplicated message. Do not enter real
    message content or export network bodies, ciphertext or key material.
-9. Test Logout last: its fixed side must lose API/chat access and clear private
+9. Test Sign out last: its fixed side must lose API/chat access and clear private
    UI. There is deliberately no test login/identity-switch endpoint. Restarting
    this harness creates a different fresh fixture and loses its old server data;
    it is not a persistence or recovery procedure. Cross-account switching remains

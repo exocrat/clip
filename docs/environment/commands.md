@@ -1,5 +1,9 @@
 # Runtime Command Registry
 
+> **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
+Linux is the supported development environment. Platform-specific commands in historical checkpoints below record past work and are not current setup instructions.
+
 This file lists the common project commands and points to the current owner
 guides for specialized workflows. Keep command-specific inputs, effects, safety
 limits and recovery beside the tool or feature they operate. The work log keeps
@@ -96,7 +100,7 @@ uv run --locked pytest apps/api/tests/domains/listings/test_hybrid_read.py -q -W
 The owned native PostgreSQL/helper probe uses the existing pinned local tools:
 
 ```bash
-LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --hybrid-read
+# Historical platform-specific command omitted; see Git history.
 ```
 
 The native run creates and stops its own database/helper and retains private
@@ -327,8 +331,7 @@ registry access; no cloud resource/provider is invoked.
 | `bash database/local-db.sh start` | Create/start only the local service, then authenticated readiness. Nonzero on unavailable tools, ownership/configuration/port conflict or readiness failure; inspect sanitized output. |
 | `bash database/local-db.sh wait` | Authenticated TCP `SELECT 1`, up to 30 attempts (2-second connect timeout and pauses). Exit 0 means connectivity only; absent container/timeout fails. |
 | `bash database/local-db.sh migrate` | Pinned dbmate 2.36.0, fixed local URL, strict transactional migrations, no schema dump/implicit dotenv. Exit 0 means the tool finished; Step 6 separately verifies expected head/schema. Inspect failures before retry; never automatically reset. |
-| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; on the current CN-01 branch compare expected head `20261023080000` (seven migrations). |
-| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; isolated branch head is `20261023173439`; do not apply the isolated chain to retained/shared data before current-main integration. |
+| `bash database/local-db.sh status` | Display migration state. Pending migrations can appear with exit 0; compare against current head `20261029182500` (32 migrations). |
 | `bash database/local-db.sh stop` | Stop validated local container; retain all volume data. Absent container succeeds. |
 | `bash database/local-db.sh reset --confirm-delete-local-data` | Warn and permanently delete only the validated service container and `clip-local_clip_local_postgres_data`. Requires deliberate approval of that destructive action. No force/prune/broad volume deletion; leaves DB stopped. Missing confirmation fails before Docker. |
 | `bash database/local-db.sh --help` | Fixed usage; no tools/password required. |
@@ -536,7 +539,7 @@ it never stages fixes. CI's independent check-only gate remains required.
 
 Run `make help` at the clone root. Targets reuse existing tools; no second npm
 manifest, environment loader or daemon is introduced. GNU Make is required
-(including macOS's supplied GNU Make). Existing `make` remains Black check-only.
+on Linux. Existing `make` remains Black check-only.
 
 | Target | Mapping / effects |
 |---|---|
@@ -546,7 +549,7 @@ manifest, environment loader or daemon is introduced. GNU Make is required
 | `make start-api` / `make start-web` | Foreground API on 127.0.0.1:8000 / web on 127.0.0.1:5173. Use separate terminals; Ctrl+C stops each owned server. Database start/migration are explicit preceding actions. |
 | `make preview-web` | Existing `npm run preview`, loopback 4173; build first (`npm run build` or `make test-web`). |
 | `make migrate` / `make migration-status` | Local dbmate apply/status; status can report pending revisions without failing. |
-| `make seed` | Apply pending migrations, including the existing eight-category/four-condition catalogue. No sample accounts/listings or separate seed replay. |
+| `make seed` | Apply pending migrations, including the current nine-category/four-condition catalogue; command output still describes the original seed. No sample accounts/listings or separate seed replay. |
 | `make data-generate RUN_NAME=preview-42 SEED=42 USERS=3 LISTINGS=2` | Existing safe PD-09 preview file generator; all inputs mandatory, no overwrite. This is not final domain data. |
 | `make data-validate RUN_NAME=preview-42` / `make data-load` | Existing preview validation / explicit unavailable-loader failure (nonzero, no database write). |
 | `make test` | Shared runner's Python, explicit data and web gates; `test-python`, `test-data`, `test-web` select each. Web includes lint/types/build as registered. |
@@ -927,7 +930,7 @@ owned no-network disposable PostgreSQL18.6/dbmate2.36.0 database, transient keys
 and synthetic-only mailbox. It refuses non-test environment/implicit enablement;
 60–3600s cap, default1800s, or Ctrl+C then own DB removal. Stop Vite separately.
 No real SES/Microsoft call, account/credential input, retained DB or cloud action.
-Use only the reserved example recipient documented in apps/web/README.md.
+Use only `preview@example.invalid` as the reserved preview recipient.
 Preview mode cannot build/deploy; ordinary dev has no proxy and ordinary builds
 remove preview inbox. Normal API startup includes health/Listings; Identity remains explicitly unbound.
 
@@ -1289,7 +1292,7 @@ native harness now accepts optional `--listings-store`. Exact invocation from
 this clone after verifying the pinned local tools:
 
 ```sh
-LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --listings-store
+# Historical platform-specific command omitted; see Git history.
 ```
 
 The tool prefixes are inputs, never an existing DB target. The harness creates a
@@ -1362,7 +1365,7 @@ Actual disposable PostgreSQL plus the **existing** repository-local model/helper
 macOS only, no install/download or existing DB target:
 
 ```bash
-LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --embedding-worker
+# Historical platform-specific command omitted; see Git history.
 ```
 
 This opts into the same fresh-cluster/schema round trip and adapter suite as
@@ -1391,7 +1394,7 @@ With the existing local model/helper and native tools, run only a newly-created
 private database (no existing target accepted):
 
 ```bash
-LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --search-calibration
+# Historical platform-specific command omitted; see Git history.
 ```
 
 This selects `LISTINGS_TEST_SEARCH_CALIBRATION=1` only for the native test. It
@@ -1440,7 +1443,7 @@ Real native matching/filters/pages/index eligibility use the existing fresh priv
 runner command (no existing database target):
 
 ```bash
-LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --listings-store
+# Historical platform-specific command omitted; see Git history.
 ```
 
 The expanded browse matrix now includes spelling rules; no additional runner flag,
@@ -1464,7 +1467,7 @@ Actual new private PostgreSQL cluster, snapshot/math checks and the already-loca
 pinned helper through the real worker/read path:
 
 ```bash
-LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --hybrid-read
+# Historical platform-specific command omitted; see Git history.
 ```
 
 The flag sets only test `LISTINGS_TEST_HYBRID_MODEL=1`; it is not an application
@@ -1498,7 +1501,7 @@ Actual native ranking/filters/pages/model-state independence use the existing
 fresh private database runner, with no model/download/install:
 
 ```bash
-LC_ALL=C bash database/tests/native-checks.sh "$PWD/.tools/native-db/pgsql" "$PWD/.tools/native-db/downloads/dbmate-macos-arm64" --listings-store
+# Historical platform-specific command omitted; see Git history.
 ```
 
 No new flag/target is introduced. The expanded browse native case includes
@@ -1510,7 +1513,9 @@ access on this Mac requires sandbox escalation. No existing/shared DB, productio
 API/UI mode or model process is activated. [Policy/evidence](../architecture/keyword-listing-relevance.md).
 
 
-## SE-01 registered search mode/API checkpoint
+## SE-01 registered search mode/API checkpoint (historical)
+
+This section records an earlier checkpoint, not current default search behavior.
 
 Use repository-local Python/Node and the existing generation/native commands.
 `PATH="$PWD/.tools/node/bin:$PATH" .venv/bin/python scripts/generate_contracts.py generate`
@@ -1525,7 +1530,9 @@ verified lifecycle/configuration checkpoint. Existing web controls omit the new
 mode field and therefore select Keyword until their own checkpoint.
 
 
-## SE-01 frontend mode/relevance verification
+## SE-01 frontend mode/relevance verification (historical)
+
+The former mode selector described here is not the current interface; see the web README for current search behavior.
 
 Existing `npm run check` now includes URL/mode/form, request cancellation/late
 completion/retry, static control rendering and generated-contract compatibility
@@ -1657,7 +1664,7 @@ The existing native command (no new tools) now runs `search-storage-smoke.sql`
 as a fourth transactional smoke before and after migration rollback/reapply:
 
 ```sh
-bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+# Historical platform-specific command omitted; see Git history.
 ```
 
 It creates and stops only its own new socket-only cluster and retains its logs.
@@ -1679,7 +1686,7 @@ test; no existing target is accepted. Docker acceptance remains pending.
 ```sh
 .venv/bin/pytest -q -W error apps/api/tests/domains/search/test_wanted.py
 .venv/bin/mypy --no-incremental apps/api/app/domains/search/wanted_models.py apps/api/app/domains/search/wanted_store.py apps/api/app/domains/search/wanted.py apps/api/app/domains/search/wanted_routes.py
-bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+# Historical platform-specific command omitted; see Git history.
 ```
 
 The existing native wrapper adds real wanted HTTP/concurrency/receipt checks,
@@ -1695,7 +1702,7 @@ provider acceptance is implied.
 
 ```sh
 .venv/bin/pytest -q -W error apps/api/tests/domains/search/test_wanted_retirement.py
-bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+# Historical platform-specific command omitted; see Git history.
 ```
 
 The native adapter suite adds `test_wanted_retirement_postgres.py`; its private
@@ -1711,7 +1718,7 @@ tool installation is needed. Real Conversations calls remain an integration gate
 ```sh
 .venv/bin/pytest -q -W error apps/api/tests/domains/search/test_draft_matches.py apps/api/tests/domains/search/test_wanted.py
 .venv/bin/mypy --no-incremental apps/api/app/domains/search/draft_matches.py apps/api/app/domains/search/wanted_models.py apps/api/app/domains/search/wanted_routes.py
-bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+# Historical platform-specific command omitted; see Git history.
 ```
 
 The native adapter suite adds the real-Listings draft-query HTTP check. It still
@@ -1724,7 +1731,7 @@ here. Draft matching has no storage/worker/history side effect or UI activation.
 ```sh
 PATH="$PWD/.tools/node/bin:$PATH" .venv/bin/pytest -q -W error apps/api/tests/domains/search/test_saved.py tests/contracts
 .venv/bin/mypy --no-incremental apps/api/app/domains/search/saved.py apps/api/app/domains/search/saved_store.py apps/api/app/domains/search/saved_routes.py
-bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+# Historical platform-specific command omitted; see Git history.
 ```
 
 Node is exposed only to that test process; nothing is installed or changed
@@ -1738,7 +1745,7 @@ pending. No new migration, pool, job or cloud resource is needed.
 
 ```sh
 PATH="$PWD/.tools/node/bin:$PATH" .venv/bin/pytest -q -W error apps/api/tests/domains/search/test_wanted.py apps/api/tests/domains/search/test_saved.py
-bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+# Historical platform-specific command omitted; see Git history.
 ```
 
 The native adapter list adds `test_step6_postgres.py` for regular/temporary own
@@ -1754,7 +1761,7 @@ No skipped/missing response path is represented as a functional pass.
 ```sh
 PATH="$PWD/.tools/node/bin:$PATH" .venv/bin/python scripts/generate_contracts.py check
 PATH="$PWD/.tools/node/bin:$PATH" .venv/bin/pytest -q -W error apps/api/tests/domains/search/test_wanted_response.py tests/contracts
-bash database/tests/native-checks.sh .tools/native-db/pgsql .tools/native-db/downloads/dbmate-macos-arm64 --listings-store
+# Historical platform-specific command omitted; see Git history.
 PATH="$PWD/.tools/node/bin:$PATH" npm run check
 ```
 
@@ -1897,7 +1904,7 @@ limits](../../scripts/evaluation/k6/README.md).
 After building the normal web bundle with pinned Node/npm, run:
 
 ```bash
-CLIP_ENVIRONMENT=test .venv/bin/python scripts/marketplace_inspection.py --synthetic-inspection
+CLIP_ENVIRONMENT=test CLIP_API_READ_REQUESTS_PER_MINUTE=100000 CLIP_API_WRITE_REQUESTS_PER_MINUTE=100000 .venv/bin/python scripts/marketplace_inspection.py --synthetic-inspection
 ```
 
 This creates only its own disposable PostgreSQL18.6 database, runs the actual
@@ -1908,11 +1915,10 @@ storage. No AWS, real mail, or retained database is used. Account switching stay
 in the loopback-only launcher and is absent from deployed code. Ctrl+C removes
 its database and temporary photos; `--check-only` checks and cleans up without
 serving. `--port 5175` starts an independent debugging fixture while preserving
-the default5174 inspection session; ports outside5174/5175 are rejected. Full steps and sample-account guidance are in the
+the default5174 inspection session; port 5176 is also supported; other ports are rejected. The rate overrides apply only to this synthetic inspection process. Full steps and sample-account guidance are in the
 [NEXT-03 behavior plan](../tasks/next-03-visual-feedback-plan.md) and [completion summary](../tasks/next-03-visual-feedback-implementation-report.md).
 
-Requires locked Python/Node dependencies and local Docker, using only owned
-disposable PostgreSQL. The first command starts one loopback ephemeral HTTP port,
+The following describes an earlier Identity transport checkpoint, not additional inspection commands. It required locked Python/Node dependencies and local Docker, using only owned disposable PostgreSQL. That checkpoint started one loopback ephemeral HTTP port,
 uses the real shared app/cookie/CSRF/domain SQL and runs the actual TS adapters in
 Vitest. Only signing/mail/image metadata and browser Origin/cookie/proxy handling
 are synthetic. No public test-auth/OTP-inbox endpoint, live provider/send/secret or
@@ -1921,8 +1927,7 @@ synthetic cookies in /tmp/clip-id-ready-csrf-http-node.log. The standalone JS HT
 case skips unless the Python owner supplies CLIP_IDENTITY_TRANSPORT_HTTP privately;
 never supply a real cookie or retained/hosted target. Ordinary npm checks skip it.
 This automation is not actual browser/device, deployment or full Step14 evidence.
-The second command proves normal/production runtime exposes no synthetic CSRF
-route and existing isolated local/hosted profiles retain their transport gates.
+Its separate runtime check covered synthetic CSRF-route and transport gates.
 
 ### Identity HTTPS proxy preparation — ID-01 Step13
 

@@ -10,9 +10,7 @@ recency or price ordering. Category, condition, inclusive price and negotiabilit
 filters are applied before paging. Runtime validation rejects malformed/range-
 reversed inputs through shared 422 errors; unknown/inactive catalogue codes are
 validated by the owned store. Discovery responses are `private, no-store` and
-each request rechecks eligibility/storage. Saved-item retrieval remains separate
-SE-02 work, including retained unavailable summaries and retired-content privacy.
-Isolated PostgreSQL checks are available; integrated hosted readiness and final Search acceptance remain separate gates. See the
+each request rechecks eligibility/storage. Saved-item retrieval is also implemented. Availability and readiness depend on the configured integrations and deployment. See the
 [browse implementation and current checks](app/domains/listings/README.md).
 
 The API serves process health and Listings create, detail, owner-list,
@@ -27,8 +25,7 @@ PostgreSQL-backed Listings store at startup; without it, feature routes fail
 closed. The combined factory also mounts Search/Wanted/Saved and Conversations
 routes and binds Conversations' real thread, message, key, read-state and retirement
 operations. Real Identity authentication requires explicit trusted composition;
-selecting a provider name alone does not enable it. CN-02 offer persistence and
-contact-sharing integration, and CN-03 recipient/delivery workers, remain pending.
+selecting a provider name alone does not enable it. CN-02 offer persistence and contact-sharing integration and CN-03 recipient/delivery workers are implemented; their runtime dependencies must be configured.
 The [shared-core boundary](app/core/README.md) and typed startup
 settings remain the foundation for the remaining domain tasks.
 
@@ -104,7 +101,7 @@ uv sync --locked
 uv run --locked pytest apps/api/tests -q -W error
 ```
 
-`uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API-only command above needs no Node installation. Foundation API tests start the real ASGI app in explicit test mode using FastAPI's TestClient without an HTTP listener/provider/cloud call. ID-01 Microsoft persistence tests additionally require local Docker: they create only their own tmpfs PostgreSQL18.6 database, private Unix socket and synthetic records, then remove the container; no retained database or host port is used. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
+`uv run --locked pytest` runs all currently configured test roots; PD-11 contract generation tests also require root `npm ci` and the pinned Node toolchain. The API suite also requires Node and npm for its browser transport tests. Foundation API tests start the real ASGI app in explicit test mode using FastAPI's TestClient without an HTTP listener/provider/cloud call. ID-01 Microsoft persistence tests additionally require local Docker: they create only their own tmpfs PostgreSQL18.6 database, private Unix socket and synthetic records, then remove the container; no retained database or host port is used. The tests discard inherited `CLIP_`/`AWS_` settings for isolation and restore the developer's environment afterward. Synthetic cases cover local defaults, typed overrides, malformed/empty values, production-debug rejection, redacted errors, fresh reads and ignored dotenv/example files. Fresh credential-free subprocesses verify invalid configuration prevents the actual entry point from importing. Temporary fixture files stay under pytest's temporary directory.
 
 The Listings store workflow also has a separate explicit runner. Run
 `uv run --locked python scripts/check_database.py
