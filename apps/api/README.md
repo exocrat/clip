@@ -49,8 +49,8 @@ The API reads these values from the process environment at startup:
 | Variable | Type and local default | Behavior |
 |---|---|---|
 | `CLIP_ENVIRONMENT` | `local`, `test`, or `production`; default `local` | Rejects unsupported or empty values. This labels configuration mode, not deployment readiness. |
-| `CLIP_API_READ_REQUESTS_PER_MINUTE` | Integer 1–100000; default `100` | Rolling read limit per authenticated account or anonymous transport peer, per API process. |
-| `CLIP_API_WRITE_REQUESTS_PER_MINUTE` | Integer 1–100000; default `10` | Rolling write limit per authenticated account or anonymous transport peer, per API process; counters reset on restart and are not shared across replicas. |
+| `CLIP_API_READ_REQUESTS_PER_MINUTE` | Integer 1–100000; default `3600` | Rolling read limit per authenticated account or anonymous transport peer, per API process. |
+| `CLIP_API_WRITE_REQUESTS_PER_MINUTE` | Integer 1–100000; default `200` | Rolling write limit per authenticated account or anonymous transport peer, per API process; counters reset on restart and are not shared across replicas. |
 | `CLIP_DEBUG` | Boolean; default `false` | Controls FastAPI debug responses; production rejects `true`. Invalid or empty boolean values fail startup. |
 | `CLIP_IDENTITY_PROVIDER` | `disabled`, `fake`, or `microsoft`; default `disabled` | `microsoft` permits private local/test validator construction; production rejects this incomplete integration and all fake auth. No sign-in route/session is installed. |
 | `CLIP_EMAIL_PROVIDER` | `disabled`, `fake`, `ses`, or `dual`; default `disabled` | Explicit provider selection; the notification worker requires controlled test-mode `dual`. |
@@ -79,20 +79,17 @@ enabled only when `CLIP_STORAGE_PROVIDER=s3` and its bucket, region, and
 run-scoped prefix are configured; AWS credentials are never placed in these
 settings. The upload URL lasts at most five minutes, and its signed request
 requires the declared content type, exact content length and `If-None-Match: *`, so a replay cannot
-replace an object at that key. Confirmation currently checks S3-reported type
-and byte count; Step 5 will add actual file-content checks before the upload can
-be accepted as an image. Identity's public eligibility declaration is not
+replace an object at that key. Confirmation checks declared type and byte count against S3 metadata and inspects bounded object content with Pillow structural, format and dimension validation. This is not full pixel decoding. Identity's public eligibility declaration is not
 bound by default. Explicit Identity composition now supplies eligibility, and
 the configured Conversations provider supplies thread creation, exact-pair lookup,
-participant checks and retirement operations. CN-02 offer persistence remains
-unavailable. Requests needing an unbound dependency return the shared safe error. No
+participant checks and retirement operations. CN-02 offer persistence is implemented; its configured Conversations storage, Identity and Listings dependencies are required. Requests needing an unbound dependency return the shared safe error. No
 placeholder credential or fake service is required to start locally. PD-06 implements selection safeguards; PD-10 supplies
 [controlled test helpers](../../tests/fixtures/core/README.md) that normal API
 startup never installs. Unknown provider names fail startup, and the API never
 falls back to fake success. Do not treat production configuration mode alone
 as evidence of a working or safe cloud deployment.
 
-Before session authentication, an additional per-peer ceiling of at least 600 reads and 120 writes per minute protects the identity boundary. It uses the server-provided transport peer (subject to the deployment’s trusted-proxy configuration), applies across users sharing that peer, and is also per process.
+Before session authentication, an additional per-peer ceiling of at least 3,600 reads and 200 writes per minute protects the identity boundary. It uses the server-provided transport peer (subject to the deployment’s trusted-proxy configuration), applies across users sharing that peer, and is also per process.
 
 ## Tests
 

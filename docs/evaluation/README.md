@@ -9,7 +9,7 @@ history. To locate an older receipt, list the evaluation files at
 `f36ce3d^` with `git ls-tree -r --name-only f36ce3d^ docs/evaluation`, then read
 one with `git show f36ce3d^:<path-from-repository-root>`. Historical output does
 not prove current cloud state or authorize an action.
-No ECS-only versus ECS+Lambda measured comparison has been run. The
+The [November 6 results report](canonical-results-20261106.md) records 18 measured comparison runs. Its private raw evidence has not been independently revalidated by this documentation update; settled billing and any remaining acceptance checks retain their stated limits. The
 [FR/NFR owner and evidence map](../architecture/foundation-traceability.md)
 links requirements to their remaining checks.
 

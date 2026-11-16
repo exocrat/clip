@@ -1,6 +1,6 @@
 # Terraform state bucket bootstrap and recovery
 
-This directory contains the local-backend bootstrap configuration for the CLIP Terraform state bucket. It is a preparation artifact only. No plan, apply, state migration, or AWS operation is authorized by PD-15 Step 4.
+This root now declares the project S3 backend. The local-to-S3 bootstrap migration was previously completed and verified; the initial procedure below is historical, not a current replay procedure. See the [state migration and recovery plan](state-migration-plan.md). Any recovery or new-account bootstrap needs a freshly reviewed target and separate approval.
 
 ## Local static checks
 
@@ -12,7 +12,7 @@ The configuration is fixed to account `335523638354` and Region `ap-south-1`. It
 
 The `resource_owner` and `cleanup_review_date` inputs are required and must be set for an approved plan. The plan output must be checked to ensure it targets only the intended bucket and these controls.
 
-## Bootstrap and state migration procedure
+## Historical initial bootstrap and state migration procedure
 
 1. Use an isolated task checkout and confirm that no state or plan file will be staged or committed.
 2. Select an exact candidate bucket name matching the required prefix and check that it is available. Before planning, verify the intended account `335523638354` and Region `ap-south-1`. No apply or provisioning is authorized by this preparation step.
@@ -29,7 +29,7 @@ The `resource_owner` and `cleanup_review_date` inputs are required and must be s
 - Use `terraform force-unlock` only for a lock confirmed to be stale and created by your own failed operation, after verifying that no other Terraform run is active. Do not delete a `.tflock` object manually as routine recovery.
 - Do not remove the bucket or permanently delete old object versions until project closeout/retention review and separate cleanup approval.
 
-## Remote backend block to add only after bucket approval
+## Historical remote backend block
 
 The placeholder below is not runnable until replaced with the exact selected bucket name and approved in the bootstrap plan:
 

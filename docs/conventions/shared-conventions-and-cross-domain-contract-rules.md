@@ -192,8 +192,7 @@ checks representative imports/qualified SQL/ORM schema targets and domain import
 cycles, and fails with location/rule diagnostics. Regression tests prove allowed
 and forbidden examples plus CLI failure/recovery. Existing frontend checks stay
 under `npm test`. Computed SQL, unqualified table resolution, arbitrary reflection
-and semantic call graphs still require review; no composition exception is
-currently granted. [Commands and limits](../environment/commands.md#pd-11-boundary-checks).
+and semantic call graphs still require review; reviewed composition exceptions are limited to the explicit `COMPOSITION_IMPORTS` allowlist in `scripts/check_boundaries.py` and named lifecycle boundaries. [Commands and limits](../environment/commands.md#pd-11-boundary-checks).
 
 [Decision and origin](../decisions/domain-public-boundaries.md).
 
@@ -277,17 +276,17 @@ class SelectedOwnContacts(BaseModel):
     phone: str | None
     upi_id: str | None
 
-async def get_shareable_contact_options(user_id: UserId) -> ShareableContactOptions: ...
-async def get_selected_own_contacts(user_id: UserId, fields: set[str]) -> SelectedOwnContacts: ...
+async def get_shareable_contact_options(caller: CallerContext, conversation_id: ConversationId) -> ShareableContactOptions: ...
+async def get_selected_own_contacts(caller: CallerContext, conversation_id: ConversationId, fields: frozenset[ContactField]) -> SelectedOwnContacts: ...
 ```
 
-PD-11 step 8 carries these declarations in [the Identity source](../../contracts/source/identity.py). `UserId` is a shared alias of core's existing UUID representation, with validation still supplied by the approved UUIDv4 helpers. Source functions fail if invoked; they have no provider, route or data access. Selected-contact fields suppress repr values, while serialization remains private. Final trusted-caller binding remains the explicit DL-00 gate below.
+PD-11 step 8 carries these declarations in [the Identity source](../../contracts/source/identity.py). `UserId` is a shared alias of core's existing UUID representation, with validation still supplied by the approved UUIDv4 helpers. Source functions fail if invoked; they have no provider, route or data access. Selected-contact fields suppress repr values, while serialization remains private. Runtime access requires trusted actor/conversation claims established by Conversations and checked by Identity.
 
 The Identity contract must specify authorization and exposure rules for these operations. Selected values are private contact data: return only requested fields through the approved conversation/contact-sharing flow, and never place them in logs or test output.
 
 The [PD-11 step 1 source decision](../decisions/contract-source-and-generation.md) selects reviewed typed Python declarations in `contracts/source/`, separate from implementation handlers, as the canonical editable machine-readable source. Generate domain public declarations from it; generate HTTP OpenAPI only for explicitly mapped HTTP operations, then derive frontend TypeScript declarations. Internal calls and private types do not automatically become HTTP/frontend surfaces. Generation uses FastAPI schema machinery and pinned `@hey-api/openapi-ts@0.99.0` (TypeScript-only plugin) with shared TypeScript `5.9.3`; implemented paths and commands are in `contracts/README.md`. Compare the implemented API against the generated HTTP contract; a generated declaration is not an implemented operation or proof of authorization/transaction behavior.
 
-[Contract version/change review](../../contracts/README.md#version-and-change-review) records the current HTTP version in canonical source, exact Git revisions, compatibility/migration review, affected-owner approval, regenerated outputs, independent human peer approval and exact-revision merge authorization. Public semantics must not change through generated-file edits or a version bump alone; existing privacy/authorization and real-integration gates remain required.
+[Contract version/change review](../../contracts/README.md#shared-changes) records the current HTTP version in canonical source, exact Git revisions, compatibility/migration review, affected-owner approval, regenerated outputs, independent human peer approval and exact-revision merge authorization. Public semantics must not change through generated-file edits or a version bump alone; existing privacy/authorization and real-integration gates remain required.
 
 Use stable contract types across `public.py`, generated OpenAPI, frontend API types, and generated agent stubs. The source contract is edited; generated outputs are rebuilt with the documented generator, never hand-edited. Cross-domain changes require review from affected owners because contracts are shared surfaces.
 

@@ -52,14 +52,14 @@ Native UTF-8/C locale and a minimal build without ICU/readline/zlib differ from
 the Debian/C.UTF-8 image. Native apply/head/smoke/down-up/inventory repeatability
 evidence is valid only for that route. The user later confirmed the previously
 pending PD-08 platform, owner and CI acceptance gates complete on 2026-10-19;
-see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence).
+see the [work-log reconciliation](../status/foundation-handoff.md).
 The retained Linux/ARM64 evidence remains route-specific. See
 [historical database verification details](../evaluation/README.md).
 
 ## Approver
 Implementation selection within Mohit's verified PD-08 Step 4 scope. The user
 later confirmed the previously pending result, affected-owner and CI acceptance
-gates complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence).
+gates complete on 2026-10-19; see the [work-log reconciliation](../status/foundation-handoff.md).
 
 ## Supersedes
 None.

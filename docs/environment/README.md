@@ -53,7 +53,7 @@ make migration-status
 Reuse the initialization password when restarting an existing volume; changing
 the environment value does not rotate it. Preserve it privately. No `.env` file
 is sourced by these commands; copying `.env.example` is not setup. `seed` applies
-all pending migrations, including nine categories and four conditions, without fake accounts or listings. The current chain has 32 migrations with head **20261029182500**; check that none are pending. The `make seed` status message still mentions the original eight categories; the later migration adds the ninth. Never reset to fix an unknown authentication error.
+all pending migrations, including nine categories and four conditions, without fake accounts or listings. The current chain has 32 migrations with head **20261029182500**; check that none are pending. The original seed had eight categories; a later migration adds the ninth. Never reset to fix an unknown authentication error.
 
 In separate terminals, run `make start-api` and `make start-web`. They run in the
 foreground and fail on occupied ports. The web application calls the API. Default API startup provides a health endpoint, but authenticated marketplace routes need explicit Identity, database and provider configuration; a healthy process alone does not establish feature readiness.

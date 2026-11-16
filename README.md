@@ -57,7 +57,7 @@ Reuse the initialization password when restarting an existing volume. `make stop
 
 ### Explore with synthetic accounts
 
-For a local walkthrough without real accounts, use the isolated inspection launcher. It requires the locked dependencies, local Docker, a built web bundle, and the local Hybrid interpreter and model at the paths documented in the [inspection command guide](docs/environment/commands.md#next-03-complete-local-inspection). It creates a disposable PostgreSQL database and synthetic users, mail, and photo storage; it does not send real mail or use AWS.
+For a local walkthrough without real accounts, use the isolated inspection launcher. It requires the locked dependencies, local Docker, a built web bundle, and the separately provisioned Hybrid interpreter `.tools/semantic/venv/bin/python` and model `.tools/semantic/model` (not installed by `make setup`; no tested Linux provisioning procedure is recorded) as described in the [inspection command guide](docs/environment/commands.md#next-03-complete-local-inspection). It creates a disposable PostgreSQL database and synthetic users, mail, and photo storage; it does not send real mail or use AWS.
 
 ```bash
 npm run build

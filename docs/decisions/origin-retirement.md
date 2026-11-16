@@ -101,7 +101,7 @@ should appear there as a content-free marker or be omitted. This follow-up does
 not change the approved retirement trigger, timing, or content-cleanup rules.
 
 ## Approver
-Mohit (C), explicit approval of the consolidated remaining package. The user later confirmed the PD-08 affected-owner/privacy gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). Domain implementation must still follow the stated cleanup and ordering safeguards.
+Mohit (C), explicit approval of the consolidated remaining package. The user later confirmed the PD-08 affected-owner/privacy gate complete on 2026-10-19; see the [work-log reconciliation](../status/foundation-handoff.md). Domain implementation must still follow the stated cleanup and ordering safeguards.
 
 ## Supersedes
 None; refines the previously open origin/metadata retirement policy.

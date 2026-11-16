@@ -113,7 +113,7 @@ stale-output/runtime-parity regression coverage is implemented in step 6.
 
 The current HTTP version remains 0.1.0, declared once in canonical health source
 and consumed by generated runtime metadata/OpenAPI. Generator format 2 and source
-Git revision are recorded separately. The [contract guide](../../contracts/README.md#version-and-change-review)
+Git revision are recorded separately. The [contract guide](../../contracts/README.md#shared-changes)
 requires compatibility classification, affected-owner decisions before shared
 semantic changes, regenerated outputs, real consumer checks, independent human
 peer approval and authorization of the exact merge. This records existing

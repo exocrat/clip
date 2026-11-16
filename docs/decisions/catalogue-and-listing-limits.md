@@ -49,7 +49,7 @@ Provides a small shared initial vocabulary, explicit mobile/laptop classificatio
 LI-01/LI-02/SE-01/SE-02 and DL-00 must preserve consistent validation/filter semantics. NEXT-03's forward migration `20261028120000_sale_original_price_and_marketplace_amount_cap.sql` stores the optional Original price and enforces the same inclusive ₹1 crore cap on sale asking prices and Wanted budgets. No ciphertext limit, image decoding/dimension policy, sensitive-price threshold, provider choice or deployment is approved by this decision.
 
 ## Approver
-Mohit (C), explicit approval of the presented catalogue and field-limit proposal. The user later confirmed the PD-08 affected-owner schema gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). This records the gate status without inferring a reviewer identity.
+Mohit (C), explicit approval of the presented catalogue and field-limit proposal. The user later confirmed the PD-08 affected-owner schema gate complete on 2026-10-19; see the [work-log reconciliation](../status/foundation-handoff.md). This records the gate status without inferring a reviewer identity.
 
 The pickup-area correction was directed by Suraj (B), 2026-10-21. The work log records the affected consumer/schema review and LI-01/NEXT-03 completion; this decision is not a live schema-state check.
 

@@ -48,10 +48,10 @@ stops rather than resetting an existing target. No live providers or email run.
 
 ## Human walkthrough
 
-For CN-02 Step7, open the chat and choose **Choose contact details**. The helper
+For CN-02 Step7, open the chat, expand **Share contact details**, and choose **Choose contact details**. The helper
 uses Identity's real source-contact editing service to set a synthetic email on
 each fixed actor; no mail is sent. Only Email should be available. Select Email,
-review the field names and select **Confirm and send encrypted details** to send the selected synthetic contact information encrypted. Cancelling before confirmation does not send it. The
+select **Review selected details**, review the field names, and select **Confirm and send encrypted details** to send the selected synthetic contact information encrypted. Cancelling before confirmation does not send it. The
 normal application uses the same public contact endpoints with Identity's real
 session middleware, while this helper retains fixed synthetic authentication.
 
@@ -93,7 +93,7 @@ cross-browser result. Always use the exact `127.0.0.1` URLs, not `localhost`.
    inbox and refresh. The badge should clear only after display acknowledgement.
    Reading/polling alone must not acknowledge a message.
 7. Test encrypted contact sharing with synthetic values only. On A, choose
-   **Choose contact details**, select Email, choose **Review selected details**,
+   **Share contact details**, then **Choose contact details**, select Email, choose **Review selected details**,
    then **Confirm and send encrypted details**. Expect the sender to see that the
    encrypted details were sent, and B to see a **Contact details shared with
    you** card with the synthetic email after the thread refreshes. Do not use

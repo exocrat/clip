@@ -24,7 +24,7 @@ Users are active regular synthetic accounts with no contacts or credentials.
 Listings reference generated owners, reviewed catalogue codes, whole-rupee
 integer paise, negotiability, optional pickup area, proof declaration and UTC
 windows/timestamps. The loader resolves catalogue UUIDs from active codes.
-Eight categories/four conditions, zero prices, price/recency ties and both
+Nine categories/four conditions, zero prices, price/recency ties and both
 negotiability values are covered. Per ten rows: seven are available at the
 logical time, one seller-unavailable, one future and one ended. These are
 controlled fixtures, not relevance judgments or later wall-clock availability.

@@ -2,23 +2,7 @@
 
 **Canonical path:** `docs/tasks/project-task-index.md`
 
-**Current remaining-work plan:** [Ordered task groups NEXT-00–10](remaining-project-plan.md)
-records Suraj's 2026-10-27 direction. The order is: define the ECS/Lambda
-experiment early; reduce repository clutter; complete the NEXT-03 marketplace
-changes; then NEXT-04 audits readiness and verifies the integrated app on HTTPS,
-so the cloud walkthrough does not need to be repeated after those changes. Notifications
-joins when ready, followed by final synthetic data, required NFR/experiment runs,
-deployment of the measured eligible architecture, final usability/security work,
-optional work if time remains, and CLOSE-00. Suraj verified NEXT-00 and the
-NEXT-01 experiment design. Use the original task sources for detailed
-implementation and acceptance. The experiment method is in the separate
-[ECS/Lambda experiment guidelines](../evaluation/ecs-lambda-experiment-guidelines.md).
-[Dataset recipe](../../data/evaluation/reference-dataset-design.md),
-[NFR measurement design](../evaluation/nfr/measurement-design.md) and
-[comparison design and gates](../evaluation/ecs-only-vs-ecs-lambda-task-list.md#next-01-step-1--question-and-requirement-framing)
-provide the reviewed early-design handoff; actual run readiness and peer-reviewed
-merge remain pending.
-Native-mobile feasibility is deferred research only; no native build is selected.
+**Current remaining-work plan:** The [remaining-work map](remaining-project-plan.md) records EXP-02–08 and the non-EXP completion direction. The [November 6 results report](../evaluation/canonical-results-20261106.md) records measured runs; reconcile their evidence and remaining review/billing requirements before changing task acceptance. The earlier NEXT-00–10 order is historical. The canonical [experiment task list](../evaluation/ecs-only-vs-ecs-lambda-task-list.md) retains detailed procedures. Native-mobile feasibility is deferred research only.
 
 ## Execution source and phase routing
 

@@ -42,7 +42,7 @@ The retained schema design map (now a source index) links the relevant migration
 Deletion jobs belong to owning domain implementations; PD-08 creates no deployed cleanup worker. Backups need a separately approved finite retention policy and restore-time deletion/expiry reconciliation. Live database deletion does not establish backup/provider deletion or erase participant-held copies. These choices authorize policy recording, not execution of destructive cleanup or cloud changes.
 
 ## Approver
-Mohit (C), explicit approval of the retention durations and minimal-record exceptions. The user later confirmed the PD-08 privacy/affected-owner schema gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). Domain implementation must still enforce and test these limits.
+Mohit (C), explicit approval of the retention durations and minimal-record exceptions. The user later confirmed the PD-08 privacy/affected-owner schema gate complete on 2026-10-19; see the [work-log reconciliation](../status/foundation-handoff.md). Domain implementation must still enforce and test these limits.
 
 ## Supersedes
 None.

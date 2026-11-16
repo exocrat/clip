@@ -63,5 +63,5 @@ No hosted cancellation behavior is claimed until published/observed.
 
 The user confirmed the previously pending PD-08/09/12/13/15 platform, owner,
 upstream, hosted and independent-acceptance gates complete; see the [work-log
-reconciliation](../status/work-log.md#resolved-integration-evidence). PD-17–19
+reconciliation](../status/foundation-handoff.md). PD-17–19
 and PRE-00 were later accepted; current milestone status is in the work log.

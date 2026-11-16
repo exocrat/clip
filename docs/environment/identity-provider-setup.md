@@ -91,8 +91,7 @@ and the controlled recipient identity needed by the observed sandbox denial.
 The private ses_sandbox_recipient_identity_arn Terraform input must be preserved
 until its deliberate production transition review; do not broaden identity scope.
 
-Source in infra/terraform/shared/test/identity-email.tf uses exact verify@
-FromAddress. The approved2026-10-26 07:04:31UTC apply recorded that sender-condition
+Source in infra/terraform/shared/test/identity-email.tf permits exact verify@clip-iisc.site and updates@clip-iisc.site FromAddress values. The approved2026-10-26 07:04:31UTC apply recorded that sender-condition
 update; it is not still an unperformed change. The recorded apply and delivery
 checks are historical; current effective permissions and runtime delivery state
 are not asserted here. SES sandbox recipients must remain verified; Resend fallback

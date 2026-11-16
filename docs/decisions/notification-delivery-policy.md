@@ -67,7 +67,7 @@ enforcement remain implementation and owner-review gates. This choice does not
 authorize a cloud resource, deployment, live delivery, or paid service.
 
 ## Approver
-Mohit (C), explicit approval of the presented notification policy. The user later confirmed the PD-08 producer/notification/Identity affected-owner gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). CN-01/CN-03 still own implementation, provider, and race checks.
+Mohit (C), explicit approval of the presented notification policy. The user later confirmed the PD-08 producer/notification/Identity affected-owner gate complete on 2026-10-19; see the [work-log reconciliation](../status/foundation-handoff.md). CN-01/CN-03 still own implementation, provider, and race checks.
 
 ## Supersedes
 None; refines the existing durable-intent decision.

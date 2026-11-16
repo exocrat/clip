@@ -17,7 +17,7 @@ How are structured offers revised/withdrawn, and how do they relate to selection
 - When approved retention removes history, preserve the minimal logical offer ID/pair and monotonically allocated next-revision counter; clear the current pointer under an explicit history-deleted marker. A later new revision reuses the same logical offer rather than creating a duplicate pair or resurrecting deleted content. Exact deferred cleanup constraints remain affected-owner review.
 - Seller selection is a Listings-owned action, not an offer acceptance/payment/reservation state. Setting an eligible buyer from an existing Sale Listing conversation is private tracking and preserves availability (2026-10-28 revision below); authorized seller views include no-offer conversations and current submitted/withdrawn offers.
 - Structured offers initially apply to Sale Listing conversations. Wanted Request response conversations support discussion/contact sharing; adding offers there requires explicit buyer-role and amount semantics first.
-- Mohit's later lifecycle approval requires listing availability/window eligibility and both participants' eligibility for create/revise/resubmit. The eligible buyer may withdraw after listing unavailability; existing authorized discussion/contact sharing remains usable, subject to separate retention/retirement.
+- Mohit's later lifecycle approval requires listing availability/window eligibility and both participants' eligibility for create/revise/resubmit. The eligible buyer may withdraw after listing unavailability; existing authorized thread history remains readable, but new messages and contact shares are blocked while the sale listing is unavailable; offer withdrawal remains allowed. Reopening restores writes subject to the current contract.
 - An eligible seller may privately select an eligible buyer from a valid non-retired listing conversation even without an offer, including while unavailable. Set/change/clear preserves availability and the time window; owner, revision and participant checks remain mandatory. See the 2026-10-28 revision.
 
 ## Rationale
@@ -68,7 +68,7 @@ allows a retry to restore deleted content. No additional replay-lookup interface
 is needed for this rule.
 
 ## Approver
-Mohit (C), explicit approval of the five-part offer-lifecycle proposal. The user later confirmed the PD-08 Conversations/Listings affected-owner gate complete on 2026-10-19; see the [work-log reconciliation](../status/work-log.md#resolved-integration-evidence). CN-02/LI-02 retain their implementation and concurrency checks.
+Mohit (C), explicit approval of the five-part offer-lifecycle proposal. The user later confirmed the PD-08 Conversations/Listings affected-owner gate complete on 2026-10-19; see the [work-log reconciliation](../status/foundation-handoff.md). CN-02/LI-02 retain their implementation and concurrency checks.
 
 ## Supersedes
 None.

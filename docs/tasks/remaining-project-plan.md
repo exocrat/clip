@@ -5,6 +5,8 @@ listed in the [pending task register](../status/pending_tasks.md). EXP-02–08 r
 verification limits are in the [work log](../status/work-log.md); the remaining
 EXP rows are in [pending task register](../status/pending_tasks.md).
 
+The [November 6 results report](../evaluation/canonical-results-20261106.md) records measured comparison and NFR runs. The earlier open-task rows below have not yet been reconciled against the report, its private raw evidence, review or billing; they do not mean no runs occurred.
+
 This page is a short navigation map, not a second task procedure. Follow the
 [canonical experiment task list](../evaluation/ecs-only-vs-ecs-lambda-task-list.md)
 for the exact order, owners, prerequisites, steps, acceptance checks and action
@@ -19,7 +21,7 @@ Do not use historical plans or receipts as current approval or cloud state.
 | EXP-03 | Publish the prepared runtime and reusable tooling through the required PR, CI and approved merge. | Independent review, affected-owner review, passing checks and explicit merge authorization. |
 | EXP-04 | Run deployed parity checks after EXP-03. | Accepted deployed revision and separately approved target/window. |
 | EXP-05 | Review capacity results and align selected Lambda memory with Terraform and frozen inputs. | Human capacity decision; no unreviewed resource/configuration change. |
-| EXP-06 | Run the approved Lambda initialization measurement. | EXP-05 decision, DATA-READY and exact run approval. |
+| EXP-06 | Run the full approved A/B comparison matrix, including Lambda initialization observations. | EXP-05 decision, DATA-READY and exact run approval. |
 | EXP-07 | Analyze valid results after EXP-06. | Freeze source/input bindings; retain uncertainty and invalid evidence. |
 | EXP-08 | Reconcile cost/resources and publish the comparison report. | EXP-07 analysis; account for retained costs and cleanup before project closeout. |
 

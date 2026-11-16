@@ -1897,13 +1897,13 @@ data. See the [k6 guide](../../scripts/evaluation/k6/README.md).
 
 EXP-02 local comparison preparation: after starting the synthetic inspection
 app below, provide one to ten case objects on standard input to
-`.venv/bin/python -m scripts.evaluation.k6.comparison_runner --port 5175 --k6 /usr/bin/k6`.
+`.venv/bin/python -m scripts.evaluation.k6.comparison_runner --port 5174 --k6 /usr/bin/k6`.
 Only documented inspection ports are accepted; it obtains the synthetic buyer
 session in memory and checks HTTP status and content against separately supplied
 expected responses. It is not an NFR or cloud runner. See [its case format and
 limits](../../scripts/evaluation/k6/README.md).
 
-After building the normal web bundle with pinned Node/npm, run:
+The launcher expects `.tools/semantic/venv/bin/python` and `.tools/semantic/model`, containing the pinned helper runtime and model. `make setup` does not provision them; a supported, tested Linux provisioning procedure is not recorded here, so existing verified artifacts are a prerequisite. After building the normal web bundle with pinned Node/npm, run:
 
 ```bash
 CLIP_ENVIRONMENT=test CLIP_API_READ_REQUESTS_PER_MINUTE=100000 CLIP_API_WRITE_REQUESTS_PER_MINUTE=100000 .venv/bin/python scripts/marketplace_inspection.py --synthetic-inspection
@@ -2072,7 +2072,13 @@ durable restoration handling before task acceptance.
 
 ## NEXT-06 frozen dataset validation
 
-NEXT-06/DATA-READY is complete. Current offline release validation and dataset
+NEXT-06/DATA-READY is complete. With a full Git history, restored photo archive and pinned model available, validate offline from the repository root:
+
+```bash
+.venv/bin/python -m scripts.evaluation.reference_release validate --image-root "$PWD/data-transfer-next06/images" --model-root "$PWD/.tools/semantic/model"
+```
+
+See the [transfer guide](../../data/transfer/README.md) for the archive and its prerequisites. Validation is read-only and does not contact AWS. Current offline release validation and dataset
 instructions are in the [data guide](../../data/README.md) and [accepted
  task-wide review](../evaluation/domain/next-06/task-wide-review.md). The old
 transfer, cloud-inspection and runtime-preparation commands were one-time task

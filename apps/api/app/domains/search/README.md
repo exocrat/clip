@@ -1,10 +1,12 @@
-# Search domain boundary and pending implementation
+# Search domain boundary and implementation
 
 Owner: C — Mohit. SE-01 implements sale browse/search through the reviewed
 Listings-owned query/store boundary. This directory's generated `public.py`
 remains declaration-only; the SE-02 wanted author/read implementation is described
-below. Saved Listing APIs and remaining lifecycle/UI behavior remain SE-02 work. See the [task list](../../../../../docs/tasks/domain-task-list.md)
+below. Saved Listing APIs and their UI are implemented; their configured dependencies and current deployment must still be verified. See the [task list](../../../../../docs/tasks/domain-task-list.md)
 and [reviewed Search contract](../../../../../contracts/search.md).
+
+The numbered checkpoint details below preserve historical status and do not supersede current implementation.
 
 Shared technical primitives belong in `app.core`. The selected MVP has no Search
 listing projection and no private cross-domain table reads. Search uses public

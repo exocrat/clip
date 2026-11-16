@@ -542,7 +542,7 @@ Output directory must be new; never overwrite prior evidence. Runner exits2for
 invalid workload/response/accounting, even when k6 itself returns0. Stop the owned
 native preview after the run; it reaps helper/closes DB and retains its evidence.
 No token/account/credential values are needed for the explicit local fixture.
-The canonical final label file remains absent and cannot be fabricated by tools.
+The accepted final labels are in `data/evaluation/query-labels.json`; this preview does not create or replace human judgments.
 
 `comparison_cost_preview.py` performs offline per-run cost arithmetic on
 operator-supplied values. Its input format and limits are documented in the

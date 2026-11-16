@@ -46,7 +46,7 @@ def test_default_limits_and_separate_authenticated_users():
     assert (
         settings.api_read_requests_per_minute,
         settings.api_write_requests_per_minute,
-    ) == (100, 10)
+    ) == (3600, 200)
     with client_for() as client:
         one = {"x-test-identity": "one"}
         two = {"x-test-identity": "two"}
