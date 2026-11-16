@@ -25,7 +25,7 @@ variables {
 run "defaults_add_no_conversations_secret" {
   command = plan
   assert {
-    condition     = length(aws_iam_role_policy.api_conversations_secret) == 0 && aws_ecs_task_definition.api[0].memory == "512" && length(aws_cloudwatch_metric_alarm.notification) == 0
+    condition     = length(aws_iam_role_policy.api_conversations_secret) == 0 && aws_ecs_task_definition.api_release[0].memory == "512" && length(aws_cloudwatch_metric_alarm.notification) == 0
     error_message = "Defaults must preserve512MiB, no new secret grant and no notification monitoring."
   }
 }
@@ -51,15 +51,15 @@ run "explicit_consumers_use_exact_secret_and_bounded_capacity" {
     error_message = "Explicit monitoring must use bounded failure metrics and actionless alarms."
   }
   assert {
-    condition     = contains([for setting in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : setting.value if setting.name == "CLIP_NOTIFICATION_WORKER_ENABLED"], "true")
+    condition     = contains([for setting in jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0].environment : setting.value if setting.name == "CLIP_NOTIFICATION_WORKER_ENABLED"], "true")
     error_message = "Enable the bounded poller explicitly."
   }
   assert {
-    condition     = contains([for secret in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].secrets : secret.name], "CLIP_DATABASE_DSN") && aws_ecs_task_definition.api[0].memory == "2048" && aws_ecs_service.api[0].desired_count == 0
+    condition     = contains([for secret in jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0].secrets : secret.name], "CLIP_DATABASE_DSN") && aws_ecs_task_definition.api_release[0].memory == "2048" && aws_ecs_service.api[0].desired_count == 0
     error_message = "Explicit configuration must bind the separate DSN/cap without starting a service."
   }
   assert {
-    condition     = alltrue([for setting in jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0].environment : setting.value == "true" if contains(["CLIP_HYBRID_SEARCH_ENABLED", "CLIP_HYBRID_WORKER_ENABLED"], setting.name)]) && length(aws_instance.identity_https_proxy) == 0
+    condition     = alltrue([for setting in jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0].environment : setting.value == "true" if contains(["CLIP_HYBRID_SEARCH_ENABLED", "CLIP_HYBRID_WORKER_ENABLED"], setting.name)]) && length(aws_instance.identity_https_proxy) == 0
     error_message = "Hybrid flags must be explicit without creating public proxy resources."
   }
 
@@ -71,7 +71,7 @@ run "worker_without_conversations_refused" {
     identity_test_recipients    = ["synthetic@example.invalid"]
     notification_worker_enabled = true
   }
-  expect_failures = [aws_ecs_task_definition.api]
+  expect_failures = [aws_ecs_task_definition.api_release]
 }
 run "unlisted_without_worker_refused" {
   command = plan
@@ -81,12 +81,12 @@ run "unlisted_without_worker_refused" {
     conversations_runtime_enabled          = true
     notification_allow_unlisted_recipients = true
   }
-  expect_failures = [aws_ecs_task_definition.api]
+  expect_failures = [aws_ecs_task_definition.api_release]
 }
 run "consumer_without_identity_refused" {
   command = plan
   variables { conversations_runtime_enabled = true }
-  expect_failures = [aws_ecs_task_definition.api]
+  expect_failures = [aws_ecs_task_definition.api_release]
 }
 run "hybrid_default_capacity_refused" {
   command = plan
@@ -95,5 +95,5 @@ run "hybrid_default_capacity_refused" {
     identity_test_recipients = ["synthetic@example.invalid"]
     hybrid_runtime_enabled   = true
   }
-  expect_failures = [aws_ecs_task_definition.api]
+  expect_failures = [aws_ecs_task_definition.api_release]
 }

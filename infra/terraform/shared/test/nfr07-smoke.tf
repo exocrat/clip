@@ -47,7 +47,7 @@ locals {
   # can share a 4-GiB host with a 2-GiB source task, preserving two source tasks.
   # Port 18001 cannot collide with API. Strip the shared-pool endpoint: all
   # smoke domains must connect directly to the isolated restored database.
-  nfr07_source_container = local.nfr07_active ? jsondecode(aws_ecs_task_definition.api[0].container_definitions)[0] : null
+  nfr07_source_container = local.nfr07_active ? jsondecode(aws_ecs_task_definition.api_release[0].container_definitions)[0] : null
 }
 resource "aws_ssm_parameter" "nfr07_database" {
   count            = local.nfr07_active ? 1 : 0
