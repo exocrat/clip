@@ -48,6 +48,7 @@ own their detailed commands and limits.
 | ECS fallback diagnostic | Add `--profile-set short-release --ecs-fallback-only` to the local capacity command. Runs only A, 10-second warm-up/60-second measured windows. Direct local PostgreSQL; never managed-proxy or formal NFR evidence. |
 | Disposable database and SQL diagnostics | [Database guide](../../database/README.md) |
 | Identity provider setup and real-run gates | [Identity setup guide](identity-provider-setup.md) |
+| Prepare Turnstile deployment handoff (local by default; optional approved SSM write) | [Runtime key/secret handoff](turnstile-deployment.md) |
 | Cloud plans, targets and lifecycle | [Cloud inventory](cloud-inventory.md), the relevant [Terraform runbook](../../infra/terraform/shared/test/README.md), and the owning task's reviewed plan |
 
 The k6 local pilot is loopback-only and cannot accept an NFR. Draft profiles

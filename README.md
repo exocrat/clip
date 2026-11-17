@@ -11,6 +11,7 @@ The repository contains the React web client, FastAPI service, PostgreSQL migrat
 - [Product requirements (PRD)](PRD.md) — original goals, requirements, and acceptance targets.
 - [Developer guide](dev.md) — architecture, code map, workflows, and checks.
 - [Contributing](CONTRIBUTING.md) — ownership, review, and Git process.
+- [Deployment instructions](infra/terraform/shared/test/README.md#application-rollout-start-here) — existing project environment, including the one-time #52/#65 runtime setup.
 - [Documentation index](docs/README.md) — canonical decisions, task status, and operational guides.
 
 ## Prerequisites

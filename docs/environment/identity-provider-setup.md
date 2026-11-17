@@ -163,3 +163,12 @@ This was a pending operator configuration action when the procedure was written;
 INT-01 completion and current deployment status are tracked separately. Use the
 [NFR-07 provisioning procedure](../evaluation/predeployment-gap-tools.md) for any
 future restore test, and verify current registration before acting.
+
+## Turnstile recovery deployment (#52/#65)
+
+See the [deployment handoff](turnstile-deployment.md) for the build/runtime
+distinction, one-time private SSM provisioning, exact ECS execution-role
+permission, public collaborator handoff, smoke checks and rollback. Normal
+below-threshold Microsoft/temporary sign-in does not contact Turnstile. This
+adds a targeted challenge recovery path; it does not change Microsoft client
+registration or grant a site-wide bot-protection guarantee.

@@ -1,5 +1,25 @@
 # Shared test Terraform root
 
+## Application rollout: start here
+
+For the first release containing #52/#65, follow the
+[Turnstile deployment handoff](../../../../docs/environment/turnstile-deployment.md)
+in addition to the [normal Terraform plan/apply workflow](../../README.md).
+**An image-only update does not enable the complete fix.** One-time setup creates
+`/clip/test/turnstile/secret-key`, adds the public `turnstile_site_key` to the
+maintained environment inputs and applies the prepared execution-role/task wiring.
+The image build itself keeps its existing Microsoft/Hybrid flags and artifacts;
+no Turnstile key is a build argument.
+
+Preserve that public input in **every later Terraform plan**. The easiest route
+is to add the single public setting to the same environment input file already
+used for deployments; then the normal command sequence stays unchanged. Omitting
+it reverts to the null default and proposes removing the challenge configuration.
+The handoff also provides an alternative extra `-var-file` command and the exact
+SSM setup helper. Do not replace the existing complete environment inputs with
+the small handoff fragment. These instructions do not authorize an AWS write,
+apply, restart or deployment.
+
 This root is specific to the project AWS account and domain. For another account, follow the [cross-account prerequisites](../../README.md#deploying-into-another-aws-account) and review the account-bound configuration and application origins before planning. Defaults do not enable a complete application.
 
 PD-16 owns the shared test-environment root and state key `shared/test/terraform.tfstate`; use the default Terraform workspace. The S3 backend points to the bucket in `infra/terraform/bootstrap/versions.tf` and the exact shared/test state key; Step 4 local checks remain backend-free. Step 5 checks local/remote state collisions before `terraform init -reconfigure`; never plan against the implicit local backend. The root uses Terraform 1.15.9 and its locked AWS provider. `deployment_phase` is mandatory with no default; `base` enables the VPC, one-AZ NAT/ECS/RDS base and the RDS-subnet-only second AZ, while `service` additionally enables the API service plus separate one-shot database-login setup and probe tasks. Backend-free format/schema validation needs no real variable values; if explicitly selecting an empty local configuration, use `disabled` only without planning against deployed state. Cloud plans use `-input=false` with reviewed phase-specific inputs. The API uses bridge port mapping 8000→18000 for SSM port forwarding and creates no inbound security-group rule. [DEC-05](../../../../docs/decisions/private-postgresql-probe-login.md) records the probe-login boundary: setup can fetch the master and probe parameters; the probe can fetch only its own credential; neither task role receives AWS permissions.

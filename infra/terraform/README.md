@@ -10,6 +10,13 @@ Create the required SSM SecureString parameters and database URLs in the target 
 
 ## Deployment operator reading order
 
+**First #52/#65 rollout:** complete the
+[Turnstile runtime setup](../../docs/environment/turnstile-deployment.md) before
+an image-only update. Retain its public `turnstile_site_key` in the existing
+maintained environment inputs for all later plans. Image build commands and
+existing Microsoft/Hybrid build settings are unchanged; the first rollout also
+applies the prepared runtime secret reference and execution-role permission.
+
 The general Terraform workflow below is not a standalone production deployment
 runbook. Start with the [shared test root guide](shared/test/README.md), then
 review the [bounded deployment plan](../../docs/evaluation/deployment-20261103/plan.md)
@@ -33,14 +40,34 @@ related cloud checks where practical. Confirm rollback, ownership, retention and
 cleanup before starting. The operator must determine actual values from the
 current target; this guide does not supply or authorize credentials.
 
-The API rate limits default to 3,600 reads and 200 writes per minute per authenticated account or anonymous transport peer, per process. A separate per-peer ceiling of at least 3,600 reads and 200 writes per minute protects session authentication.
+The API rate limits default to 3,600 reads and 200 writes per minute per
+authenticated account or anonymous transport peer, per process. Trusted session
+classification precedes budget selection: anonymous traffic does not consume a
+signed-in account's allowance merely because they share an address. There is no
+additional shared-peer ceiling spanning authenticated accounts. Session
+verification work is not itself bounded by these request budgets.
 Their `CLIP_API_READ_REQUESTS_PER_MINUTE` and
 `CLIP_API_WRITE_REQUESTS_PER_MINUTE` overrides are documented in the
 [API settings](../../apps/api/README.md#startup-settings). The shared Terraform
 task definition currently does not expose these overrides as variables; changing
-them there requires a reviewed task-definition/configuration change. The peer ceiling is shared by clients with the same transport address. Counters
+them there requires a reviewed task-definition/configuration change. Only
+anonymous requests share a transport-peer budget. Counters
 reset on restart and are independent across ECS tasks and Lambda instances. Confirm the selected values do not
 invalidate a planned experiment.
+
+Comprehensive bot protection and guaranteed availability under sustained
+automated abuse or volumetric denial-of-service traffic are outside the project's
+scope. The targeted Turnstile sign-in recovery challenge is included. A rollout
+for #52/#65 must supply paired `CLIP_TURNSTILE_SITE_KEY` and backend-only
+`CLIP_TURNSTILE_SECRET_KEY`. The shared/test root now accepts an optional public
+`turnstile_site_key`; it injects the paired backend settings and grants the API
+execution role access to exactly `/clip/test/turnstile/secret-key`. The Standard
+SecureString must be created separately before the approved rollout; no raw
+secret belongs in Terraform inputs/state or image builds. The default null key
+keeps this feature disabled. Use the prepared
+[Turnstile deployment handoff](../../docs/environment/turnstile-deployment.md).
+This does not waive the specified normal/reference-workload FR/NFR targets;
+see the [request-budget and scope decision](../../docs/decisions/api-rate-limit-isolation.md).
 
 The existing browser-to-S3 signed-length upload change has not yet been verified
 against real S3. Before relying on it in a deployment, verify a valid image

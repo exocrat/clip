@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
+import pytest
 
 from app.core.auth import CallerContext
 from app.core.config import Settings
@@ -109,36 +110,17 @@ def test_active_client_capacity_fails_closed_and_recovers(monkeypatch):
         )
 
 
-def test_pre_auth_peer_ceiling_cannot_be_bypassed_by_account_switching():
-    app = FastAPI()
-    users = {
-        name: CallerContext(uuid4(), "regular", datetime.now(UTC) + timedelta(days=1))
-        for name in ("one", "two")
-    }
-
-    @app.post("/resource")
-    def resource():
-        return {"ok": True}
-
-    app.add_middleware(
-        ApiRateLimitMiddleware,
-        read_limit=60,
-        write_limit=1,
-        api_prefix_only=False,
-        peer_only=True,
-    )
-
-    @app.middleware("http")
-    async def trusted_identity(request, call_next):
-        request.scope["clip.caller"] = users[request.headers["x-test-identity"]]
-        return await call_next(request)
-
-    with TestClient(app, client=("192.0.2.1", 1234)) as client:
-        assert (
-            client.post("/resource", headers={"x-test-identity": "one"}).status_code
-            == 200
-        )
-        assert (
-            client.post("/resource", headers={"x-test-identity": "two"}).status_code
-            == 429
-        )
+@pytest.mark.parametrize("method", ["GET", "POST"])
+def test_anonymous_and_authenticated_budgets_do_not_share_peer_allowance(method):
+    """One peer's anonymous traffic and two accounts each retain their own cap."""
+    with client_for(read_limit=1, write_limit=1) as client:
+        assert client.request(method, "/resource").status_code == 200
+        assert client.request(method, "/resource").status_code == 429
+        for user in ("one", "two"):
+            headers = {"x-test-identity": user}
+            assert (
+                client.request(method, "/resource", headers=headers).status_code == 200
+            )
+            assert (
+                client.request(method, "/resource", headers=headers).status_code == 429
+            )

@@ -2,6 +2,213 @@
 
 > **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
 
+### #52/#65 review handoff authorized — 2026-11-17 16:24:46 UTC
+
+Suraj accepted the local functional verification and authorized publishing the
+combined branch as a PR and waiting for CI, superseding the earlier stop before
+commit/push. Another human will handle merge; this author/agent must not merge
+or deploy. Remote main was checked at `f63e293104f0475bfaa3536bbf4f97e90bb0ae98`,
+matching the branch base, with no open conflicting PR at this checkpoint.
+
+Application verification remains the full 12-gate local pass, attended ordinary
+browser Turnstile/Microsoft recovery, final frontend wording rerun, ten secret
+handoff tests and forty Terraform mock tests. The production SSM secret is
+provisioned/verified at version 1; no key is in the patch. Prepared runtime IAM
+and task configuration still require the separately reviewed deployment apply.
+
+The next gate is the latest PR head's Foundation quality gates and independent
+human/affected Identity/shared-core review using the peer-review prompt. Issues
+#52/#65 remain open until reporting-team retest; do not use merge-triggered issue
+closure. Hosted CI evidence is authoritative on the PR for its exact head. No
+merge, cloud rollout or new performance claim is authorized by publication.
+
+### Approved Turnstile SSM setup — 2026-11-17 16:18:28 UTC
+
+Suraj explicitly approved storing the production widget secret in SSM. Using the
+account-checked `surajs2` profile, the prepared helper created exactly one Standard
+SecureString, `/clip/test/turnstile/secret-key`, in account `335523638354`, Region
+`ap-south-1`, version 1, with overwrite disabled and the default AWS-managed SSM
+key. An independent metadata read confirmed Standard/SecureString/version 1;
+a private decrypted comparison confirmed an exact match to the supplied website
+widget secret. Only the boolean match result and non-secret metadata were saved.
+No raw key, ciphertext, credentials or provider token entered Git/chat/logs.
+
+The outside-Git public handoff receipt now confirms AWS provisioning and version 1.
+The key is retained for the later deployment; the collaborator needs the public
+site-key input and SSM reference, not the raw secret. No IAM change, Terraform
+apply, task registration/restart, image publication or deployment was performed.
+All code/docs remain uncommitted/unpushed. Review and the actual runtime rollout
+remain separate gates; stop-before-commit/push direction remains in force.
+
+### Turnstile deployment preparation — 2026-11-17 16:01:52 UTC
+
+Suraj requested deployment-ready instructions/configuration, secure collaborator
+handoff and the free-plan limits. Added the optional public `turnstile_site_key`
+input in `shared/test/turnstile.tf`, exact SSM read grant for the API execution
+role, ECS environment/secret injection and an Identity-runtime precondition in
+`service.tf`. The service waits for the exact IAM grant before rollout. Defaults
+inject nothing; raw secret values never enter Terraform inputs/state or images.
+No application task-role, Lambda read-role, proxy, capacity or network change.
+
+Added `scripts/prepare_turnstile_deployment.py`: local-only public tfvars/receipt
+preparation by default, with an explicit optional approved write of one Standard
+SecureString at `/clip/test/turnstile/secret-key`. It checks the project STS
+account, uses fixed regional endpoints/bounded one-attempt CLI calls, refuses
+existing parameters and captures private diagnostics without displaying them.
+The secret is carried in a seekable Linux memory-only descriptor, never disk
+payload files or command arguments. Prepared public
+handoff files from the private website-widget pair outside Git; the receipt
+correctly records no AWS write. The collaborator can receive those public files
+and the deployment guide without receiving the raw secret after SSM setup.
+
+Checks: helper 10 tests passed using synthetic keys/fake CLI processes; isolated
+backend-free Terraform validation passed; all 40 mocked plans passed; formatting,
+repository boundaries and Gitleaks passed. Early new mock assertions needed a
+known plan-time execution-role ID/valid ARN; both were corrected in the fixture.
+No real AWS plan/apply or parameter write occurred. Read-only STS confirmed profile
+`surajs2` in project account `335523638354`; the initially assumed `clip-project`
+profile does not exist on this contributor's machine.
+
+At 2026-11-17 16:06:54 UTC, read-only CLI STS and the seekable descriptor probe
+confirmed `surajs2` is usable in the expected account; exact SSM metadata lookup
+confirmed the target parameter does not yet exist. The installed Python SDK's
+login path required an optional dependency, so the helper deliberately uses the
+working AWS CLI without adding packages. The final 10 fake-process tests passed;
+local-only preparation was rerun and the receipt still records no AWS write.
+
+At 2026-11-17 16:11:33 UTC, Suraj requested an explicit answer about changes to
+the actual deployment process. Added the first-rollout notice to the existing
+shared/test guide and root README/central Terraform entry points, not only a new
+document. The handoff now includes the exact plan/review/apply command pattern
+and explains that retaining the public setting in the existing maintained inputs
+keeps later commands unchanged; omitting it would remove the prepared runtime
+configuration. Local documentation links and shell continuation examples passed.
+No new AWS action was authorized by this clarification.
+
+The [handoff](../environment/turnstile-deployment.md) explains build versus runtime,
+website versus localhost widget, secret-holder/operator responsibilities, exact
+input/reference, existing Hybrid/Microsoft settings, restart/rollback, smoke checks
+and currently documented free-plan limits. Indexed it in the environment/command
+and documentation guides. Creating the actual SSM parameter still needs separate
+cloud-action approval; runtime IAM/task configuration is prepared but unapplied.
+No commit, push, Terraform apply or deployment. Review/approval gates remain.
+
+### Attended #52/#65 real-provider checks — 2026-11-17 15:47:57 UTC
+
+Suraj created a separate localhost Turnstile widget, saved its keys privately and
+completed attended tests against the branch's Microsoft-enabled local bundle and
+an owned disposable PostgreSQL database. Normal temporary sign-in succeeded
+without a challenge. After five wrong-password attempts, target-lock recovery
+succeeded through real Turnstile in the user's ordinary browser. Shared-IP login
+exhaustion recovery succeeded for both temporary login and real IISc Microsoft
+SSO; Suraj completed encryption/Handle onboarding and reached the marketplace.
+With anonymous API exhaustion staged (control request returned 429), Suraj
+refreshed the already-signed-in Microsoft session and remained signed in. Suraj
+also reached the marketplace after combined target/source/API staging and a
+fresh temporary login. Anonymous API windows are 60 seconds; the earlier automated
+private regression supplies deterministic simultaneous-exhaustion evidence.
+
+The dedicated automated Chromium failed before a credential resubmission; its
+exact browser/provider failure cause was not established. The ordinary browser
+completed the real challenge. The misleading client-side failure message was
+corrected in Identity `api.ts` to describe an incomplete security check, and its
+blocked-script test now asserts that message. Final `npm run check` passed lint,
+526 tests/3 skipped, types and build after that wording change; backend behavior
+is unchanged from the full 12-gate pass above. Existing Vite chunk warning remains.
+
+Suraj explicitly declined NFR/experiment remeasurement. Normal authenticated
+workloads do not contact Turnstile; read/write defaults, search/data/message logic,
+infrastructure and experiment workloads were not changed. No new numerical
+performance claim is made. Human checks are recorded as human reports, separately
+from automated HTTP evidence; no Microsoft credentials/assertions were captured.
+Local app/database and the dedicated browser were shut down after the checks.
+The ordinary browser, production deployment and retained databases were untouched.
+
+Local functional verification is accepted through Suraj's step reports. Code/diff
+review, affected Identity/shared-core and independent peer review, runtime secret
+wiring, commit/PR/CI, production smoke/retest and reporting-team acceptance remain
+pending. Stop before commit/push remains in force. No GitHub issue reply or cloud
+change was made in this increment.
+
+### Combined #52/#65 sign-in recovery — 2026-11-17 15:10:30 UTC
+
+Suraj expanded the existing branch to address the email-target lockout and both
+shared-IP denial paths together, authorized local disposable SQL/Chromium checks,
+and explicitly directed stopping before commit/push. Suraj created a Turnstile
+widget and stored paired keys privately outside Git; no secret was copied into
+source, logs or build configuration. Suraj is the sole writer for this scoped
+Identity API/challenge-dialog change; affected Identity/shared-core owner and
+independent peer review remain pending.
+
+The implementation adds a verified, one-use challenge exception on the three
+public sign-in POSTs. It retains source/target abuse histories, normal credential,
+nonce, lifecycle and browser checks, and denies local proof replay across workers
+using existing auth-event storage. Ordinary below-threshold sign-in never calls
+the provider. A challenge provider outage denies only challenged operations.
+Exceptional challenge checks are capped at four concurrent requests, with a
+regression proving ordinary requests remain responsive during slow checks.
+Project-wide comprehensive abuse protection remains excluded; the targeted
+sign-in challenge is explicitly included. No schema or cloud resource change.
+
+Focused combined backend checks: 32 passed, including real SQL/cookies/passwords,
+reset/session revocation, source and target exhaustion, synthetic signed Microsoft
+exchange, failed proofs, provider errors and concurrent proof consumption.
+The final targeted backend/contract run passed 78 tests, and the focused
+frontend challenge/fault run passed 11 tests. Actual Chromium passed at 1,280px
+and 390px widths with real SQL/cookies and an active application lifespan; both
+session and conversation-key reads returned 200 after challenged sign-in.
+The first backend run exposed a failure
+counter increment beyond its existing SQL cap; it now saturates at five. The first
+browser attempt used a stale bundle because a new test mock failed TypeScript;
+the mock signature was corrected and the bundle rebuilt. The first aggregate
+failed contract snapshot checks while canonical comments/generated output changed;
+the generated Identity copy is now current. A subsequent targeted invocation used
+the wrong Node PATH and failed tool-dependent contract checks; the pinned-tool
+rerun passed all 78 cases. At 2026-11-17 15:27:42 UTC, the final full `make check` passed all 12
+gates: Python 2,617 passed/188 skipped; data 331 passed; web 526 passed/3 skipped
+with lint/types/production build; database safety 35 passed; PostgreSQL 18.6
+lifecycle and focused Conversations operations (186 passed) passed; CI parity,
+formatting, boundaries, generated contracts/types and Gitleaks passed. Existing
+Vite large-chunk warning remains. Skips are not passing evidence. An additional
+private SQL/HTTP regression passed with target, source and anonymous API budgets
+exhausted simultaneously, confirming the cross-issue recovery path. Prior aggregate
+evidence below covers only the earlier request-isolation increment.
+
+A bounded real-provider negative smoke reached Cloudflare, denied an invalid
+proof and did not report an invalid secret. Unattended real-widget Chromium did
+not obtain a token; successful real-provider redemption is not claimed.
+
+Runtime key delivery/task-definition configuration, real-provider browser and
+Microsoft account interaction, affected-owner/independent review, human result
+verification, commit/PR/CI, deployment and reporting-team retest remain pending.
+No commit, push, deployment or issue reply is part of this increment.
+
+### Authenticated request-budget isolation — 2026-11-17 10:45:11 UTC
+
+Suraj authorized this scoped correction and clarified that comprehensive bot
+protection is outside the project's scope. Identity now reserves the shared-core
+request budget after verifying the session, including before early rejection of
+failed cookies. Verified accounts no longer spend an outer shared-peer allowance;
+anonymous traffic remains limited. The session-only Listings runtime follows the
+same policy. Existing credential/source-attempt policies are unchanged. The
+accepted [scope decision](../decisions/api-rate-limit-isolation.md) preserves the
+normal/reference-workload FR/NFR obligations and records that these budgets do
+not bound all session-validation work.
+
+The new same-address HTTP/SQL regression failed on unchanged `f63e293` and passes
+with the correction. Expanded limiter/body-limit/Identity/Lambda checks: 41
+passed, including forged/revoked/expired cookies and hostile origins. Dependencies
+were installed from the locked manifests; boundaries reported zero violations.
+At 2026-11-17 10:56:57 UTC, full `make check` passed all 12 gates: Python
+2,593 passed/188 skipped; data 331 passed; web 515 passed/3 skipped with lint,
+types and build; database safety 35 passed; PostgreSQL 18.6 lifecycle passed;
+Conversations operations 186 passed; formatting, CI parity, contracts/types,
+boundaries and Gitleaks passed. Skipped cases are not passing evidence. Vite
+reported its existing large-chunk warning. Work remains uncommitted on
+`task/rt65-authenticated-rate-isolation`; human result verification, affected
+Identity/shared-core owner and independent peer review, commit/PR/CI, deployment
+and reporting-team retest remain pending. No cloud or GitHub issue action.
+
 ### Documentation and rate-limit verification — 2026-11-16 18:45:33 UTC
 
 Aditya ran `uv run --locked pytest -q -W error`: 2,580 passed and 188 skipped. Skipped cases are not passing evidence; other aggregate gates were not reported.
@@ -1626,6 +1833,7 @@ evidence](../evaluation/README.md).
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
+| RT-52/65 coordinated authentication recovery | Suraj (B); Identity/shared-core affected-owner review | in progress | PR handoff: verify current-head CI and arrange independent/affected-owner review; no merge/deploy | Full make check passed (Python 2,617/188 skipped; web 526/3 skipped; remaining gates passed); targeted 78, UI 11, Chromium, simultaneous-exhaustion and attended real Turnstile/Microsoft checks passed; final frontend rerun passed; helper 10 and Terraform mock 40 passed | Local functional behavior verified by Suraj; commit/push/PR and waiting for CI authorized; peer review pending | `task/rt65-authenticated-rate-isolation`; base `f63e293`; [decision](../decisions/api-rate-limit-isolation.md) | SSM production secret verified at version 1; reviewed runtime apply pending; wiring prepared; peer/owner and diff review, commit/PR/CI, deployment smoke and red-team retest pending | 2026-11-17 16:24:46 UTC |
 | Chat and Wanted visual correction | Aditya; affected Search, Listings and Conversations owners | in progress | Complete desktop/phone visual verification and obtain required peer/owner reviews | Full `make check` passed: Python 2,580/188 skipped; data 331; web 515/3 skipped; all remaining aggregate checks passed | pending | `task/visual-navigation-wanted-chat`; head `5a03002` plus uncommitted test update | Visual verification, affected-owner/independent review, commit approval, PR/CI and deployment remain | 2026-11-07 14:52:31 UTC |
 | Approved marketplace redesign | Rahul; Aditya, Suraj and Mohit affected-owner review | in progress | Complete aggregate CI, visual inspection and review | Final rate-limit and affected integration suite 56 passed; frontend 513 passed/3 skipped; local aggregate timed out during Python tests | Original preview design and Handle button approved | `task/mobile-menu-checkbox`; [feedback plan](../tasks/next-03-visual-feedback-plan.md) | Full aggregate/CI, visual verification and affected-owner/security and independent review pending | 2026-11-06 19:50:28 UTC |
 | API default rate limits | Rahul; Aditya affected-owner reviewer | in progress | Review defaults and affected workloads | Defaults and settings guide updated; diff check passed | pending | `task/mobile-menu-checkbox`; local changes | Independent review, PR and deployment gates remain | 2026-11-06 17:03:07 UTC |
