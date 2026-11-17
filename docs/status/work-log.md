@@ -1,5 +1,9 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### Issue 55 key-replacement repair — 2026-11-17 10:54:05 UTC
+
+Conversation client now displays previous-key incoming messages as unavailable and continues to current-key entries; accepted sends are no longer reported failed when the subsequent refresh fails. Real SDK synthetic tests cover key replacement, both directions and session restart; focused page tests cover old-key skipping and current-key failures. Frontend aggregate passed 519 tests (3 skipped), lint, typecheck and build. A three-profile Chromium replay with real local PostgreSQL and encryption passed key replacement, new messages in both directions and reloads, both with the old browser closed and with it open; the latter required stopping the old browser when its published key changes. The legacy fixture required temporary local adaptation for newer availability, Handle and Listings wiring; its synthetic image endpoint returned 503 and was outside this check. No cloud changes; independent peer review remains required.
+
 > **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
 
 ### Documentation and rate-limit verification — 2026-11-16 18:45:33 UTC
