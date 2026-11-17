@@ -67,3 +67,47 @@ def test_my_listings_rejects_noncontract_pagination(query: str) -> None:
     assert response.status_code == 422
     assert response.json()["error"]["code"] == "validation_error"
     assert service.page is None
+
+
+@pytest.mark.parametrize(
+    "field", ["title", "description", "category_code", "condition_code", "pickup_area"]
+)
+@pytest.mark.parametrize("method", ["POST", "PUT"])
+def test_listing_rejects_nul_before_service(field: str, method: str) -> None:
+    """Invalid user text gets a safe 422 before any listing write."""
+    from unittest.mock import AsyncMock
+    from uuid import uuid4
+
+    client, service = _client()
+    service.create = AsyncMock()
+    service.replace = AsyncMock()
+    body = {
+        "title": "Bicycle",
+        "description": "A bicycle",
+        "category_code": "books",
+        "condition_code": "good",
+        "pickup_area": "Campus",
+        "asking_price_paise": 100,
+        "negotiable": False,
+        "operation_id": str(uuid4()),
+    }
+    if method == "POST":
+        body["image_upload_ids"] = [str(uuid4())]
+        path = "/listings"
+    else:
+        body.update(
+            expected_revision=1,
+            original_price_paise=None,
+            available_from="2026-01-01T00:00:00Z",
+            available_until=None,
+            proof_available=None,
+            images=[{"source": "existing", "image_id": str(uuid4())}],
+        )
+        path = f"/listings/{uuid4()}"
+    body[field] = "test\x00value"
+    with client:
+        response = client.request(method, path, json=body)
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "validation_error"
+    service.create.assert_not_awaited()
+    service.replace.assert_not_awaited()

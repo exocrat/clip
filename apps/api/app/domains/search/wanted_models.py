@@ -24,7 +24,17 @@ class WantedCreate(CreateWantedRequest):
     @classmethod
     def trimmed_text(cls, value: Any) -> Any:
         """Whitespace-only input becomes empty and fails the inherited minimum."""
+        if isinstance(value, str) and "\x00" in value:
+            raise ValueError("Invalid text")
         return value.strip() if isinstance(value, str) else value
+
+    @field_validator("category_code", mode="before")
+    @classmethod
+    def valid_category_text(cls, value: Any) -> Any:
+        """Reject NUL without changing the original category value."""
+        if isinstance(value, str) and "\x00" in value:
+            raise ValueError("Invalid text")
+        return value
 
     @field_validator("budget_paise", mode="before")
     @classmethod
@@ -46,6 +56,8 @@ class WantedPatch(WantedRequestPatch):
         """Reject explicit null; omitted optional defaults are not validated."""
         if value is None:
             raise ValueError("Non-null field")
+        if isinstance(value, str) and "\x00" in value:
+            raise ValueError("Invalid text")
         return value.strip() if isinstance(value, str) else value
 
     @field_validator("budget_paise", mode="before")
@@ -126,6 +138,8 @@ class WantedDiscoveryPage(WantedPage):
     @classmethod
     def trimmed_query(cls, value: Any) -> Any:
         """Whitespace-only search means no text restriction."""
+        if isinstance(value, str) and "\x00" in value:
+            raise ValueError("Invalid search text")
         return (value.strip() or None) if isinstance(value, str) else value
 
     @field_validator("category_code", mode="before")
@@ -136,7 +150,10 @@ class WantedDiscoveryPage(WantedPage):
             return []
         values = value if isinstance(value, list) else [value]
         if any(
-            not isinstance(item, str) or not item.strip() or len(item) > 100
+            not isinstance(item, str)
+            or not item.strip()
+            or len(item) > 100
+            or "\x00" in item
             for item in values
         ):
             raise ValueError("Invalid category selection")
@@ -196,4 +213,6 @@ class DraftTitle(DraftMatchRequest):
     @classmethod
     def trimmed_title(cls, value: Any) -> Any:
         """Blank is invalid; padding does not consume the120-character limit."""
+        if isinstance(value, str) and "\x00" in value:
+            raise ValueError("Invalid text")
         return value.strip() if isinstance(value, str) else value

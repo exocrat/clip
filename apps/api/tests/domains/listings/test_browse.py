@@ -543,3 +543,22 @@ def test_revocation_after_success_is_rechecked_before_next_store_read():
         assert client.get("/listings").status_code == 200
         assert client.get("/listings").status_code == 403
     store.browse_available_listings.assert_awaited_once()
+
+
+@pytest.mark.parametrize(
+    "query",
+    [
+        "q=bike%00&search_mode=hybrid",
+        "q=bike%00&search_mode=keyword",
+        "category_code=books%00",
+        "condition_code=good%00",
+    ],
+)
+def test_nul_search_is_rejected_before_storage(query):
+    """Both search modes and catalogue filters reject PostgreSQL-incompatible text."""
+    application, store = app()
+    with TestClient(application) as client:
+        response = client.get("/listings?" + query)
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "validation_error"
+    store.browse_available_listings.assert_not_awaited()
