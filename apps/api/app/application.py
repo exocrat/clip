@@ -198,9 +198,55 @@ async def _marketplace_lifespan(
             application.state.listings_conversations = (
                 None if read_only_listings else conversations_public
             )
-            yield
+            cleanup_task = _maybe_start_image_cleanup(
+                application, settings, pool, read_only_listings
+            )
+            try:
+                yield
+            finally:
+                await _stop_background_task(cleanup_task)
     finally:
         await finish_search_cleanup(pool.close())
+
+
+def _maybe_start_image_cleanup(
+    application: FastAPI,
+    settings: Settings,
+    pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]],
+    read_only_listings: bool,
+) -> "asyncio.Task[None] | None":
+    """Start the in-process daily image-object reclamation when it applies.
+
+    Read-only (Lambda) composition and configurations without S3 image storage
+    have nothing to reclaim, so no task is started. The lazy import keeps the
+    read-only path from loading the scheduler and its service dependencies.
+    """
+    if (
+        read_only_listings
+        or not settings.image_cleanup_enabled
+        or application.state.listings_image_storage is None
+    ):
+        return None
+    from app.domains.listings.image_cleanup_scheduler import start as start_cleanup
+
+    return start_cleanup(
+        pool,
+        application.state.listings_store,
+        application.state.listings_identity,
+        application.state.listings_image_storage,
+        interval_seconds=settings.image_cleanup_interval_seconds,
+    )
+
+
+async def _stop_background_task(task: "asyncio.Task[None] | None") -> None:
+    """Cancel and await a background task during shutdown, ignoring its cancel."""
+    if task is None:
+        return
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
 
 
 @asynccontextmanager

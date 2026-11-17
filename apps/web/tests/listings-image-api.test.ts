@@ -1,6 +1,10 @@
 import { withCsrf } from './helpers/csrf';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ListingsApiError, uploadListingImage } from '../src/features/listings/listingsApi';
+import {
+  ACCOUNT_IMAGE_QUOTA_MESSAGE,
+  ListingsApiError,
+  uploadListingImage,
+} from '../src/features/listings/listingsApi';
 
 type Intent = {
   upload_id: string;
@@ -189,6 +193,32 @@ describe('Listings photo upload HTTP flow', () => {
       .rejects.toThrow('The photo could not be uploaded. Retry the photo.');
 
     expect(FakeXMLHttpRequest.requests).toHaveLength(1);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows the account image-quota message when the create is capped', async () => {
+    const fetch = vi.fn().mockResolvedValueOnce(
+      response({ error: { code: 'conflict', details: [{ field: 'size_bytes', code: 'account_image_quota_exceeded' }] } }, 409),
+    );
+    vi.stubGlobal('fetch', withCsrf(fetch));
+
+    await expect(uploadListingImage(fileBytes, operationId, vi.fn(), vi.fn()))
+      .rejects.toThrow(ACCOUNT_IMAGE_QUOTA_MESSAGE);
+
+    expect(FakeXMLHttpRequest.requests).toHaveLength(0);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the expired-upload message for a generic create conflict', async () => {
+    const fetch = vi.fn().mockResolvedValueOnce(
+      response({ error: { code: 'conflict', message: 'Resource state conflict' } }, 409),
+    );
+    vi.stubGlobal('fetch', withCsrf(fetch));
+
+    await expect(uploadListingImage(fileBytes, operationId, vi.fn(), vi.fn()))
+      .rejects.toThrow('This photo upload expired. Remove it and choose the photo again.');
+
+    expect(FakeXMLHttpRequest.requests).toHaveLength(0);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
