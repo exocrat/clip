@@ -61,3 +61,13 @@ The primary experiment compares ECS-only with ECS plus Lambda for a fixed set of
 ## Exclusions and optional work
 
 Payment processing or verification, delivery coordination, ratings, auctions, partial quantity sales, atomic swaps, native mobile apps, offline operation, multilingual UI, WhatsApp listing creation, automated pricing, comprehensive moderation, and active multi-region serving are outside the MVP. Weekly wanted digests, match alerts, image-aware search, and additional comparisons are optional and need their own scope and approval.
+
+**Later accepted project scope clarification (2026-11-17):** Comprehensive bot
+protection, including site-wide managed bot-protection services,
+and guaranteed availability under sustained automated abuse or volumetric
+denial-of-service traffic are outside the project's scope. The targeted
+Turnstile sign-in recovery challenge for #52/#65 is included in this correction. Authentication,
+authorization, application request-limit isolation and the stated FR/NFR targets
+under their specified normal/reference workloads remain required. This records
+the later clarification without modifying the submitted PRD; see the
+[accepted decision](docs/decisions/api-rate-limit-isolation.md).

@@ -1,3 +1,4 @@
+import { solveSignInChallenge } from './SignInChallenge';
 import { sessionFetch, SessionFetchError } from '../../shared/http/sessionFetch';
 import type {
   ActivateTemporaryRequestWritable,
@@ -69,15 +70,34 @@ export async function request(
   body?: unknown,
   protectedWrite = false,
   signal?: AbortSignal,
+  challengeToken?: string,
 ): Promise<unknown> {
   try {
     const response = await sessionFetch(path, {
       method, signal,
-      ...(body !== undefined ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}),
+      headers: {
+        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(challengeToken ? { 'X-CLIP-Challenge-Token': challengeToken } : {}),
+      },
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
     }, {
       prefix: import.meta.env.MODE === 'identity-preview' ? '' : '/api',
       publicAuthentication: !protectedWrite,
     });
+    // A challenge-marked 429 guarantees this sign-in was refused, not issued.
+    // Only explicit user completion permits one replay; never retry uncertain writes.
+    const siteKey = response.headers.get('X-CLIP-Challenge-Site-Key');
+    if (response.status === 429 && siteKey && !challengeToken && method === 'POST'
+      && ['/auth/temporary/sessions', '/auth/microsoft/login-attempts', '/auth/microsoft/sessions'].includes(path)) {
+      let proof: string;
+      try { proof = await solveSignInChallenge(siteKey, signal); }
+      catch {
+        const failure = new IdentityError(503);
+        failure.message = 'The security check could not be completed. Please try signing in again.';
+        throw failure;
+      }
+      return request(path, method, body, protectedWrite, signal, proof);
+    }
     if (!response.ok) throw new IdentityError(response.status);
     return response.status === 204 ? undefined : await response.json();
   } catch (error) {

@@ -32,6 +32,12 @@ from app.contracts.domain_types import (
     TemporarySessionRequest,
 )
 
+# Sign-in transport extension (#52/#65): only the three credential/attempt POSTs
+# may return X-CLIP-Challenge-Site-Key on a confirmed-refused 429. The browser can
+# explicitly complete Turnstile and retry that operation once with
+# X-CLIP-Challenge-Token. JSON request/response schemas do not change. Proofs are
+# not caller identity and cannot exempt marketplace operations. See the canonical
+# API settings guide, "Exceptional sign-in recovery", for provider/replay policy.
 # Reviewed runtime adapter metadata; source callables below remain declarations.
 RUNTIME_BINDINGS = frozenset(
     {

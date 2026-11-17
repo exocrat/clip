@@ -19,7 +19,7 @@ from app.core.auth import require_caller
 from app.core.config import ConfigurationError, Settings, load_settings
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestLoggingMiddleware
-from app.core.rate_limit import ApiRateLimitMiddleware
+from app.core.rate_limit import ApiRateLimiter, ApiRateLimitMiddleware
 from app.core.request_size import ApiRequestSizeMiddleware
 from app.core.database import PoolFactory, create_async_connection_pool
 from app.core.database_transport import (
@@ -402,9 +402,10 @@ def create_app(
 
     install_error_handlers(app)
     path_prefix = "/api" if settings.serve_web_app or listings_read_only else ""
-    # Identity middleware must authenticate before the limiter selects a user key.
-    app.add_middleware(
-        ApiRateLimitMiddleware,
+    # Identity reserves one budget after validating the session, including on
+    # rejected-cookie requests. Anonymous traffic must not spend an authenticated
+    # account's allowance merely because both share a network/proxy address.
+    rate_limiter = ApiRateLimiter(
         read_limit=settings.api_read_requests_per_minute,
         write_limit=settings.api_write_requests_per_minute,
         api_prefix_only=settings.serve_web_app or listings_read_only,
@@ -414,24 +415,21 @@ def create_app(
             app,
             identity,
             path_prefix=path_prefix,
+            rate_limiter=rate_limiter,
         )
     if identity_reads is not None:
-        install_identity_reads(app, identity_reads)
+        install_identity_reads(app, identity_reads, rate_limiter=rate_limiter)
+    if identity is None and identity_reads is None:
+        app.add_middleware(
+            ApiRateLimitMiddleware,
+            read_limit=settings.api_read_requests_per_minute,
+            write_limit=settings.api_write_requests_per_minute,
+            api_prefix_only=settings.serve_web_app or listings_read_only,
+        )
     app.add_middleware(
         ApiRequestSizeMiddleware,
         api_prefix_only=settings.serve_web_app or listings_read_only,
     )
-    # A separate peer ceiling protects session validation before authenticated limits.
-    # Retain the former 600/120 defaults while allowing explicitly higher test limits.
-    if identity is not None or identity_reads is not None:
-        app.add_middleware(
-            ApiRateLimitMiddleware,
-            read_limit=max(600, settings.api_read_requests_per_minute),
-            write_limit=max(120, settings.api_write_requests_per_minute),
-            api_prefix_only=settings.serve_web_app or listings_read_only,
-            peer_only=True,
-        )
-
     app.add_middleware(RequestLoggingMiddleware)
 
     if settings.isolated_listings_test_caller:

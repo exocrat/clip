@@ -63,6 +63,7 @@ document here for every task.
   [secret-handling rules](environment/secret-handling.md), and
   [cloud inventory](environment/cloud-inventory.md). Refresh live cloud state
   before any cloud action.
+- [Turnstile sign-in recovery deployment handoff](environment/turnstile-deployment.md).
 - [Notification email setup and provider gates](environment/notification-email-setup.md).
 - [WSL first-session guide](environment/wsl-and-first-session.md) applies only
   to contributors who use WSL.

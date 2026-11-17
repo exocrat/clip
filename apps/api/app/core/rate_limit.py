@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from time import monotonic
 
 from starlette.requests import Request
+from starlette.responses import Response
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.core.auth import CallerContext
@@ -23,43 +24,45 @@ class ClientWindow:
     last_seen: float = 0
 
 
-class ApiRateLimitMiddleware:
-    """Apply rolling limits to verified accounts or, when configured, peers.
+class ApiRateLimiter:
+    """Reserve a rolling request budget after trusted session classification.
 
-    Anonymous requests share the transport peer's allowance; forwarded headers
-    are never read here. Counters are per process, reset at restart, and are not
-    shared by replicas. Health checks and static frontend paths are excluded.
+    Verified accounts have independent budgets; only anonymous requests share
+    a transport peer's allowance. Cookies and forwarded headers never select
+    an account key. Reservation is synchronous so one event-loop invocation
+    checks and charges a budget without yielding. Counters are bounded, local
+    to one process, and reset at restart; replicas do not share them.
     """
 
     def __init__(
         self,
-        app: ASGIApp,
         read_limit: int,
         write_limit: int,
         api_prefix_only: bool,
-        peer_only: bool = False,
     ) -> None:
-        self.app = app
         self.read_limit = read_limit
         self.write_limit = write_limit
         self.api_prefix_only = api_prefix_only
-        self.peer_only = peer_only
         self.clients: OrderedDict[tuple[str, str], ClientWindow] = OrderedDict()
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+    def reject(self, scope: Scope) -> Response | None:
+        """Charge one request, or return a safe 429 without running its handler.
+
+        Identity calls this after setting or rejecting the trusted caller, even
+        when it will reject the request itself. With no Identity runtime, the
+        standalone middleware uses the same budget before calling the app.
+        """
         if scope["type"] != "http":
-            await self.app(scope, receive, send)
-            return
+            return None
         path = scope.get("path", "")
         if path == "/health" or (self.api_prefix_only and not path.startswith("/api/")):
-            await self.app(scope, receive, send)
-            return
+            return None
 
         caller = scope.get("clip.caller")
         peer = scope.get("client")
         key = (
             ("user", str(caller.user_id))
-            if not self.peer_only and isinstance(caller, CallerContext)
+            if isinstance(caller, CallerContext)
             else ("peer", str(peer[0]) if peer else "unknown")
         )
         now = monotonic()
@@ -70,11 +73,9 @@ class ApiRateLimitMiddleware:
             self.clients.popitem(last=False)
         window = self.clients.get(key)
         if window is None and len(self.clients) >= MAX_ACTIVE_CLIENTS:
-            response = error_response(
+            return error_response(
                 Request(scope), ERRORS[429], headers={"Retry-After": "60"}
             )
-            await response(scope, receive, send)
-            return
         if window is None:
             window = ClientWindow()
             self.clients[key] = window
@@ -87,10 +88,30 @@ class ApiRateLimitMiddleware:
             entries.popleft()
         if len(entries) >= limit:
             retry = max(1, int(60 - (now - entries[0])) + 1)
-            response = error_response(
+            return error_response(
                 Request(scope), ERRORS[429], headers={"Retry-After": str(retry)}
             )
-            await response(scope, receive, send)
-            return
         entries.append(now)
+        return None
+
+
+class ApiRateLimitMiddleware(ApiRateLimiter):
+    """Apply the same budget to apps without the trusted Identity boundary."""
+
+    def __init__(
+        self,
+        app: ASGIApp,
+        read_limit: int,
+        write_limit: int,
+        api_prefix_only: bool,
+    ) -> None:
+        super().__init__(read_limit, write_limit, api_prefix_only)
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Reject before the handler, preserving health/static/non-HTTP bypasses."""
+        rejection = self.reject(scope)
+        if rejection is not None:
+            await rejection(scope, receive, send)
+            return
         await self.app(scope, receive, send)

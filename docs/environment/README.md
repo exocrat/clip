@@ -2,6 +2,10 @@
 
 This directory holds non-secret records for contributor workstations, commands, secret-access procedures, and any shared cloud environment. Record observed facts accurately and keep credentials and secret values out of the repository.
 
+For the combined #52/#65 rollout, use the
+[Turnstile deployment handoff](turnstile-deployment.md): keys are runtime inputs,
+with a private SSM secret and a public collaborator configuration fragment.
+
 ## Local foundation setup
 
 This is the common local setup path for the API, web application and database. Marketplace features are implemented, but a working end-to-end setup requires the applicable database, identity and provider configuration. No AWS login or cloud deployment is needed merely to start the local processes.

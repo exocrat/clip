@@ -38,6 +38,7 @@ from app.domains.identity.runtime_database import (
     validate_database,
 )
 from app.domains.identity.sessions import IdentitySessions
+from app.domains.identity.signin_challenge import TurnstileVerifier
 from app.domains.identity.temporary_crypto import TemporaryKeys
 
 LISTINGS_DATABASE_PARAMETER = "/clip/test/listings-database-url"
@@ -334,7 +335,18 @@ def _prepare_identity(
             else None
         )
         sessions = IdentitySessions(
-            pooled if pooled is not None else connect, keys, clock
+            pooled if pooled is not None else connect,
+            keys,
+            clock,
+            challenge=(
+                TurnstileVerifier(
+                    settings.turnstile_site_key,
+                    settings.turnstile_secret_key,
+                    policy.origins,
+                )
+                if settings.turnstile_site_key and settings.turnstile_secret_key
+                else None
+            ),
         )
         return IdentityHttpDependencies(
             sessions,
