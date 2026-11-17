@@ -1213,7 +1213,7 @@ export type NewListingImage = {
 /**
  * OfferRevisionRequest
  *
- * Submit/revise an offer without plaintext notes or payment behavior.
+ * Submit/revise an offer that remains exact in browser JSON.
  */
 export type OfferRevisionRequest = {
     /**

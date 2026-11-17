@@ -58,6 +58,22 @@ def test_browser_inbox_and_entry_query_strings_parse_to_bounded_integers(
     assert captured[-1].after_sequence == 0 and captured[-1].page_size == size
 
 
+@pytest.mark.parametrize("size", [20, 50, 100])
+@pytest.mark.parametrize("group_by", [None, "item", "person"])
+def test_inbox_rejects_offsets_outside_postgresql_range(query_client, size, group_by):
+    """Valid boundary pages reach the service; overflow is rejected before SQL."""
+    client, captured = query_client
+    last_page = (2**63 - 1) // size + 1
+    group = f"&group_by={group_by}" if group_by else ""
+    valid = client.get(f"/conversations?page={last_page}&page_size={size}{group}")
+    assert valid.status_code == 200
+    assert captured[-1].page == last_page
+    count = len(captured)
+    invalid = client.get(f"/conversations?page={last_page + 1}&page_size={size}{group}")
+    assert invalid.status_code == 422
+    assert len(captured) == count
+
+
 @pytest.mark.parametrize(
     "query",
     [

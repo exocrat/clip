@@ -79,6 +79,11 @@ class Settings(BaseSettings):
     image_bucket: str | None = None
     image_region: str | None = None
     image_key_prefix: str | None = None
+    # In-process daily reclamation of abandoned image-upload objects (issue #69).
+    # Enabled by default so a normal API deploy also runs the cleanup; set
+    # CLIP_IMAGE_CLEANUP_ENABLED=false to turn it off without a code change.
+    image_cleanup_enabled: bool = True
+    image_cleanup_interval_seconds: int = 24 * 60 * 60
     development_auth: bool = False
     # Optional dedicated tuple-row pool for Conversations; otherwise the shared
     # database URL supplies its connection information at application composition.

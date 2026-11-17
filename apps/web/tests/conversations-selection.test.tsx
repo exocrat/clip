@@ -77,6 +77,32 @@ describe('seller selection in a Sale Listing conversation', () => {
     expect(selectBuyer.mock.calls[0]).toEqual(selectBuyer.mock.calls[1]);
   });
 
+  it('blocks clearing another buyer while a selection is unconfirmed', async () => {
+    const selectBuyer = vi.fn().mockResolvedValueOnce({ kind: 'dependency' })
+      .mockResolvedValueOnce({ kind: 'selected', listing: state({ selected_buyer_id: buyerId, selected_conversation_id: conversationId }) });
+    renderSelection({ readOwnedListing: vi.fn(async () => state({ selected_buyer_id: 'other-buyer' })), selectBuyer });
+    fireEvent.click(await screen.findByRole('button', { name: 'Select this buyer instead' }));
+    await screen.findByText('Selection could not be confirmed. Retry this same attempt.');
+    expect((screen.getByRole('button', { name: 'Clear selected buyer' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Clear selected buyer' }));
+    expect(selectBuyer).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry selection' }));
+    await screen.findByText('This buyer is selected for your private tracking.');
+    expect(selectBuyer.mock.calls[0]).toEqual(selectBuyer.mock.calls[1]);
+  });
+
+  it('allows retrying an unconfirmed clear of the current buyer', async () => {
+    const selectBuyer = vi.fn().mockResolvedValueOnce({ kind: 'dependency' })
+      .mockResolvedValueOnce({ kind: 'selected', listing: state() });
+    renderSelection({ readOwnedListing: vi.fn(async () => state({ selected_buyer_id: buyerId, selected_conversation_id: conversationId })), selectBuyer });
+    fireEvent.click(await screen.findByRole('button', { name: 'Clear selected buyer' }));
+    await screen.findByText('Selection could not be confirmed. Retry this same attempt.');
+    fireEvent.click(screen.getByRole('button', { name: 'Retry selection' }));
+    await screen.findByRole('button', { name: 'Select this buyer' });
+    expect(selectBuyer.mock.calls[0]).toEqual(selectBuyer.mock.calls[1]);
+    expect(selectBuyer.mock.calls[1][1].buyer_id).toBeNull();
+  });
+
   it('refreshes after a revision conflict and uses the new revision for a new attempt', async () => {
     let reads = 0;
     const readOwnedListing = vi.fn(async () => state({ revision: ++reads === 1 ? 7 : 8 }));

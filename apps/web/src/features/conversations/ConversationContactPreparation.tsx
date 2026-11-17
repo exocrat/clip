@@ -58,7 +58,7 @@ export function ConversationContactPreparation({ conversationId, api, canShare, 
     }
   }
   async function confirm() {
-    if (!review || !fields.length || busy) return;
+    if (!review || !fields.length || busy || retryOperationId || !canShare) return;
     const controller = new AbortController();
     const operationId = crypto.randomUUID();
     active.current = controller;
@@ -96,6 +96,9 @@ export function ConversationContactPreparation({ conversationId, api, canShare, 
     try {
       await onRetry(retryOperationId);
       setRetryOperationId(null);
+      setOptions(null);
+      setFields([]);
+      setReview(false);
       setMessage('Encrypted contact details sent.');
     } catch {
       setMessage('The share is still unconfirmed. Retry this same share or refresh the conversation.');
@@ -108,7 +111,7 @@ export function ConversationContactPreparation({ conversationId, api, canShare, 
     </div>
     {!canShare ? <p role="status">Set up encryption in this conversation before sharing contact details.</p> : null}
     {retryOperationId ? <div className="conversation-contact-preparation__actions"><Button disabled={busy || !canShare} onClick={() => void retryShare()} variant="secondary">Retry this contact share</Button></div> : null}
-    {!options ? <div className="conversation-contact-preparation__actions"><Button disabled={busy} onClick={() => void load()}>Choose contact details</Button></div> : review ? <>
+    {retryOperationId ? null : !options ? <div className="conversation-contact-preparation__actions"><Button disabled={busy} onClick={() => void load()}>Choose contact details</Button></div> : review ? <>
       <p className="conversation-contact-preparation__review">Confirm for this conversation: {choices.filter((choice) => fields.includes(choice.field)).map((choice) => choice.label).join(', ')}.</p>
       <div className="conversation-contact-preparation__actions">
         <Button disabled={busy || !canShare} onClick={() => void confirm()}>Confirm and send encrypted details</Button>

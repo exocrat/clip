@@ -80,11 +80,14 @@ describe('explicit own-contact preparation', () => {
     expect(screen.queryByText('private contact value')).toBeNull();
     expect(screen.queryByText('synthetic-contact@example.invalid')).toBeNull();
 
+    expect(screen.queryByRole('button', { name: 'Confirm and send encrypted details' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Cancel' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Retry this contact share' }));
     await screen.findByText('Encrypted contact details sent.');
     expect(api.prepareOwnContacts).toHaveBeenCalledTimes(1);
     expect(onShare).toHaveBeenCalledTimes(1);
     expect(onRetry).toHaveBeenCalledExactlyOnceWith('22222222-2222-4222-8222-222222222222');
+    expect(screen.getByRole('button', { name: 'Choose contact details' })).toBeTruthy();
   });
 
   it('validates the selected-only API response and passes exact fields to the member route', async () => {

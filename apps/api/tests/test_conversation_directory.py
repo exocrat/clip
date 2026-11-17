@@ -73,6 +73,40 @@ def prekey(key_id: int, *, kem: bool = False) -> PublicPreKeyMaterial:
     )
 
 
+async def seed_peer_conversation(pool, peer_id):
+    """Create a fresh member and a conversation whose peer (counterparty) is peer_id.
+
+    Used to exercise several distinct members reserving against one peer's shared
+    one-time prekey pool, since `seed_thread` always invents a brand-new peer.
+    """
+    member_id, conversation_id, request_id = uuid4(), uuid4(), uuid4()
+    async with pool.connection() as connection:
+        async with connection.transaction():
+            await connection.execute(
+                "INSERT INTO identity.users (id, account_class, status) "
+                "VALUES (%s, 'regular', 'active')",
+                (member_id,),
+            )
+            await connection.execute(
+                "INSERT INTO search.wanted_requests "
+                "(id, author_id, title, description, category_code, status) "
+                "VALUES (%s, %s, 'Synthetic request', 'Test-only request', %s, 'open')",
+                (request_id, member_id, "other"),
+            )
+            await connection.execute(
+                "INSERT INTO conversations.threads "
+                "(id, wanted_request_id, initiator_id, counterparty_id) "
+                "VALUES (%s, %s, %s, %s)",
+                (conversation_id, request_id, member_id, peer_id),
+            )
+            await connection.execute(
+                "INSERT INTO conversations.members (conversation_id, user_id) "
+                "VALUES (%s, %s), (%s, %s)",
+                (conversation_id, member_id, conversation_id, peer_id),
+            )
+    return member_id, conversation_id
+
+
 def test_own_key_lookup_distinguishes_first_use_rotation_and_retired_state():
     async def scenario(pool):
         from test_thread_creation import seed_users_and_listing
@@ -378,12 +412,13 @@ def test_prekey_batches_atomic_retry_reservation_depletion_and_target_conflict()
             await keys.consume_member_prekeys(caller(bob), thread, reservation)
             == selected
         )
-        depleted = await keys.consume_member_prekeys(
+        # A fresh operation_id from the same member/conversation must reuse the
+        # single outstanding reservation rather than consume another of the peer's
+        # one-time prekeys, so one member cannot drain the shared pool.
+        reused = await keys.consume_member_prekeys(
             caller(bob), thread, PreKeyBundleRequest(operation_id=uuid4())
         )
-        assert (
-            depleted.ec_one_time_prekey is None and depleted.kem_one_time_prekey is None
-        )
+        assert reused == selected
         assert (await keys.read_own_inventory(caller(alice))).ec_one_time_count == 0
         # Replaying publication returns its original result, not today's depleted count.
         assert await keys.publish_own_prekeys(caller(alice), batch) == result
@@ -395,9 +430,65 @@ def test_prekey_batches_atomic_retry_reservation_depletion_and_target_conflict()
     run_scenario(scenario)
 
 
-def test_concurrent_prekey_consumers_never_reserve_the_same_key():
+def test_one_member_cannot_drain_a_peers_shared_one_time_prekeys():
+    """A member issuing many fresh operation IDs consumes at most one of the
+    peer's one-time prekeys, so the shared pool stays available to other members'
+    first contact instead of collapsing onto the last-resort prekey (issue #62)."""
+
     async def scenario(pool):
         alice, bob, _, thread, *_ = await seed_thread(pool)
+        keys = PostgresKeyDirectory(pool)
+        await keys.register_own_key(caller(alice), public_bundle())
+        await keys.publish_own_prekeys(
+            caller(alice),
+            PublicPreKeyBatchRequest(
+                key_version=2,
+                prekeys=[
+                    prekey(1),
+                    prekey(2),
+                    prekey(3),
+                    prekey(1, kem=True),
+                    prekey(2, kem=True),
+                    prekey(3, kem=True),
+                ],
+                operation_id=uuid4(),
+            ),
+        )
+        assert (await keys.read_own_inventory(caller(alice))).ec_one_time_count == 3
+
+        # Bob issues five distinct operation IDs for the same conversation; only
+        # the first reserves a prekey and the rest reuse that single grant.
+        grants = [
+            await keys.consume_member_prekeys(
+                caller(bob), thread, PreKeyBundleRequest(operation_id=uuid4())
+            )
+            for _ in range(5)
+        ]
+        assert all(grant == grants[0] for grant in grants)
+        assert grants[0].ec_one_time_prekey is not None
+        # Only one ec and one kem prekey were consumed; the pool is not drained.
+        assert (await keys.read_own_inventory(caller(alice))).ec_one_time_count == 2
+
+        # A different member on another conversation with alice still receives a
+        # distinct one-time prekey rather than the depleted last-resort fallback.
+        carol, thread2 = await seed_peer_conversation(pool, alice)
+        carol_grant = await keys.consume_member_prekeys(
+            caller(carol), thread2, PreKeyBundleRequest(operation_id=uuid4())
+        )
+        assert carol_grant.ec_one_time_prekey is not None
+        assert (
+            carol_grant.ec_one_time_prekey.key_id != grants[0].ec_one_time_prekey.key_id
+        )
+
+    run_scenario(scenario)
+
+
+def test_concurrent_prekey_consumers_never_reserve_the_same_key():
+    async def scenario(pool):
+        # Two distinct members racing against one peer's pool must still receive
+        # different one-time prekeys (the peer-account lock prevents double-spend).
+        # A single member cannot grab two keys; that is covered by the reuse tests.
+        alice, *_ = await seed_thread(pool)
         keys = PostgresKeyDirectory(pool)
         await keys.register_own_key(caller(alice), public_bundle())
         await keys.publish_own_prekeys(
@@ -406,13 +497,15 @@ def test_concurrent_prekey_consumers_never_reserve_the_same_key():
                 key_version=2, prekeys=[prekey(1), prekey(2)], operation_id=uuid4()
             ),
         )
+        carol, thread_c = await seed_peer_conversation(pool, alice)
+        dave, thread_d = await seed_peer_conversation(pool, alice)
         results = await asyncio.gather(
-            *(
-                keys.consume_member_prekeys(
-                    caller(bob), thread, PreKeyBundleRequest(operation_id=uuid4())
-                )
-                for _ in range(3)
-            )
+            keys.consume_member_prekeys(
+                caller(carol), thread_c, PreKeyBundleRequest(operation_id=uuid4())
+            ),
+            keys.consume_member_prekeys(
+                caller(dave), thread_d, PreKeyBundleRequest(operation_id=uuid4())
+            ),
         )
         ids = [
             result.ec_one_time_prekey.key_id

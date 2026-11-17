@@ -93,7 +93,7 @@ class PostgresOfferOperations:
             invalid |= (
                 request.amount_paise is None
                 or request.offer_id is not None
-                or request.amount_paise > 9_223_372_036_854_775_807
+                or request.amount_paise > 9_007_199_254_740_991
             )
         else:
             invalid |= (

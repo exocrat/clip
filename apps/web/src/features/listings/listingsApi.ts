@@ -40,9 +40,17 @@ export const publicListingsDemo = import.meta.env.VITE_LISTINGS_PUBLIC_DEMO === 
 export const isolatedListingsDemo =
   import.meta.env.DEV && import.meta.env.VITE_LISTINGS_ISOLATED_DEMO === 'true';
 
+/**
+ * The per-account image quota counts reserved bytes until a once-daily cleanup
+ * job reclaims cancelled or expired uploads (a planned, documented limitation),
+ * so the seller is told to remove images and retry after cleanup has run.
+ */
+export const ACCOUNT_IMAGE_QUOTA_MESSAGE =
+  'You have uploaded too many images. Please delete a few images from your listings and try again in a few days.';
+
 /** Keep failures actionable without reflecting raw API/provider diagnostics. */
 export class ListingsApiError extends Error {
-  constructor(public readonly status: number, code?: string) {
+  constructor(public readonly status: number, public readonly code?: string) {
     const messages: Record<number, string> = {
       401: 'Your session is missing or expired. Sign in again before continuing.',
       403: 'This account is not allowed to perform this action.',
@@ -55,7 +63,9 @@ export class ListingsApiError extends Error {
     };
     super(code === 'demo_listing_limit_reached'
       ? 'This isolated demo has reached its ten-listing limit. Stop and restart it to begin a fresh run.'
-      : messages[status] ?? 'The request could not be completed. Please try again.');
+      : code === 'account_image_quota_exceeded'
+        ? ACCOUNT_IMAGE_QUOTA_MESSAGE
+        : messages[status] ?? 'The request could not be completed. Please try again.');
   }
 }
 
@@ -100,7 +110,8 @@ export async function listingsRequest<T>(
         error?: { details?: Array<{ code?: string }> };
       };
       code = payload.error?.details?.find((detail) =>
-        detail.code === 'demo_listing_limit_reached'
+        detail.code === 'demo_listing_limit_reached' ||
+        detail.code === 'account_image_quota_exceeded'
       )?.code;
     } catch {
       // An unstructured error body must not replace the safe status message.
@@ -303,7 +314,11 @@ export async function uploadListingImage(
     instruction = await createImageUpload(requestBody, signal);
   } catch (error) {
     if (error instanceof ListingsApiError && error.status === 409) {
-      throw new ListingImageFinalError('This photo upload expired. Remove it and choose the photo again.');
+      throw new ListingImageFinalError(
+        error.code === 'account_image_quota_exceeded'
+          ? ACCOUNT_IMAGE_QUOTA_MESSAGE
+          : 'This photo upload expired. Remove it and choose the photo again.',
+      );
     }
     throw error;
   }
@@ -317,7 +332,11 @@ export async function uploadListingImage(
       instruction = await createImageUpload(requestBody, signal);
     } catch (error) {
       if (error instanceof ListingsApiError && error.status === 409) {
-        throw new ListingImageFinalError('This photo upload expired. Remove it and choose the photo again.');
+        throw new ListingImageFinalError(
+          error.code === 'account_image_quota_exceeded'
+            ? ACCOUNT_IMAGE_QUOTA_MESSAGE
+            : 'This photo upload expired. Remove it and choose the photo again.',
+        );
       }
       throw error;
     }
