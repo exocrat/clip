@@ -2,6 +2,10 @@
 
 > **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
 
+### Issue #71 conversation retries — 2026-11-17 16:02:11 UTC
+
+Aditya requested the fix on the current branch. Unconfirmed buyer-selection commands now block the alternate clear action and remain retryable, including a pending clear; unconfirmed contact shares expose only the same-operation retry and reset the form after success. Focused frontend tests: 14 passed; frontend typecheck and diff whitespace check passed. Human verification and Conversations owner review remain pending.
+
 ### Issues #63 and #66 — 2026-11-17 12:37:55 UTC
 
 Aditya requested both fixes on the pagination branch. Offer submission now rejects amounts outside JavaScript safe integer precision while preserving the separate listing cap; regenerated contracts and retained the internal guard. Key setup reports rate limiting without hiding marketplace content and retains explicit retry; CSRF transport preserves 429. Focused API/contract checks 56 passed, UI checks 10 passed plus 5 after 429 transport coverage, contract generation check, frontend typecheck/lint and Python formatting passed. Existing unsafe offer records were not migrated; live retest, human verification and affected-owner review remain pending.

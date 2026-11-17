@@ -85,7 +85,7 @@ export function ConversationListingSelection({ listingId, conversationId, buyerI
   }, [refresh, saving, pendingCommand]);
 
   const submit = async (clear = false) => {
-    if (!listing || saving) return;
+    if (!listing || saving || (clear && pendingCommand)) return;
     const command = pendingCommand ?? {
       buyer_id: clear ? null : buyerId,
       conversation_id: clear ? null : conversationId,
@@ -135,12 +135,12 @@ export function ConversationListingSelection({ listingId, conversationId, buyerI
       {!loading && !loadError && listing && selectedForThisBuyer ? <p role="status">
         This buyer is selected for your private tracking.
       </p> : null}
-      {!loading && !loadError && listing && !selectionComplete ? (
+      {!loading && !loadError && listing && (!selectionComplete || pendingCommand) ? (
         <Button disabled={saving} onClick={() => void submit()}>
           {saving ? 'Selecting…' : pendingCommand ? 'Retry selection' : listing.selected_buyer_id && !selectedForThisBuyer ? 'Select this buyer instead' : 'Select this buyer'}
         </Button>
       ) : null}
-      {!loading && !loadError && listing?.selected_buyer_id ? <Button disabled={saving} variant="secondary" onClick={() => void submit(true)}>Clear selected buyer</Button> : null}
+      {!loading && !loadError && listing?.selected_buyer_id ? <Button disabled={saving || !!pendingCommand} variant="secondary" onClick={() => void submit(true)}>Clear selected buyer</Button> : null}
       {message ? <p role="status">{message}</p> : null}
       <p>Selection is private to you and leaves availability unchanged. Mark as done deal separately when the listing should become unavailable.</p>
     </section>
