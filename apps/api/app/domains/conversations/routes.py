@@ -6,7 +6,7 @@ from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request, Response
-from pydantic import field_validator
+from pydantic import field_validator, model_validator
 from psycopg_pool import AsyncConnectionPool
 
 from app.contracts.domain_types import (
@@ -73,6 +73,13 @@ class ConversationHttpQuery(ConversationQuery):
     def exact_integer_query(cls, value: Any) -> Any:
         """Keep pagination and money values exact across HTTP string parsing."""
         return _http_integer(value)
+
+    @model_validator(mode="after")
+    def bounded_offset(self) -> "ConversationHttpQuery":
+        """Reject page offsets PostgreSQL cannot represent before querying storage."""
+        if (self.page - 1) * self.page_size > 2**63 - 1:
+            raise ValueError("Page outside supported domain")
+        return self
 
 
 class EntryHttpQuery(EntryQuery):

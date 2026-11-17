@@ -40,6 +40,17 @@ Optional work must not displace required functionality, security, NFR evaluation
 
 Payment processing or verification; delivery or pickup coordination; ratings; auctions; partial quantity sales; atomic swaps; native mobile apps; offline use; multilingual UI; WhatsApp listing creation; automated pricing; comprehensive moderation; active multi-region serving; and a separate search service as an MVP dependency.
 
+**Accepted project scope clarification, 2026-11-17:** Comprehensive bot protection,
+including site-wide managed bot-protection services, and
+guaranteed availability under sustained automated abuse or volumetric
+denial-of-service traffic are outside the project's scope. The targeted
+Turnstile sign-in recovery challenge for #52/#65 is included in this correction. Application request
+limits and isolation between anonymous traffic and authenticated accounts remain
+part of the implemented service. This clarification does not waive existing
+authentication, authorization, or FR/NFR acceptance targets under their specified
+normal/reference workloads. The submitted PRD is preserved unchanged. See the
+[request-budget and scope decision](../decisions/api-rate-limit-isolation.md).
+
 ## 3. Functional requirements
 
 The requirement IDs and intent below were checked against the submitted `docs/source/ICC_Project_PRD_FINAL.pdf`. The table is a concise paraphrase, not a replacement for the PRD’s full wording. Later contracts, tasks, and tests/evidence must trace to these IDs and preserve the PRD intent. Any discrepancy found while producing those documents must be recorded and resolved rather than silently normalized.

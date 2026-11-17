@@ -104,14 +104,14 @@ resource "aws_ecs_task_definition" "api_release" {
       ] : [], var.identity_runtime_enabled ? [
       { name = "CLIP_NOTIFICATION_WORKER_ENABLED", value = tostring(var.notification_worker_enabled) },
       { name = "CLIP_NOTIFICATION_ALLOW_UNLISTED_RECIPIENTS", value = tostring(var.notification_allow_unlisted_recipients) },
-    ] : [], local.database_proxy_environment, local.pgbouncer_environment)
+    ] : [], local.database_proxy_environment, local.pgbouncer_environment, local.turnstile_environment)
     secrets = concat(var.identity_runtime_enabled ? [{
       name      = "CLIP_DATABASE_URL"
       valueFrom = "arn:aws:ssm:${local.region}:${local.account_id}:parameter/clip/test/listings-database-url"
       }] : [], var.conversations_runtime_enabled ? [{
       name      = "CLIP_DATABASE_DSN"
       valueFrom = "arn:aws:ssm:${local.region}:${local.account_id}:parameter/clip/test/conversations/database-url"
-    }] : [])
+    }] : [], local.turnstile_secrets)
     healthCheck = {
       command = [
         "CMD",
@@ -145,6 +145,10 @@ resource "aws_ecs_task_definition" "api_release" {
   } : {})])
 
   lifecycle {
+    precondition {
+      condition     = !local.turnstile_enabled || var.identity_runtime_enabled
+      error_message = "Turnstile sign-in recovery requires the real Identity runtime."
+    }
     precondition {
       condition     = (!var.conversations_runtime_enabled && !var.hybrid_runtime_enabled) || var.identity_runtime_enabled
       error_message = "Consumer runtime options require the real Identity profile; fake auth is not an integration path."
@@ -219,6 +223,7 @@ resource "aws_ecs_service" "api" {
     aws_ecs_cluster_capacity_providers.shared,
     aws_iam_role_policy.api_identity_email,
     aws_iam_role_policy.api_execution,
+    aws_iam_role_policy.api_turnstile_secret,
     aws_lb_listener.exp03_https,
   ]
   tags = { Name = "clip-test-api-${local.region}-pd16" }

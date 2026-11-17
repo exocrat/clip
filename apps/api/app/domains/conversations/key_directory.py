@@ -97,6 +97,38 @@ class PostgresKeyDirectory:
         )
 
     @staticmethod
+    async def _existing_reservation_for_version(
+        connection: AsyncConnection[Any],
+        caller: CallerContext,
+        request: dict[str, Any],
+        key_version: int,
+    ) -> dict[str, Any] | None:
+        """Return this caller's stored reservation for the peer's current key, if any.
+
+        Unlike `_replay`, which matches a single `operation_id`, this matches the
+        request payload itself (the `{kind, conversation_id}` reservation) across
+        every operation_id the caller has used, so a fresh operation_id reuses one
+        outstanding grant instead of consuming another one-time prekey and draining
+        the peer's shared pool. The match is scoped to the peer's current key
+        version: after the peer replaces (rotates) its key, earlier reservations
+        hold a now-retired bundle and must not be served, so this returns None and
+        the caller reserves afresh against the new key. Callers must already hold
+        the serializing lock that guards the underlying resource so a concurrent
+        insert is visible here.
+        """
+        cursor = await connection.execute(
+            "SELECT result FROM conversations.key_directory_operations "
+            "WHERE user_id = %s AND request = %s "
+            "AND (result -> 'key_bundle' ->> 'key_version')::int = %s "
+            "ORDER BY operation_id LIMIT 1",
+            (caller.user_id, Jsonb(request), key_version),
+        )
+        row = await cursor.fetchone()
+        if row is None:
+            return None
+        return dict(row[0])
+
+    @staticmethod
     async def _active(
         connection: AsyncConnection[Any], user_id: UUID
     ) -> tuple[Any, ...]:
@@ -340,7 +372,17 @@ class PostgresKeyDirectory:
     async def consume_member_prekeys(
         self, caller: CallerContext, conversation_id: UUID, payload: PreKeyBundleRequest
     ) -> MemberPreKeyBundle:
-        """Reserve each peer OTP at most once; exact retries reuse their stored reservation."""
+        """Reserve one peer OTP per (caller, conversation); retries reuse that grant.
+
+        A fresh ``operation_id`` no longer consumes an additional one-time prekey
+        from the peer's shared pool: once this caller has reserved for this
+        conversation, every later request for the same conversation returns that
+        same reservation. This bounds a single member of a single conversation to
+        one of the peer's one-time prekeys, so a member cannot drain the pool (and
+        force other users' first contact onto the last-resort prekey) merely by
+        issuing new operation IDs. Exact ``operation_id`` retries remain idempotent
+        via ``_replay``; the request payload itself is the reuse key.
+        """
         request = {"kind": "consume", "conversation_id": str(conversation_id)}
         async with self._transaction(caller) as connection:
             peer = await self._peer(connection, caller, conversation_id)
@@ -349,8 +391,15 @@ class PostgresKeyDirectory:
             )
             if replay is not None:
                 return MemberPreKeyBundle.model_validate(replay)
+            # Serialize on the peer's account so a concurrent reservation for the
+            # same conversation has committed and is visible to the lookup below.
             await self._lock(connection, f"key-account:{peer}")
             key = await self._active(connection, peer)
+            existing = await self._existing_reservation_for_version(
+                connection, caller, request, key[1]
+            )
+            if existing is not None:
+                return MemberPreKeyBundle.model_validate(existing)
             bundle = self._decode(key[2])
             reserved: dict[str, Any] = {}
             for key_type, field in (

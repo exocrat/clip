@@ -45,6 +45,34 @@ read_only_router = APIRouter()
 read_only_router.include_router(browse_router)
 
 
+class ListingTextValidation:
+    """Reject NUL in text before it reaches PostgreSQL or a storage adapter."""
+
+    @field_validator(
+        "title",
+        "description",
+        "category_code",
+        "condition_code",
+        "pickup_area",
+        mode="before",
+        check_fields=False,
+    )
+    @classmethod
+    def no_nul_text(cls, value: Any) -> Any:
+        """Keep valid text unchanged and reject PostgreSQL-incompatible NUL."""
+        if isinstance(value, str) and "\x00" in value:
+            raise ValueError("Invalid text")
+        return value
+
+
+class ValidatedListingCreate(ListingTextValidation, CreateListingRequest):
+    """Apply local input validation without changing generated contracts."""
+
+
+class ValidatedListingReplacement(ListingTextValidation, ListingReplacement):
+    """Apply the same text validation to listing replacements."""
+
+
 class ListingManagementPage(PageQuery):
     """Parse browser query strings strictly before applying the page contract."""
 
@@ -230,7 +258,7 @@ async def get_image_delivery(
     responses=_ERROR_RESPONSES,
 )
 async def create_listing(
-    body: CreateListingRequest,
+    body: ValidatedListingCreate,
     caller: Annotated[CallerContext, Depends(require_caller)],
     service: Annotated[ListingsService, Depends(_service)],
 ) -> ListingDetail:
@@ -291,7 +319,7 @@ async def list_my_listings(
 )
 async def replace_listing(
     listing_id: ListingId,
-    body: ListingReplacement,
+    body: ValidatedListingReplacement,
     caller: Annotated[CallerContext, Depends(require_caller)],
     service: Annotated[ListingsService, Depends(_service)],
 ) -> ListingDetail:

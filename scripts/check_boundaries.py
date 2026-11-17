@@ -70,6 +70,8 @@ COMPOSITION_IMPORTS: dict[str, frozenset[str]] = {
             "app.domains.listings.isolated_test.require_isolated_test_database",
             "app.domains.listings.isolated_test.IsolatedListingsTestIdentity",
             "app.domains.listings.isolated_test.isolated_test_caller",
+            "app.domains.listings.image_cleanup_scheduler",
+            "app.domains.listings.image_cleanup_scheduler.start",
         }
     ),
 }

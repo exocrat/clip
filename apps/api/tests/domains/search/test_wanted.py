@@ -225,3 +225,65 @@ def test_description_rejects_blank_or_excess_after_trim(text):
     values["description"] = text
     with pytest.raises(ValidationError):
         WantedCreate(**values)
+
+
+@pytest.mark.parametrize("field", ["title", "description", "category_code"])
+def test_wanted_create_and_patch_reject_nul(field):
+    """Neither new nor edited wanted text can carry NUL to storage."""
+    values = create_values()
+    values[field] = "test\x00value"
+    with pytest.raises(ValidationError):
+        WantedCreate(**values)
+    with pytest.raises(ValidationError):
+        WantedPatch(
+            expected_revision=1, operation_id=uuid4(), **{field: "test\x00value"}
+        )
+
+
+def test_wanted_search_and_draft_reject_nul():
+    """Search terms, category filters and transient draft titles reject NUL."""
+    from app.domains.search.wanted_models import DraftTitle, WantedDiscoveryPage
+
+    for params in ({"q": "bike\x00"}, {"category_code": ["books\x00"]}):
+        with pytest.raises(ValidationError):
+            WantedDiscoveryPage(**params)
+    with pytest.raises(ValidationError):
+        DraftTitle(draft_title="bike\x00")
+
+
+@pytest.mark.parametrize(
+    "method,path,body",
+    [
+        ("GET", "/wanted-requests?q=bike%00", None),
+        ("GET", "/wanted-requests?category_code=books%00", None),
+        (
+            "POST",
+            "/wanted-requests",
+            {"title": "bike\x00", "description": "wanted", "category_code": "books"},
+        ),
+        ("POST", "/wanted-requests/draft-matches", {"draft_title": "bike\x00"}),
+        (
+            "PATCH",
+            "/wanted-requests/10000000-0000-4000-8000-000000000001",
+            {"title": "bike\x00", "expected_revision": 1},
+        ),
+    ],
+)
+def test_wanted_http_rejects_nul(method, path, body):
+    """Real request parsing returns the safe validation envelope for NUL input."""
+    from app.domains.search.wanted_routes import draft_match_service
+
+    app = FastAPI()
+    install_error_handlers(app)
+    app.include_router(router)
+    app.dependency_overrides[require_caller] = lambda: CallerContext(
+        uuid4(), "regular", datetime.now(UTC) + timedelta(minutes=5)
+    )
+    app.dependency_overrides[wanted_service] = lambda: AsyncMock()
+    app.dependency_overrides[draft_match_service] = lambda: AsyncMock()
+    if body is not None and "draft_title" not in body:
+        body = body | {"operation_id": str(uuid4())}
+    with TestClient(app) as client:
+        response = client.request(method, path, json=body)
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "validation_error"

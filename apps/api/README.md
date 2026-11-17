@@ -89,7 +89,81 @@ startup never installs. Unknown provider names fail startup, and the API never
 falls back to fake success. Do not treat production configuration mode alone
 as evidence of a working or safe cloud deployment.
 
-Before session authentication, an additional per-peer ceiling of at least 3,600 reads and 200 writes per minute protects the identity boundary. It uses the server-provided transport peer (subject to the deployment’s trusted-proxy configuration), applies across users sharing that peer, and is also per process.
+## Request rate limits and project scope
+
+The normal API validates the session before choosing a request budget. Each
+authenticated account has its own rolling read/write allowance; requests without
+a valid session share an anonymous allowance for their server-provided transport
+peer. Anonymous requests do not consume the allowance of signed-in accounts on
+the same campus network, proxy or NAT. Failed cookies are still charged to the
+anonymous allowance, including requests rejected by Identity before a route runs.
+Cookies or submitted identity/forwarding headers alone cannot select an account
+allowance. The full API and session-only Listings runtime use the same policy.
+
+Counters remain bounded and per process, reset at restart, and are not shared
+across replicas. Peer addresses depend on the deployment's existing trusted-proxy
+configuration. Health and non-API static paths retain their documented exclusions.
+Identity's OTP policy is unchanged. Its existing sign-in source and password-target
+limits remain enforced, with one exceptional attempt admitted by a verified,
+locally consumed Turnstile proof on the three public sign-in operations. A proof
+does not clear history, authenticate an account, or bypass credential validation.
+
+Session verification precedes this budget decision, so these request budgets do
+not cap all session-validation work. They provide application request isolation,
+not comprehensive bot detection or capacity protection. Comprehensive bot
+protection and guaranteed availability under sustained automated abuse or
+volumetric denial-of-service traffic are **outside the project's scope**. This
+excludes site-wide managed bot protection; the targeted sign-in recovery
+challenge described below is included. Existing
+authentication, authorization and applicable FR/NFR targets under the specified
+normal/reference workload remain required. See the accepted
+[scope and isolation decision](../../docs/decisions/api-rate-limit-isolation.md).
+
+### Exceptional sign-in recovery (#52/#65)
+
+Configure `CLIP_TURNSTILE_SITE_KEY` and `CLIP_TURNSTILE_SECRET_KEY` together in the
+backend environment. The secret must be delivered through the approved secret
+store/runtime configuration, never a web build variable, source file or image.
+Neither setting activates a new cloud resource. An unconfigured runtime retains
+the original throttling and does **not** provide the complete #52/#65 fix.
+Production/test deployment must explicitly include both settings before retesting.
+The shared/test Terraform opt-in and one-time SSM setup are documented in the
+[deployment handoff](../../docs/environment/turnstile-deployment.md); only the
+public site key is passed as Terraform input.
+
+A refused `POST /auth/temporary/sessions`, `/auth/microsoft/login-attempts` or
+`/auth/microsoft/sessions` advertises the public site key in
+`X-CLIP-Challenge-Site-Key` on its 429 response. The web client opens a cancellable
+security-check dialog and, only after completion, resubmits that rejected operation
+once with `X-CLIP-Challenge-Token`. It does not replay uncertain/network-failed
+writes. Provider script loading is limited to ten seconds and the dialog to two
+minutes. Tokens stay in memory and are never stored or logged.
+
+The backend validates the proof at Cloudflare's fixed HTTPS Siteverify endpoint
+with at most four concurrent challenge verifications per API middleware instance,
+a three-second socket timeout, a bounded response, no redirects/proxy-secret
+forwarding, exact trusted hostname and action `clip_signin`. It then atomically
+records a domain-separated digest in existing `identity.auth_source_events` to
+prevent replay across workers for fifteen minutes, longer than the provider's
+five-minute token lifetime. The existing cleanup job retains expired source
+events for a further 24 hours before eligibility for deletion; its deployment
+remains a separate operational gate. No database migration is needed.
+A verified proof admits one operation through the API peer/source/target limits;
+normal password or Microsoft signature/nonce/account checks still decide sign-in.
+Further challenged guesses require fresh provider proofs, and neither successful
+sign-in nor cookie deletion clears abuse counters. Origin/TLS/body guards remain.
+
+Provider failures deny only that challenged operation with a safe 503; ordinary
+below-threshold sign-in does not contact Cloudflare. Challenged users depend on
+Cloudflare and browser access to `https://challenges.cloudflare.com`. If a CSP is
+introduced, its script/frame/connect policy must allow the widget as documented
+by Cloudflare. Keep pre-clearance disabled: this is not a site-wide clearance
+cookie or a replacement for account/session authorization. Configure only the
+approved site hostnames; local automation uses synthetic provider boundaries.
+These controls are a bounded recovery mechanism, not an assurance against
+challenge-solving services, password spraying with freshly solved proofs, or
+resource exhaustion. Local attended real-provider/Microsoft checks are recorded in the work log;
+deployed provider keys and production retesting remain separate verification gates.
 
 ## Tests
 

@@ -6,6 +6,7 @@ Proxy/TLS/source wiring and real browser/provider verification remain deployment
 checks; forwarded identity/IP headers are deliberately not trusted here.
 """
 
+from asyncio import Semaphore
 from dataclasses import dataclass, field
 from contextlib import AbstractAsyncContextManager
 from datetime import datetime
@@ -22,6 +23,7 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from app.core.errors import ERRORS, PublicError, error_response, install_error_handlers
 from app.core.logging import RequestLoggingMiddleware, request_stage
+from app.core.rate_limit import ApiRateLimiter
 from app.core.runtime_bindings import runtime_claims, runtime_scope
 from app.domains.identity.capabilities import Capability
 from app.domains.identity.microsoft import MicrosoftTokenValidator
@@ -162,9 +164,18 @@ class IdentityInvocationConnectionsMiddleware:
 class IdentityBrowserMiddleware:
     """Create trusted request context and enforce unsafe-request browser boundaries."""
 
-    def __init__(self, app: ASGIApp, sessions: IdentitySessions, policy: BrowserPolicy):
+    def __init__(
+        self,
+        app: ASGIApp,
+        sessions: IdentitySessions,
+        policy: BrowserPolicy,
+        rate_limiter: ApiRateLimiter | None = None,
+    ):
         """Bind explicit dependencies; all blocking storage runs outside event loop."""
         self.app, self.sessions, self.policy = app, sessions, policy
+        self.rate_limiter = rate_limiter
+        # Cap exceptional provider work without filling the normal worker pool.
+        self.challenge_slots = Semaphore(4)
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         """Bind this explicit runtime per request, isolated from parallel app scopes."""
@@ -187,12 +198,30 @@ class IdentityBrowserMiddleware:
             return
         scope.pop("clip.caller", None)
         scope.pop("clip.session", None)
+        scope.pop("clip.signin_challenged", None)
         request = Request(scope)
 
         async def no_store(message: Message) -> None:
             """Prevent intermediaries caching authentication/private responses."""
             if message["type"] == "http.response.start":
                 message = dict(message)
+                if (
+                    message["status"] == 429
+                    and challenge_path
+                    and self.sessions.challenge
+                ):
+                    message["headers"] = list(message.get("headers", [])) + [
+                        (
+                            b"x-clip-challenge-site-key",
+                            self.sessions.challenge.site_key.encode(),
+                        ),
+                    ]
+                    if not any(
+                        k.lower() == b"retry-after" for k, _ in message["headers"]
+                    ):
+                        # Credential/source windows are at most fifteen minutes;
+                        # preserve the API limiter's more precise header if present.
+                        message["headers"].append((b"retry-after", b"900"))
                 message["headers"] = [
                     (k, v)
                     for k, v in message.get("headers", [])
@@ -203,6 +232,11 @@ class IdentityBrowserMiddleware:
         unsafe = request.method not in {"GET", "HEAD", "OPTIONS"}
         raw_path = request.url.path
         path = raw_path[4:] if raw_path.startswith("/api/") else raw_path
+        challenge_path = request.method == "POST" and path in {
+            "/auth/temporary/sessions",
+            "/auth/microsoft/login-attempts",
+            "/auth/microsoft/sessions",
+        }
         development_peer = True
         if self.policy.development:
             try:
@@ -231,8 +265,32 @@ class IdentityBrowserMiddleware:
         )
         if denied:
             # Reject hostile transport/origin before any session read/idle update.
-            await error_response(request, ERRORS[403])(scope, receive, no_store)
+            rejection = self.rate_limiter.reject(scope) if self.rate_limiter else None
+            await (rejection or error_response(request, ERRORS[403]))(
+                scope, receive, no_store
+            )
             return
+        # Only server-verified, atomically consumed proofs admit one public
+        # credential operation through shared-IP/target throttles. Origin and
+        # transport checks above always run first. A cookie/header alone grants
+        # neither this exception nor an authenticated caller.
+        proof = (
+            request.headers.get("x-clip-challenge-token") if challenge_path else None
+        )
+        if proof and self.sessions.challenge:
+            if self.challenge_slots.locked():
+                await error_response(request, ERRORS[503])(scope, receive, no_store)
+                return
+            async with self.challenge_slots:
+                try:
+                    await run_in_threadpool(self.sessions.challenge.verify, proof)
+                    await run_in_threadpool(
+                        self.sessions.consume_signin_challenge, proof
+                    )
+                    scope["clip.signin_challenged"] = True
+                except PublicError as error:
+                    await error_response(request, error.spec)(scope, receive, no_store)
+                    return
         token = request.cookies.get(self.policy.session_cookie)
         failure = None
         if token:
@@ -245,6 +303,17 @@ class IdentityBrowserMiddleware:
                 scope["clip.session"] = identity
             except PublicError as error:
                 failure = error.spec
+        # Only a freshly validated session can obtain an account budget. Charge
+        # missing/failed cookies as anonymous before any early authentication or
+        # CSRF response, so rejected credentials cannot skip rate enforcement.
+        rejection = (
+            self.rate_limiter.reject(scope)
+            if self.rate_limiter and not scope.get("clip.signin_challenged")
+            else None
+        )
+        if rejection is not None:
+            await rejection(scope, receive, no_store)
+            return
         if unsafe and path not in PUBLIC_AUTH:
             if not token:
                 failure = ERRORS[401]
@@ -317,7 +386,12 @@ class IdentityReadDependencies:
             raise ValueError("Complete trusted Identity read dependencies required")
 
 
-def install_identity_reads(app: FastAPI, runtime: IdentityReadDependencies) -> None:
+def install_identity_reads(
+    app: FastAPI,
+    runtime: IdentityReadDependencies,
+    *,
+    rate_limiter: ApiRateLimiter | None = None,
+) -> None:
     """Reuse the session/browser boundary without mounting any Identity routes.
 
     Authentication still checks current SQL session/account state and updates the
@@ -331,7 +405,10 @@ def install_identity_reads(app: FastAPI, runtime: IdentityReadDependencies) -> N
     ):
         raise ValueError("Identity HTTP already installed")
     app.add_middleware(
-        IdentityBrowserMiddleware, sessions=runtime.sessions, policy=runtime.policy
+        IdentityBrowserMiddleware,
+        sessions=runtime.sessions,
+        policy=runtime.policy,
+        rate_limiter=rate_limiter,
     )
     if runtime.request_scope is not None:
         app.add_middleware(
@@ -373,6 +450,7 @@ def install_identity_http(
     runtime: IdentityHttpDependencies,
     *,
     path_prefix: str = "",
+    rate_limiter: ApiRateLimiter | None = None,
 ) -> None:
     """Install real auth routes and request-scoped caller policy into an existing app.
 
@@ -395,13 +473,24 @@ def install_identity_http(
 
     sessions, policy = runtime.sessions, runtime.policy
     sender, validator, clock = runtime.sender, runtime.validator, runtime.clock
-    app.add_middleware(IdentityBrowserMiddleware, sessions=sessions, policy=policy)
+    app.add_middleware(
+        IdentityBrowserMiddleware,
+        sessions=sessions,
+        policy=policy,
+        rate_limiter=rate_limiter,
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(policy.origins),
         allow_credentials=True,
         allow_methods=["GET", "POST", "DELETE", "PATCH", "PUT", "OPTIONS"],
-        allow_headers=["Content-Type", "X-CLIP-Request", "X-CSRF-Token"],
+        allow_headers=[
+            "Content-Type",
+            "X-CLIP-Request",
+            "X-CSRF-Token",
+            "X-CLIP-Challenge-Token",
+        ],
+        expose_headers=["X-CLIP-Challenge-Site-Key", "Retry-After"],
     )
 
     def source(request: Request) -> IPv4Address | IPv6Address:
@@ -460,7 +549,10 @@ def install_identity_http(
     )
     def attempt(request: Request, response: Response) -> MicrosoftLoginAttempt:
         """Begin bounded server nonce flow, setting only its private binding cookie."""
-        result = sessions.start_microsoft(source(request))
+        result = sessions.start_microsoft(
+            source(request),
+            challenged=request.scope.get("clip.signin_challenged", False),
+        )
         set_cookie(
             response,
             policy.attempt_cookie,
@@ -484,6 +576,7 @@ def install_identity_http(
             request.cookies.get(policy.attempt_cookie),
             source(request),
             validator,
+            challenged=request.scope.get("clip.signin_challenged", False),
         )
         response.delete_cookie(
             policy.attempt_cookie,
@@ -575,7 +668,12 @@ def install_identity_http(
         json_body(request)
         return grant(
             response,
-            sessions.password_login(payload.email, payload.password, source(request)),
+            sessions.password_login(
+                payload.email,
+                payload.password,
+                source(request),
+                challenged=request.scope.get("clip.signin_challenged", False),
+            ),
         )
 
     @app.post(

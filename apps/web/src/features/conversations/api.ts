@@ -1,3 +1,4 @@
+import { SessionFetchError } from '../../shared/http/sessionFetch';
 import type {
   ConversationEntry,
   ConversationSummary,
@@ -175,7 +176,8 @@ export class ConversationApi {
         headers: { Accept: 'application/json', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
         ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       });
-    } catch {
+    } catch (error) {
+      if (error instanceof SessionFetchError && error.status === 429) throw new ConversationApiError(429, 'http');
       throw new ConversationApiError(0, 'transport');
     }
     if (!response.ok) {

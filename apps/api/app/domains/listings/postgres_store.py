@@ -348,7 +348,15 @@ class PostgresListingsStore:
                     usage is None
                     or usage["reserved"] + request.size_bytes > MAX_ACCOUNT_IMAGE_BYTES
                 ):
-                    raise PublicError(ERRORS[409])
+                    # Distinguish the account-quota cap from other upload conflicts
+                    # so the client can show a clear "too many images" message. By
+                    # design the quota counts reserved bytes (including cancelled or
+                    # expired intents) until the daily cleanup job reclaims them, so
+                    # the message tells the seller to remove images and retry later.
+                    raise PublicError(
+                        ERRORS[409],
+                        (FieldError("size_bytes", "account_image_quota_exceeded"),),
+                    )
                 expires_at = now + timedelta(hours=24)
                 cursor = await connection.execute(
                     """

@@ -1105,12 +1105,13 @@ def test_prekey_depletion_rotation_retry_and_empty_draft_match(matrix_case):
     assert first.json()["kem_one_time_prekey"] is not None
     repeated = case.browser.request(method, path, headers=headers, json=body)
     assert repeated.status_code == 200 and repeated.json() == first.json()
-    depleted = case.browser.request(
+    reused = case.browser.request(
         method, path, headers=headers, json={"operation_id": str(uuid4())}
     )
-    assert depleted.status_code == 200
-    assert depleted.json()["ec_one_time_prekey"] is None
-    assert depleted.json()["kem_one_time_prekey"] is None
+    assert reused.status_code == 200
+    # A fresh operation_id for the same conversation and peer key version reuses
+    # the member's single reservation rather than draining another one-time prekey.
+    assert reused.json() == first.json()
     peer_headers = use(case.browser, case.peer)
     inventory = case.browser.get("/me/conversation-prekeys").json()
     assert inventory["ec_one_time_count"] == inventory["kem_one_time_count"] == 0
@@ -1268,8 +1269,12 @@ def test_concurrent_http_prekey_requests_reserve_each_key_once(matrix_case):
 
     responses = case.browser.portal.call(concurrent_requests)
     assert all(response.status_code == 200 for response in responses)
+    # Concurrent fresh operation_ids from the same member reuse one reservation,
+    # so both responses carry the same single one-time prekey instead of draining
+    # two keys from the peer's shared pool.
+    assert responses[0].json() == responses[1].json()
     for field in ("ec_one_time_prekey", "kem_one_time_prekey"):
-        assert sum(response.json()[field] is not None for response in responses) == 1
+        assert all(response.json()[field] is not None for response in responses)
     headers = use(case.browser, case.actor)
     before = fingerprint(case.state)
     for operation, original in zip(operations, responses, strict=True):

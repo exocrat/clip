@@ -2136,9 +2136,10 @@
       },
       "OfferRevisionRequest": {
         "additionalProperties": false,
-        "description": "Submit/revise an offer without plaintext notes or payment behavior.",
+        "description": "Submit/revise an offer that remains exact in browser JSON.",
         "properties": {
           "amount_paise": {
+            "maximum": 9007199254740991.0,
             "minimum": 0.0,
             "multipleOf": 100.0,
             "title": "Amount Paise",

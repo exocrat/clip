@@ -67,6 +67,9 @@ class Settings(BaseSettings):
     # Hosted real Identity startup is an explicit test-environment capability.
     # Defaults preserve the liveness-only, Identity-unbound ASGI entry point.
     identity_runtime_enabled: bool = False
+    # Paired opt-in: the secret stays backend-only; the site key is public.
+    turnstile_site_key: str | None = None
+    turnstile_secret_key: SecretStr | None = None
     # Isolated restore verification uses its own fixed origin and Identity DB.
     nfr07_restore_smoke_enabled: bool = False
     identity_browser_origins: tuple[str, ...] = Field(default=(), repr=False)
@@ -79,10 +82,22 @@ class Settings(BaseSettings):
     image_bucket: str | None = None
     image_region: str | None = None
     image_key_prefix: str | None = None
+    # In-process daily reclamation of abandoned image-upload objects (issue #69).
+    # Enabled by default so a normal API deploy also runs the cleanup; set
+    # CLIP_IMAGE_CLEANUP_ENABLED=false to turn it off without a code change.
+    image_cleanup_enabled: bool = True
+    image_cleanup_interval_seconds: int = 24 * 60 * 60
     development_auth: bool = False
     # Optional dedicated tuple-row pool for Conversations; otherwise the shared
     # database URL supplies its connection information at application composition.
     database_dsn: SecretStr | None = None
+
+    @model_validator(mode="after")
+    def validate_turnstile_keys(self) -> Self:
+        """Reject partial challenge configuration without exposing either key."""
+        if bool(self.turnstile_site_key) != bool(self.turnstile_secret_key):
+            raise ValueError("Both Turnstile keys must be configured together")
+        return self
 
     @field_validator("database_dsn")
     @classmethod

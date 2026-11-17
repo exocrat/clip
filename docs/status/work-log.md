@@ -1,6 +1,249 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### Issue 55 key-replacement repair — 2026-11-17 10:54:05 UTC
+
+Conversation client now displays previous-key incoming messages as unavailable and continues to current-key entries; accepted sends are no longer reported failed when the subsequent refresh fails. Real SDK synthetic tests cover key replacement, both directions and session restart; focused page tests cover old-key skipping and current-key failures. Frontend aggregate passed 519 tests (3 skipped), lint, typecheck and build. A three-profile Chromium replay with real local PostgreSQL and encryption passed key replacement, new messages in both directions and reloads, both with the old browser closed and with it open; the latter required stopping the old browser when its published key changes. The legacy fixture required temporary local adaptation for newer availability, Handle and Listings wiring; its synthetic image endpoint returned 503 and was outside this check. No cloud changes; independent peer review remains required.
+
 > **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
+
+### Issue #73 image metadata stripping — 2026-11-17 20:36:26 UTC
+
+Reproduced the finding in code (listing photos were served byte-for-byte to any signed-in viewer, including temporary accounts, with EXIF/GPS/device-serial intact). Aditya initially leaned to "user responsibility" but, after a measured benchmark on the real `c7i-flex.large` host (Xeon 8488C: marker/chunk strip 4.6 ms vs full re-encode 143.7 ms), approved a server-side strip. Implemented in `apps/api/app/domains/listings/s3_storage.py`: `inspect_object` now sanitizes each image on confirm and stores the cleaned copy before any delivery — JPEG/PNG via a no-pixel-decode marker/chunk strip (drops all APPn/COM + PNG text/eXIf/tIME chunks and any data after EOI/IEND, removing GPS/EXIF/XMP/ICC/thumbnail and appended polyglot payloads), WEBP and any non-re-validating strip via a bounded full re-encode fallback; every result is re-validated before storage so a strip bug cannot store a corrupt image. `_validate_image` now also rejects multi-frame/animated images (animated WEBP, APNG). The returned size stays the uploaded size so the upload-integrity invariant (stored == declared) holds; clean images are not rewritten. Recorded the decision and benchmark in [image-metadata-stripping](../decisions/image-metadata-stripping.md). Also removed a now-unused `# type: ignore[import-untyped]` on the PIL import (Pillow 13 ships types) surfaced by #61. Checks: `test_s3_storage.py` + `test_image_upload_service.py` 45 passed; an end-to-end smoke confirmed GPS/model/EXIF/appended data removed with pixels preserved; mypy clean on the module; Black clean. Delivery `Content-Type` forcing on the signed GET is a noted marginal follow-up. Owner: Listings (Suraj); live retest and mentor severity adjudication remain open.
+
+### Issue #61 Pillow upgrade — 2026-11-17 19:54:25 UTC
+
+Bumped the only untrusted-image parser from `pillow==12.3.0` to `13.0.0` in `pyproject.toml` and relocked (`uv lock --upgrade-package pillow`; only Pillow changed), closing all 40 published advisories the scanners reported (all fixed in 13.0.0). Pillow is used solely by `_validate_image` in `apps/api/app/domains/listings/s3_storage.py` (`Image.open(formats=("JPEG","PNG","WEBP"))`, `size`, `format`, `verify()`, with `UnidentifiedImageError`/`DecompressionBombError` handling) — all stable across the major bump. Verified: a direct smoke validated real PNG/JPEG/WEBP and rejected garbage identically under 13.0.0; focused image tests `test_s3_storage.py` + `test_image_upload_service.py` passed 41. This is a defense-in-depth upgrade; it does not by itself change the issue's disputed `invalid` validity classification, which remains a mentor question. No label/comment change or deployment performed.
+
+### Issue #69 image-quota accounting and daily cleanup — 2026-11-17 16:54:14 UTC
+
+Aditya decided the resolution on the current branch. The 200 MiB per-account image quota continues to count reserved bytes over all `image_uploads` rows (including cancelled/expired intents) until a planned once-daily job reclaims them via the existing `cleanup_image_objects` path; this preserves the storage guarantee against an upload→cancel→repeat orphan-object loop. `create_image_upload` now returns its cap conflict as `409` with the distinct field-error code `account_image_quota_exceeded`; the web client surfaces the detail code and shows "You have uploaded too many images. Please delete a few images from your listings and try again in a few days," replacing the misleading expired-upload text. Recorded the intended behaviour as a bounded, documented limitation in [image-quota-accounting-and-daily-cleanup](../decisions/image-quota-accounting-and-daily-cleanup.md). Added the once-daily reclamation entrypoint `scripts/listings_image_cleanup.py` (dry-run default counts eligible rows and touches no storage; `--apply` runs the existing `cleanup_image_objects` over bounded passes), mirroring the target-DB guard and content-free output of `scripts/conversations_cleanup.py`; validated dry-run, apply wiring and the target guard against a migration-headed disposable PostgreSQL, with Black clean. API quota `409` is unchanged in status (focused DB suite 197 passed); web upload-flow tests 8 passed, frontend typecheck/lint and Python Black passed. Aditya approved running the cadence in-process (Path A) rather than a separate ECS task/schedule. Added `apps/api/app/domains/listings/image_cleanup_scheduler.py`, a background task started from `_marketplace_lifespan` in `apps/api/app/application.py` (cancelled on shutdown) that runs one leader-gated `cleanup_image_objects` cycle per interval; a Postgres session advisory lock elects a single leader so, with two API replicas, it runs once per cycle. Two deploy-safe settings were added (`image_cleanup_enabled` default true, `image_cleanup_interval_seconds` default 86400); it reuses the API pool, S3 storage and task role (which already grants `s3:DeleteObject` on the images bucket), so it needs no new AWS resource, IAM change or cloud approval — a normal API deploy both ships the message and starts reclaiming. The entrypoint `scripts/listings_image_cleanup.py` remains as the manual/ops tool. Checks: 5 scheduler unit tests passed; config tests 31 passed; mypy clean on the changed modules; Black clean; and the full cycle (advisory-lock acquire → object delete → row removal → lock release → re-acquire) was validated end-to-end against a migration-headed disposable PostgreSQL with a fake storage. Listings owner (Suraj) review, live retest, merge and deployment remain pending.
+
+### Issue #62 one-time prekey pool drain — 2026-11-17 16:54:14 UTC
+
+Aditya requested the fix on the current branch. `consume_member_prekeys` now reserves at most one of a peer's one-time prekeys per `(caller, conversation)`: after the exact-`operation_id` replay check and under the existing peer-account lock, a fresh `operation_id` for the same conversation reuses the stored reservation instead of consuming another prekey, so one member cannot drain the peer's shared pool and force other members onto the last-resort prekey. Added `_existing_request_result` (request-payload lookup, complementing operation-id replay). Updated the two tests that had encoded the old drain-by-new-operation-id behaviour as correct (depletion→reuse; concurrency now races two distinct members, which still receive different keys) and added a regression test that a member issuing five operation IDs consumes one prekey while a second member still gets a distinct one. Focused Conversations DB suite: 197 passed; Black passed. Two limitations are deliberately out of scope and recorded in [prekey-reservation-cap](../decisions/prekey-reservation-cap.md): a member re-contacting the same conversation after a rebootstrap reuses the prior grant rather than a fresh prekey, and the per-`(caller, conversation)` cap does not stop a coordinated multi-conversation/multi-account attacker. Conversations owner (Rahul) review per standing guidance, live retest, merge and deployment remain pending.
+
+### Issue #71 conversation retries — 2026-11-17 16:02:11 UTC
+
+Aditya requested the fix on the current branch. Unconfirmed buyer-selection commands now block the alternate clear action and remain retryable, including a pending clear; unconfirmed contact shares expose only the same-operation retry and reset the form after success. Focused frontend tests: 14 passed; frontend typecheck and diff whitespace check passed. Human verification and Conversations owner review remain pending.
+
+### Issues #63 and #66 — 2026-11-17 12:37:55 UTC
+
+Aditya requested both fixes on the pagination branch. Offer submission now rejects amounts outside JavaScript safe integer precision while preserving the separate listing cap; regenerated contracts and retained the internal guard. Key setup reports rate limiting without hiding marketplace content and retains explicit retry; CSRF transport preserves 429. Focused API/contract checks 56 passed, UI checks 10 passed plus 5 after 429 transport coverage, contract generation check, frontend typecheck/lint and Python formatting passed. Existing unsafe offer records were not migrated; live retest, human verification and affected-owner review remain pending.
+
+### Issue #60 conversation pagination — 2026-11-17 11:57:35 UTC
+
+Aditya requested a separate fix branch. Added HTTP-boundary validation for PostgreSQL bigint offsets in grouped and ungrouped conversation queries, with boundary route checks. Focused route suite: 28 passed; Black check passed. No real-database regression, independent review, merge or deployment yet; human verification pending.
+
+### NUL validation checks — 2026-11-17 11:26:25 UTC
+
+Issues #57 and #59: added boundary rejection of NUL in Listings search/filter and create/replace text and Search wanted create/patch/discovery/draft text. Added Listings and Wanted/Search model and HTTP regression checks for NUL input; focused Listings, Wanted and draft suites passed 148 tests, and the expanded Wanted suite passed 39 tests. Existing general text rules remain unchanged.
+
+### #52/#65 review handoff authorized — 2026-11-17 16:24:46 UTC
+
+Suraj accepted the local functional verification and authorized publishing the
+combined branch as a PR and waiting for CI, superseding the earlier stop before
+commit/push. Another human will handle merge; this author/agent must not merge
+or deploy. Remote main was checked at `f63e293104f0475bfaa3536bbf4f97e90bb0ae98`,
+matching the branch base, with no open conflicting PR at this checkpoint.
+
+Application verification remains the full 12-gate local pass, attended ordinary
+browser Turnstile/Microsoft recovery, final frontend wording rerun, ten secret
+handoff tests and forty Terraform mock tests. The production SSM secret is
+provisioned/verified at version 1; no key is in the patch. Prepared runtime IAM
+and task configuration still require the separately reviewed deployment apply.
+
+The next gate is the latest PR head's Foundation quality gates and independent
+human/affected Identity/shared-core review using the peer-review prompt. Issues
+#52/#65 remain open until reporting-team retest; do not use merge-triggered issue
+closure. Hosted CI evidence is authoritative on the PR for its exact head. No
+merge, cloud rollout or new performance claim is authorized by publication.
+
+### Approved Turnstile SSM setup — 2026-11-17 16:18:28 UTC
+
+Suraj explicitly approved storing the production widget secret in SSM. Using the
+account-checked `surajs2` profile, the prepared helper created exactly one Standard
+SecureString, `/clip/test/turnstile/secret-key`, in account `335523638354`, Region
+`ap-south-1`, version 1, with overwrite disabled and the default AWS-managed SSM
+key. An independent metadata read confirmed Standard/SecureString/version 1;
+a private decrypted comparison confirmed an exact match to the supplied website
+widget secret. Only the boolean match result and non-secret metadata were saved.
+No raw key, ciphertext, credentials or provider token entered Git/chat/logs.
+
+The outside-Git public handoff receipt now confirms AWS provisioning and version 1.
+The key is retained for the later deployment; the collaborator needs the public
+site-key input and SSM reference, not the raw secret. No IAM change, Terraform
+apply, task registration/restart, image publication or deployment was performed.
+All code/docs remain uncommitted/unpushed. Review and the actual runtime rollout
+remain separate gates; stop-before-commit/push direction remains in force.
+
+### Turnstile deployment preparation — 2026-11-17 16:01:52 UTC
+
+Suraj requested deployment-ready instructions/configuration, secure collaborator
+handoff and the free-plan limits. Added the optional public `turnstile_site_key`
+input in `shared/test/turnstile.tf`, exact SSM read grant for the API execution
+role, ECS environment/secret injection and an Identity-runtime precondition in
+`service.tf`. The service waits for the exact IAM grant before rollout. Defaults
+inject nothing; raw secret values never enter Terraform inputs/state or images.
+No application task-role, Lambda read-role, proxy, capacity or network change.
+
+Added `scripts/prepare_turnstile_deployment.py`: local-only public tfvars/receipt
+preparation by default, with an explicit optional approved write of one Standard
+SecureString at `/clip/test/turnstile/secret-key`. It checks the project STS
+account, uses fixed regional endpoints/bounded one-attempt CLI calls, refuses
+existing parameters and captures private diagnostics without displaying them.
+The secret is carried in a seekable Linux memory-only descriptor, never disk
+payload files or command arguments. Prepared public
+handoff files from the private website-widget pair outside Git; the receipt
+correctly records no AWS write. The collaborator can receive those public files
+and the deployment guide without receiving the raw secret after SSM setup.
+
+Checks: helper 10 tests passed using synthetic keys/fake CLI processes; isolated
+backend-free Terraform validation passed; all 40 mocked plans passed; formatting,
+repository boundaries and Gitleaks passed. Early new mock assertions needed a
+known plan-time execution-role ID/valid ARN; both were corrected in the fixture.
+No real AWS plan/apply or parameter write occurred. Read-only STS confirmed profile
+`surajs2` in project account `335523638354`; the initially assumed `clip-project`
+profile does not exist on this contributor's machine.
+
+At 2026-11-17 16:06:54 UTC, read-only CLI STS and the seekable descriptor probe
+confirmed `surajs2` is usable in the expected account; exact SSM metadata lookup
+confirmed the target parameter does not yet exist. The installed Python SDK's
+login path required an optional dependency, so the helper deliberately uses the
+working AWS CLI without adding packages. The final 10 fake-process tests passed;
+local-only preparation was rerun and the receipt still records no AWS write.
+
+At 2026-11-17 16:11:33 UTC, Suraj requested an explicit answer about changes to
+the actual deployment process. Added the first-rollout notice to the existing
+shared/test guide and root README/central Terraform entry points, not only a new
+document. The handoff now includes the exact plan/review/apply command pattern
+and explains that retaining the public setting in the existing maintained inputs
+keeps later commands unchanged; omitting it would remove the prepared runtime
+configuration. Local documentation links and shell continuation examples passed.
+No new AWS action was authorized by this clarification.
+
+The [handoff](../environment/turnstile-deployment.md) explains build versus runtime,
+website versus localhost widget, secret-holder/operator responsibilities, exact
+input/reference, existing Hybrid/Microsoft settings, restart/rollback, smoke checks
+and currently documented free-plan limits. Indexed it in the environment/command
+and documentation guides. Creating the actual SSM parameter still needs separate
+cloud-action approval; runtime IAM/task configuration is prepared but unapplied.
+No commit, push, Terraform apply or deployment. Review/approval gates remain.
+
+### Attended #52/#65 real-provider checks — 2026-11-17 15:47:57 UTC
+
+Suraj created a separate localhost Turnstile widget, saved its keys privately and
+completed attended tests against the branch's Microsoft-enabled local bundle and
+an owned disposable PostgreSQL database. Normal temporary sign-in succeeded
+without a challenge. After five wrong-password attempts, target-lock recovery
+succeeded through real Turnstile in the user's ordinary browser. Shared-IP login
+exhaustion recovery succeeded for both temporary login and real IISc Microsoft
+SSO; Suraj completed encryption/Handle onboarding and reached the marketplace.
+With anonymous API exhaustion staged (control request returned 429), Suraj
+refreshed the already-signed-in Microsoft session and remained signed in. Suraj
+also reached the marketplace after combined target/source/API staging and a
+fresh temporary login. Anonymous API windows are 60 seconds; the earlier automated
+private regression supplies deterministic simultaneous-exhaustion evidence.
+
+The dedicated automated Chromium failed before a credential resubmission; its
+exact browser/provider failure cause was not established. The ordinary browser
+completed the real challenge. The misleading client-side failure message was
+corrected in Identity `api.ts` to describe an incomplete security check, and its
+blocked-script test now asserts that message. Final `npm run check` passed lint,
+526 tests/3 skipped, types and build after that wording change; backend behavior
+is unchanged from the full 12-gate pass above. Existing Vite chunk warning remains.
+
+Suraj explicitly declined NFR/experiment remeasurement. Normal authenticated
+workloads do not contact Turnstile; read/write defaults, search/data/message logic,
+infrastructure and experiment workloads were not changed. No new numerical
+performance claim is made. Human checks are recorded as human reports, separately
+from automated HTTP evidence; no Microsoft credentials/assertions were captured.
+Local app/database and the dedicated browser were shut down after the checks.
+The ordinary browser, production deployment and retained databases were untouched.
+
+Local functional verification is accepted through Suraj's step reports. Code/diff
+review, affected Identity/shared-core and independent peer review, runtime secret
+wiring, commit/PR/CI, production smoke/retest and reporting-team acceptance remain
+pending. Stop before commit/push remains in force. No GitHub issue reply or cloud
+change was made in this increment.
+
+### Combined #52/#65 sign-in recovery — 2026-11-17 15:10:30 UTC
+
+Suraj expanded the existing branch to address the email-target lockout and both
+shared-IP denial paths together, authorized local disposable SQL/Chromium checks,
+and explicitly directed stopping before commit/push. Suraj created a Turnstile
+widget and stored paired keys privately outside Git; no secret was copied into
+source, logs or build configuration. Suraj is the sole writer for this scoped
+Identity API/challenge-dialog change; affected Identity/shared-core owner and
+independent peer review remain pending.
+
+The implementation adds a verified, one-use challenge exception on the three
+public sign-in POSTs. It retains source/target abuse histories, normal credential,
+nonce, lifecycle and browser checks, and denies local proof replay across workers
+using existing auth-event storage. Ordinary below-threshold sign-in never calls
+the provider. A challenge provider outage denies only challenged operations.
+Exceptional challenge checks are capped at four concurrent requests, with a
+regression proving ordinary requests remain responsive during slow checks.
+Project-wide comprehensive abuse protection remains excluded; the targeted
+sign-in challenge is explicitly included. No schema or cloud resource change.
+
+Focused combined backend checks: 32 passed, including real SQL/cookies/passwords,
+reset/session revocation, source and target exhaustion, synthetic signed Microsoft
+exchange, failed proofs, provider errors and concurrent proof consumption.
+The final targeted backend/contract run passed 78 tests, and the focused
+frontend challenge/fault run passed 11 tests. Actual Chromium passed at 1,280px
+and 390px widths with real SQL/cookies and an active application lifespan; both
+session and conversation-key reads returned 200 after challenged sign-in.
+The first backend run exposed a failure
+counter increment beyond its existing SQL cap; it now saturates at five. The first
+browser attempt used a stale bundle because a new test mock failed TypeScript;
+the mock signature was corrected and the bundle rebuilt. The first aggregate
+failed contract snapshot checks while canonical comments/generated output changed;
+the generated Identity copy is now current. A subsequent targeted invocation used
+the wrong Node PATH and failed tool-dependent contract checks; the pinned-tool
+rerun passed all 78 cases. At 2026-11-17 15:27:42 UTC, the final full `make check` passed all 12
+gates: Python 2,617 passed/188 skipped; data 331 passed; web 526 passed/3 skipped
+with lint/types/production build; database safety 35 passed; PostgreSQL 18.6
+lifecycle and focused Conversations operations (186 passed) passed; CI parity,
+formatting, boundaries, generated contracts/types and Gitleaks passed. Existing
+Vite large-chunk warning remains. Skips are not passing evidence. An additional
+private SQL/HTTP regression passed with target, source and anonymous API budgets
+exhausted simultaneously, confirming the cross-issue recovery path. Prior aggregate
+evidence below covers only the earlier request-isolation increment.
+
+A bounded real-provider negative smoke reached Cloudflare, denied an invalid
+proof and did not report an invalid secret. Unattended real-widget Chromium did
+not obtain a token; successful real-provider redemption is not claimed.
+
+Runtime key delivery/task-definition configuration, real-provider browser and
+Microsoft account interaction, affected-owner/independent review, human result
+verification, commit/PR/CI, deployment and reporting-team retest remain pending.
+No commit, push, deployment or issue reply is part of this increment.
+
+### Authenticated request-budget isolation — 2026-11-17 10:45:11 UTC
+
+Suraj authorized this scoped correction and clarified that comprehensive bot
+protection is outside the project's scope. Identity now reserves the shared-core
+request budget after verifying the session, including before early rejection of
+failed cookies. Verified accounts no longer spend an outer shared-peer allowance;
+anonymous traffic remains limited. The session-only Listings runtime follows the
+same policy. Existing credential/source-attempt policies are unchanged. The
+accepted [scope decision](../decisions/api-rate-limit-isolation.md) preserves the
+normal/reference-workload FR/NFR obligations and records that these budgets do
+not bound all session-validation work.
+
+The new same-address HTTP/SQL regression failed on unchanged `f63e293` and passes
+with the correction. Expanded limiter/body-limit/Identity/Lambda checks: 41
+passed, including forged/revoked/expired cookies and hostile origins. Dependencies
+were installed from the locked manifests; boundaries reported zero violations.
+At 2026-11-17 10:56:57 UTC, full `make check` passed all 12 gates: Python
+2,593 passed/188 skipped; data 331 passed; web 515 passed/3 skipped with lint,
+types and build; database safety 35 passed; PostgreSQL 18.6 lifecycle passed;
+Conversations operations 186 passed; formatting, CI parity, contracts/types,
+boundaries and Gitleaks passed. Skipped cases are not passing evidence. Vite
+reported its existing large-chunk warning. Work remains uncommitted on
+`task/rt65-authenticated-rate-isolation`; human result verification, affected
+Identity/shared-core owner and independent peer review, commit/PR/CI, deployment
+and reporting-team retest remain pending. No cloud or GitHub issue action.
 
 ### Documentation and rate-limit verification — 2026-11-16 18:45:33 UTC
 
@@ -1626,6 +1869,9 @@ evidence](../evaluation/README.md).
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
+| Issues #63 and #66 | Aditya; Rahul (Conversations owner) | in progress | Review safe offer bound and rate-limit UX | Focused API/contract and UI checks passed; generated artifacts current | pending | `fix/conversation-pagination-offers-rate-limit`; local changes | Existing unsafe offer records, affected-owner review, integration and deployment | 2026-11-17 12:37:55 UTC |
+| Issue #60 conversation pagination | Aditya; Rahul (Conversations owner) | in progress | Review fix and obtain affected-owner review | HTTP validation and boundary route checks performed; 28 passed | pending | `fix/conversation-pagination-offers-rate-limit`; local changes | Independent/owner review, integration and deployment | 2026-11-17 11:57:35 UTC |
+| RT-52/65 coordinated authentication recovery | Suraj (B); Identity/shared-core affected-owner review | in progress | PR handoff: verify current-head CI and arrange independent/affected-owner review; no merge/deploy | Full make check passed (Python 2,617/188 skipped; web 526/3 skipped; remaining gates passed); targeted 78, UI 11, Chromium, simultaneous-exhaustion and attended real Turnstile/Microsoft checks passed; final frontend rerun passed; helper 10 and Terraform mock 40 passed | Local functional behavior verified by Suraj; commit/push/PR and waiting for CI authorized; peer review pending | `task/rt65-authenticated-rate-isolation`; base `f63e293`; [decision](../decisions/api-rate-limit-isolation.md) | SSM production secret verified at version 1; reviewed runtime apply pending; wiring prepared; peer/owner and diff review, commit/PR/CI, deployment smoke and red-team retest pending | 2026-11-17 16:24:46 UTC |
 | Chat and Wanted visual correction | Aditya; affected Search, Listings and Conversations owners | in progress | Complete desktop/phone visual verification and obtain required peer/owner reviews | Full `make check` passed: Python 2,580/188 skipped; data 331; web 515/3 skipped; all remaining aggregate checks passed | pending | `task/visual-navigation-wanted-chat`; head `5a03002` plus uncommitted test update | Visual verification, affected-owner/independent review, commit approval, PR/CI and deployment remain | 2026-11-07 14:52:31 UTC |
 | Approved marketplace redesign | Rahul; Aditya, Suraj and Mohit affected-owner review | in progress | Complete aggregate CI, visual inspection and review | Final rate-limit and affected integration suite 56 passed; frontend 513 passed/3 skipped; local aggregate timed out during Python tests | Original preview design and Handle button approved | `task/mobile-menu-checkbox`; [feedback plan](../tasks/next-03-visual-feedback-plan.md) | Full aggregate/CI, visual verification and affected-owner/security and independent review pending | 2026-11-06 19:50:28 UTC |
 | API default rate limits | Rahul; Aditya affected-owner reviewer | in progress | Review defaults and affected workloads | Defaults and settings guide updated; diff check passed | pending | `task/mobile-menu-checkbox`; local changes | Independent review, PR and deployment gates remain | 2026-11-06 17:03:07 UTC |

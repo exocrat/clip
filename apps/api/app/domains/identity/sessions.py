@@ -41,6 +41,7 @@ from app.domains.identity.notification_address import (
     NotificationRecipientResolver,
 )
 from app.domains.identity.temporary_passwords import TemporaryPasswords
+from app.domains.identity.signin_challenge import TurnstileVerifier
 
 ABSOLUTE = timedelta(days=7)
 IDLE = timedelta(hours=24)
@@ -112,8 +113,11 @@ class IdentitySessions:
         connect: Callable[[], AbstractContextManager[Database]],
         keys: TemporaryKeys,
         clock: Callable[[], datetime],
+        *,
+        challenge: TurnstileVerifier | None = None,
     ):
         """Bind explicit trusted dependencies and prepare real dummy Argon2 work."""
+        self.challenge = challenge
         self._connect = connect
         self._keys = keys
         self._clock = clock
@@ -149,7 +153,12 @@ class IdentitySessions:
             raise PublicError(ERRORS[503]) from None
 
     def _source(
-        self, c: Database, address: IPv4Address | IPv6Address, now: datetime
+        self,
+        c: Database,
+        address: IPv4Address | IPv6Address,
+        now: datetime,
+        *,
+        challenged: bool = False,
     ) -> None:
         """Reserve every credential/attempt request under its trusted source lock."""
         source = self._keys.source_digest(address)
@@ -159,11 +168,37 @@ class IdentitySessions:
             (source, now - LOGIN_WINDOW),
         ).fetchone()
         if count is None or count[0] >= 100:
+            if challenged and count is not None:
+                return  # One verified challenge admits one attempt, never resets history.
             raise PublicError(ERRORS[429])
         c.execute(
             "INSERT INTO identity.auth_source_events(id,source_digest,created_at) VALUES (%s,%s,%s)",
             (new_id(), source, now),
         )
+
+    def consume_signin_challenge(self, token: str) -> None:
+        """Atomically reject token replay across workers using existing auth events.
+
+        Store only a domain-separated digest. The fifteen-minute replay window
+        exceeds Turnstile's five-minute token lifetime. Verification is
+        external; this local lock also closes provider replay convergence races.
+        """
+        value = hashlib.sha256(b"clip-signin-challenge-v1:" + token.encode()).digest()
+        with self.transaction() as c:
+            now = as_utc(self._clock())
+            self.challenges._lock(c, "auth-challenge", value)
+            if (
+                c.execute(
+                    "SELECT 1 FROM identity.auth_source_events WHERE source_digest=%s AND created_at>%s LIMIT 1",
+                    (value, now - LOGIN_WINDOW),
+                ).fetchone()
+                is not None
+            ):
+                raise PublicError(ERRORS[429])
+            c.execute(
+                "INSERT INTO identity.auth_source_events(id,source_digest,created_at) VALUES (%s,%s,%s)",
+                (new_id(), value, now),
+            )
 
     @staticmethod
     def _account(c: Database, user: UUID, now: datetime) -> tuple[Any, ...]:
@@ -223,7 +258,12 @@ class IdentitySessions:
         )
 
     def password_login(
-        self, email: str, password: SecretStr, source: IPv4Address | IPv6Address
+        self,
+        email: str,
+        password: SecretStr,
+        source: IPv4Address | IPv6Address,
+        *,
+        challenged: bool = False,
     ) -> SessionGrant:
         """Uniform real/dummy hash work; commit failed counters before401/429."""
         try:
@@ -234,14 +274,19 @@ class IdentitySessions:
         outcome = 401
         with self.transaction() as c:
             now = as_utc(self._clock())
-            self._source(c, source, now)
+            self._source(c, source, now, challenged=challenged)
             self.challenges._lock(c, "otp-target", target)
             now = as_utc(self._clock())
             prior = c.execute(
                 "SELECT expires_at,failures FROM identity.password_login_windows WHERE key_version=%s AND target_digest=%s FOR UPDATE",
                 (self._keys.version, target),
             ).fetchone()
-            if prior is not None and now < prior[0] and prior[1] >= 5:
+            if (
+                prior is not None
+                and now < prior[0]
+                and prior[1] >= 5
+                and not challenged
+            ):
                 outcome = 429
             else:
                 row = c.execute(
@@ -262,7 +307,9 @@ class IdentitySessions:
                 if eligible and valid and row is not None:
                     NotificationAddressCipher(self._keys).save_in(c, row[0], email)
                     return self._issue(c, row[0], as_utc(self._clock()))
-                failures = prior[1] + 1 if prior is not None and now < prior[0] else 1
+                failures = (
+                    min(5, prior[1] + 1) if prior is not None and now < prior[0] else 1
+                )
                 expires = (
                     prior[0]
                     if prior is not None and now < prior[0]
@@ -391,11 +438,13 @@ class IdentitySessions:
                 (now, user),
             )
 
-    def start_microsoft(self, source: IPv4Address | IPv6Address) -> LoginAttempt:
+    def start_microsoft(
+        self, source: IPv4Address | IPv6Address, *, challenged: bool = False
+    ) -> LoginAttempt:
         """Persist only a digest for a ten-minute browser-bound one-use login attempt."""
         with self.transaction() as c:
             now = as_utc(self._clock())
-            self._source(c, source, now)
+            self._source(c, source, now, challenged=challenged)
             token = secrets.token_urlsafe(32)
             expires = now + ATTEMPT_LIFETIME
             c.execute(
@@ -412,6 +461,8 @@ class IdentitySessions:
         attempt: str | None,
         source: IPv4Address | IPv6Address,
         validator: MicrosoftTokenValidator,
+        *,
+        challenged: bool = False,
     ) -> SessionGrant:
         """Validate outside final transaction, then consume attempt/map/session atomically."""
         try:
@@ -420,7 +471,7 @@ class IdentitySessions:
             value = None
         with self.transaction() as c:
             now = as_utc(self._clock())
-            self._source(c, source, now)
+            self._source(c, source, now, challenged=challenged)
             row = (
                 c.execute(
                     "SELECT created_at,expires_at,consumed_at FROM identity.microsoft_login_attempts WHERE token_digest=%s",

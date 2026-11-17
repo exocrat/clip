@@ -43,7 +43,9 @@ class BrowseQuery(ListingQuery):
     @classmethod
     def valid_selection_values(cls, values: list[str]) -> list[str]:
         """Reject blank/oversized codes before catalogue validation or SQL use."""
-        if any(not value.strip() or len(value) > 100 for value in values):
+        if any(
+            not value.strip() or len(value) > 100 or "\x00" in value for value in values
+        ):
             raise ValueError("Invalid catalogue selection")
         return values
 
@@ -51,6 +53,8 @@ class BrowseQuery(ListingQuery):
     @classmethod
     def trimmed_query(cls, value: Any) -> Any:
         """Trim before the inherited 120-code-point bound; blank means browse."""
+        if isinstance(value, str) and "\x00" in value:
+            raise ValueError("Invalid search text")
         return (value.strip() or None) if isinstance(value, str) else value
 
     @model_validator(mode="after")

@@ -19,7 +19,7 @@ from app.core.auth import require_caller
 from app.core.config import ConfigurationError, Settings, load_settings
 from app.core.errors import install_error_handlers
 from app.core.logging import RequestLoggingMiddleware
-from app.core.rate_limit import ApiRateLimitMiddleware
+from app.core.rate_limit import ApiRateLimiter, ApiRateLimitMiddleware
 from app.core.request_size import ApiRequestSizeMiddleware
 from app.core.database import PoolFactory, create_async_connection_pool
 from app.core.database_transport import (
@@ -198,9 +198,55 @@ async def _marketplace_lifespan(
             application.state.listings_conversations = (
                 None if read_only_listings else conversations_public
             )
-            yield
+            cleanup_task = _maybe_start_image_cleanup(
+                application, settings, pool, read_only_listings
+            )
+            try:
+                yield
+            finally:
+                await _stop_background_task(cleanup_task)
     finally:
         await finish_search_cleanup(pool.close())
+
+
+def _maybe_start_image_cleanup(
+    application: FastAPI,
+    settings: Settings,
+    pool: AsyncConnectionPool[AsyncConnection[dict[str, Any]]],
+    read_only_listings: bool,
+) -> "asyncio.Task[None] | None":
+    """Start the in-process daily image-object reclamation when it applies.
+
+    Read-only (Lambda) composition and configurations without S3 image storage
+    have nothing to reclaim, so no task is started. The lazy import keeps the
+    read-only path from loading the scheduler and its service dependencies.
+    """
+    if (
+        read_only_listings
+        or not settings.image_cleanup_enabled
+        or application.state.listings_image_storage is None
+    ):
+        return None
+    from app.domains.listings.image_cleanup_scheduler import start as start_cleanup
+
+    return start_cleanup(
+        pool,
+        application.state.listings_store,
+        application.state.listings_identity,
+        application.state.listings_image_storage,
+        interval_seconds=settings.image_cleanup_interval_seconds,
+    )
+
+
+async def _stop_background_task(task: "asyncio.Task[None] | None") -> None:
+    """Cancel and await a background task during shutdown, ignoring its cancel."""
+    if task is None:
+        return
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
 
 
 @asynccontextmanager
@@ -356,9 +402,10 @@ def create_app(
 
     install_error_handlers(app)
     path_prefix = "/api" if settings.serve_web_app or listings_read_only else ""
-    # Identity middleware must authenticate before the limiter selects a user key.
-    app.add_middleware(
-        ApiRateLimitMiddleware,
+    # Identity reserves one budget after validating the session, including on
+    # rejected-cookie requests. Anonymous traffic must not spend an authenticated
+    # account's allowance merely because both share a network/proxy address.
+    rate_limiter = ApiRateLimiter(
         read_limit=settings.api_read_requests_per_minute,
         write_limit=settings.api_write_requests_per_minute,
         api_prefix_only=settings.serve_web_app or listings_read_only,
@@ -368,24 +415,21 @@ def create_app(
             app,
             identity,
             path_prefix=path_prefix,
+            rate_limiter=rate_limiter,
         )
     if identity_reads is not None:
-        install_identity_reads(app, identity_reads)
+        install_identity_reads(app, identity_reads, rate_limiter=rate_limiter)
+    if identity is None and identity_reads is None:
+        app.add_middleware(
+            ApiRateLimitMiddleware,
+            read_limit=settings.api_read_requests_per_minute,
+            write_limit=settings.api_write_requests_per_minute,
+            api_prefix_only=settings.serve_web_app or listings_read_only,
+        )
     app.add_middleware(
         ApiRequestSizeMiddleware,
         api_prefix_only=settings.serve_web_app or listings_read_only,
     )
-    # A separate peer ceiling protects session validation before authenticated limits.
-    # Retain the former 600/120 defaults while allowing explicitly higher test limits.
-    if identity is not None or identity_reads is not None:
-        app.add_middleware(
-            ApiRateLimitMiddleware,
-            read_limit=max(600, settings.api_read_requests_per_minute),
-            write_limit=max(120, settings.api_write_requests_per_minute),
-            api_prefix_only=settings.serve_web_app or listings_read_only,
-            peer_only=True,
-        )
-
     app.add_middleware(RequestLoggingMiddleware)
 
     if settings.isolated_listings_test_caller:
