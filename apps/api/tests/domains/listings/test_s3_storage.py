@@ -50,6 +50,10 @@ class _S3Client:
         self.signed: list[tuple[str, dict, int, str]] = []
         self.get_response: dict | Exception | None = None
         self.deleted: list[dict] = []
+        self.puts: list[dict] = []
+
+    def put_object(self, **kwargs):
+        self.puts.append(kwargs)
 
     def generate_presigned_url(self, operation, *, Params, ExpiresIn, HttpMethod):
         self.signed.append((operation, Params, ExpiresIn, HttpMethod))
@@ -138,6 +142,111 @@ def test_inspection_reads_only_the_bounded_body_and_closes_it(monkeypatch):
     assert metadata == StoredImageMetadata(media_type="image/png", size_bytes=len(PNG))
     assert body.read_limits == [MAX_IMAGE_SIZE_BYTES + 1]
     assert body.closed
+
+
+def _jpeg_with_exif() -> bytes:
+    """A JPEG carrying identifying EXIF plus a trailing appended payload."""
+    image = Image.new("RGB", (6, 6), (10, 20, 30))
+    exif = image.getexif()
+    exif[0x010F] = "SecretCameraMake"
+    exif[0x0110] = "SecretCameraModel"
+    output = BytesIO()
+    image.save(output, format="JPEG", quality=90, exif=exif.tobytes())
+    return output.getvalue() + b"<<<APPENDED_POLYGLOT_PAYLOAD>>>"
+
+
+def _png_with_text() -> bytes:
+    """A PNG carrying an identifying tEXt metadata chunk."""
+    from PIL import PngImagePlugin
+
+    info = PngImagePlugin.PngInfo()
+    info.add_text("Author", "SecretAuthor")
+    output = BytesIO()
+    Image.new("RGB", (4, 4), (9, 9, 9)).save(output, format="PNG", pnginfo=info)
+    return output.getvalue()
+
+
+def _animated_image() -> bytes:
+    """A two-frame animated PNG (APNG) — outside the single-still-frame contract."""
+    first = Image.new("RGB", (4, 4), (1, 2, 3))
+    second = Image.new("RGB", (4, 4), (200, 100, 50))
+    output = BytesIO()
+    first.save(output, format="PNG", save_all=True, append_images=[second], duration=80)
+    return output.getvalue()
+
+
+def test_inspection_strips_jpeg_metadata_and_stores_the_cleaned_copy(monkeypatch):
+    storage, client, _ = _storage(monkeypatch)
+    original = _jpeg_with_exif()
+    assert b"SecretCameraMake" in original and b"APPENDED_POLYGLOT" in original
+    client.get_response = {
+        "Body": _Body(original),
+        "ContentLength": len(original),
+        "ContentType": "image/jpeg",
+    }
+
+    metadata = asyncio.run(storage.inspect_object("test/run-1/key"))
+
+    # The returned size stays the uploaded size (upload-integrity invariant).
+    assert metadata == StoredImageMetadata(
+        media_type="image/jpeg", size_bytes=len(original)
+    )
+    # A cleaned copy was written back, with no metadata or appended payload.
+    assert len(client.puts) == 1
+    put = client.puts[0]
+    assert put["Key"] == "test/run-1/key" and put["ContentType"] == "image/jpeg"
+    cleaned = put["Body"]
+    assert b"SecretCameraMake" not in cleaned
+    assert b"SecretCameraModel" not in cleaned
+    assert b"APPENDED_POLYGLOT" not in cleaned
+    assert len(cleaned) < len(original)
+    # The cleaned copy is still a valid JPEG of the same pixels.
+    with Image.open(BytesIO(cleaned)) as image:
+        assert image.format == "JPEG" and image.size == (6, 6)
+
+
+def test_inspection_strips_png_text_metadata(monkeypatch):
+    storage, client, _ = _storage(monkeypatch)
+    original = _png_with_text()
+    assert b"SecretAuthor" in original
+    client.get_response = {
+        "Body": _Body(original),
+        "ContentLength": len(original),
+        "ContentType": "image/png",
+    }
+
+    asyncio.run(storage.inspect_object("test/run-1/key"))
+
+    assert len(client.puts) == 1
+    assert b"SecretAuthor" not in client.puts[0]["Body"]
+
+
+def test_inspection_leaves_a_metadata_free_image_untouched(monkeypatch):
+    storage, client, _ = _storage(monkeypatch)
+    client.get_response = {
+        "Body": _Body(PNG),
+        "ContentLength": len(PNG),
+        "ContentType": "image/png",
+    }
+
+    asyncio.run(storage.inspect_object("test/run-1/key"))
+
+    # A clean image is not rewritten.
+    assert client.puts == []
+
+
+def test_inspection_rejects_animated_images(monkeypatch):
+    storage, client, _ = _storage(monkeypatch)
+    animated = _animated_image()
+    client.get_response = {
+        "Body": _Body(animated),
+        "ContentLength": len(animated),
+        "ContentType": "image/png",
+    }
+
+    with pytest.raises(InvalidImageContent):
+        asyncio.run(storage.inspect_object("test/run-1/key"))
+    assert client.puts == []
 
 
 @pytest.mark.parametrize(
