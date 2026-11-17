@@ -428,3 +428,52 @@ describe('CLIP SDK relay adapter', () => {
     expect(server.entries.length).toBe(0);
   });
 });
+
+it('exchanges current messages after replacing an account key and accepting the new peer identity', async () => {
+  const server = new RelayHttpFixture();
+  const sessions: ConversationSession[] = [];
+  const aliceStore = inMemoryStore();
+  const replacementStore = inMemoryStore();
+  try {
+    const a = await createConversationSession(alice, thread, server.api(alice), aliceStore, { acknowledgeUnrecoverableHistoryRisk: true });
+    const old = await createConversationSession(bob, thread, server.api(bob), inMemoryStore(), { acknowledgeUnrecoverableHistoryRisk: true });
+    sessions.push(a, old);
+    await establish(a, server, alice, bob);
+    await a.sendText(message(bob));
+    const oldEntry = server.entries.at(-1);
+    if (!oldEntry) throw new Error('Expected old entry');
+    await old.receiveText(receiveContext(oldEntry, alice));
+    await old.stop();
+
+    const replacement = await createConversationSession(bob, thread, server.api(bob), replacementStore,
+      { acknowledgeUnrecoverableHistoryRisk: true, allowUnrecoverableKeyReplacement: true });
+    sessions.push(replacement);
+    await expect(a.crypto.resumeParticipantSession({ userId: bob, keyVersion: 2 })).rejects.toThrow();
+    const newBundle = await server.api(alice).consumeMemberPrekeys(thread, { operation_id: crypto.randomUUID() });
+    await a.crypto.acceptDirectoryKeyChange(newBundle, { userId: bob, keyVersion: 2 });
+    await a.sendText({ ...message(bob), recipient_key_version: 2, text: 'After replacement' });
+    const newEntry = server.entries.at(-1);
+    if (!newEntry?.envelope) throw new Error('Expected new entry');
+    await establish(replacement, server, bob, alice);
+    await expect(replacement.receiveText({ ...receiveContext(newEntry, alice), expected_recipient_key_version: 2 }))
+      .resolves.toMatchObject({ text: 'After replacement' });
+    await replacement.sendText({ ...message(alice), sender_key_version: 2, text: 'Reply from replacement' });
+    const replyEntry = server.entries.at(-1);
+    if (!replyEntry?.envelope) throw new Error('Expected replacement reply');
+    await expect(a.receiveText({ ...receiveContext(replyEntry, bob), expected_sender_key_version: 2 }))
+      .resolves.toMatchObject({ text: 'Reply from replacement' });
+
+    await a.stop();
+    await replacement.stop();
+    const reopenedA = await createConversationSession(alice, thread, server.api(alice), aliceStore);
+    const reopenedB = await createConversationSession(bob, thread, server.api(bob), replacementStore);
+    sessions.push(reopenedA, reopenedB);
+    expect(await reopenedA.crypto.resumeParticipantSession({ userId: bob, keyVersion: 2 })).toBe(true);
+    expect(await reopenedB.crypto.resumeParticipantSession({ userId: alice, keyVersion: 1 })).toBe(true);
+    await reopenedA.sendText({ ...message(bob), recipient_key_version: 2, text: 'After reload' });
+    const reopenedEntry = server.entries.at(-1);
+    if (!reopenedEntry) throw new Error('Expected post-reload entry');
+    await expect(reopenedB.receiveText({ ...receiveContext(reopenedEntry, alice), expected_recipient_key_version: 2 }))
+      .resolves.toMatchObject({ text: 'After reload' });
+  } finally { await Promise.allSettled(sessions.map(session => session.stop())); }
+}, 60_000);

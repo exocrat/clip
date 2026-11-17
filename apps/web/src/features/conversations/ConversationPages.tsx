@@ -383,6 +383,14 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
     // read its history or process protocol traffic after that boundary changes.
     const token = generation.current;
     const isCurrent = () => generation.current === token && activeSession.current === ready.session;
+    // Another browser may replace this account's key while this tab is open.
+    // Stop before processing traffic with obsolete private session state.
+    const currentOwnKey = await runtime.api.readOwnKey();
+    if (!isCurrent()) return;
+    if (!currentOwnKey || currentOwnKey.user_id !== runtime.userId || currentOwnKey.key_version !== ready.ownKey.key_version) {
+      setKeyState({ kind: 'key_state_lost' });
+      return;
+    }
     const history = ready.session.history;
     const observedDecryptionFailureIds = new Set(decryptionFailureIds.current);
     let after = cursor.current;
@@ -396,6 +404,9 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
       setRecoveredPending(pending ? { operationId: pending.request.operation_id, text: pending.request.text } : null);
       for (const entry of page.items) {
         if (entry.kind === 'protocol_control') {
+          // Controls encrypted to a previous local key cannot be handled by this browser.
+          if (entry.sender_user_id !== runtime.userId && entry.envelope?.recipient_key_version != null &&
+            entry.envelope.recipient_key_version < ready.ownKey.key_version) continue;
           // Recovery controls are protocol traffic, not chat bubbles. The SDK
           // validates/handles them; only an authenticated retry request reports
           // that the original sender's message was not decryptable.
@@ -453,7 +464,9 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
       }
       throw error;
     }
-    await refresh();
+    // Sending and refreshing are separate operations: an accepted send must not
+    // become a failed-send retry merely because an older entry cannot be loaded.
+    try { await refresh(); } catch { /* Polling will surface and retry refresh failures. */ }
   }, [conversationId, ready, refresh, runtime]);
 
   const retry = useCallback(async (operationId: string) => {
@@ -466,7 +479,7 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
       }
       throw error;
     }
-    await refresh();
+    try { await refresh(); } catch { /* Polling reports refresh failures independently. */ }
   }, [ready, refresh]);
 
   const shareContacts = useCallback(async (selected: SelectedOwnContacts, operationId: string) => {
@@ -612,6 +625,13 @@ async function decryptEntry(
     sender_user_id: entry.sender_user_id, created_at: entry.created_at,
     text: entry.kind === 'contact_share' ? 'Contact details were removed after 30 days.' : null, content_deleted: true };
   const cached = verifiedCachedMessage(entry, received);
+  // Key replacement cannot recover old ciphertext. Keep the entry visible and
+  // continue to newer entries; current/future-key failures still fail closed.
+  if (!cached && entry.sender_user_id !== userId && entry.envelope?.recipient_key_version != null &&
+    entry.envelope.recipient_key_version < ready.ownKey.key_version) {
+    return { entry_id: entry.entry_id, sequence: entry.sequence, sender_user_id: entry.sender_user_id,
+      created_at: entry.created_at, text: 'This message is unavailable because your encryption key has changed.', content_deleted: false };
+  }
   if (cached && entry.kind === 'message') return { entry_id: entry.entry_id, sequence: entry.sequence, sender_user_id: entry.sender_user_id, created_at: entry.created_at, text: cached.text, content_deleted: false };
   if (entry.kind === 'contact_share') {
     if (entry.sender_user_id === userId) return { entry_id: entry.entry_id, sequence: entry.sequence,
