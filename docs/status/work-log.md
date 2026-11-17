@@ -2,6 +2,10 @@
 
 > **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
 
+### NUL validation checks — 2026-11-17 11:26:25 UTC
+
+Issues #57 and #59: added boundary rejection of NUL in Listings search/filter and create/replace text and Search wanted create/patch/discovery/draft text. Added Listings and Wanted/Search model and HTTP regression checks for NUL input; focused Listings, Wanted and draft suites passed 148 tests, and the expanded Wanted suite passed 39 tests. Existing general text rules remain unchanged.
+
 ### Documentation and rate-limit verification — 2026-11-16 18:45:33 UTC
 
 Aditya ran `uv run --locked pytest -q -W error`: 2,580 passed and 188 skipped. Skipped cases are not passing evidence; other aggregate gates were not reported.
