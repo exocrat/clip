@@ -97,24 +97,31 @@ class PostgresKeyDirectory:
         )
 
     @staticmethod
-    async def _existing_request_result(
+    async def _existing_reservation_for_version(
         connection: AsyncConnection[Any],
         caller: CallerContext,
         request: dict[str, Any],
+        key_version: int,
     ) -> dict[str, Any] | None:
-        """Return this caller's stored result for an equivalent request, if any.
+        """Return this caller's stored reservation for the peer's current key, if any.
 
         Unlike `_replay`, which matches a single `operation_id`, this matches the
-        request payload itself (e.g. the same `{kind, conversation_id}` reservation)
-        across every operation_id the caller has used. It lets a reservation reuse
-        one outstanding grant per request instead of consuming a fresh one for each
-        new operation_id. Callers must already hold the serializing lock that guards
-        the underlying resource so a concurrent insert is visible here.
+        request payload itself (the `{kind, conversation_id}` reservation) across
+        every operation_id the caller has used, so a fresh operation_id reuses one
+        outstanding grant instead of consuming another one-time prekey and draining
+        the peer's shared pool. The match is scoped to the peer's current key
+        version: after the peer replaces (rotates) its key, earlier reservations
+        hold a now-retired bundle and must not be served, so this returns None and
+        the caller reserves afresh against the new key. Callers must already hold
+        the serializing lock that guards the underlying resource so a concurrent
+        insert is visible here.
         """
         cursor = await connection.execute(
             "SELECT result FROM conversations.key_directory_operations "
-            "WHERE user_id = %s AND request = %s ORDER BY operation_id LIMIT 1",
-            (caller.user_id, Jsonb(request)),
+            "WHERE user_id = %s AND request = %s "
+            "AND (result -> 'key_bundle' ->> 'key_version')::int = %s "
+            "ORDER BY operation_id LIMIT 1",
+            (caller.user_id, Jsonb(request), key_version),
         )
         row = await cursor.fetchone()
         if row is None:
@@ -387,10 +394,12 @@ class PostgresKeyDirectory:
             # Serialize on the peer's account so a concurrent reservation for the
             # same conversation has committed and is visible to the lookup below.
             await self._lock(connection, f"key-account:{peer}")
-            existing = await self._existing_request_result(connection, caller, request)
+            key = await self._active(connection, peer)
+            existing = await self._existing_reservation_for_version(
+                connection, caller, request, key[1]
+            )
             if existing is not None:
                 return MemberPreKeyBundle.model_validate(existing)
-            key = await self._active(connection, peer)
             bundle = self._decode(key[2])
             reserved: dict[str, Any] = {}
             for key_type, field in (

@@ -295,6 +295,10 @@ def test_actual_api_schema_matches_generated_contract():
         "DraftTitle": "DraftMatchRequest",
         "WantedPatch": "WantedRequestPatch",
         "WantedState": "WantedRequestStateChange",
+        # NUL-rejecting runtime wrappers add only before-validators, so their wire
+        # schema is identical to the canonical request models they subclass.
+        "ValidatedListingCreate": "CreateListingRequest",
+        "ValidatedListingReplacement": "ListingReplacement",
     }
     for runtime, canonical in body_aliases.items():
         runtime_schema = deepcopy(actual["components"]["schemas"][runtime])
