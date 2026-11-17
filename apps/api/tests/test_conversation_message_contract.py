@@ -6,7 +6,11 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from app.contracts.domain_types import CipherEnvelope, MessageRequest
+from app.contracts.domain_types import (
+    CipherEnvelope,
+    MessageRequest,
+    OfferRevisionRequest,
+)
 
 
 def envelope(**overrides) -> dict:
@@ -135,3 +139,14 @@ def test_v2_retry_and_null_controls_require_recovery_target_and_null_key_refs():
     assert (
         retry.recovery_for_entry_id == null.recovery_for_entry_id == original_entry_id
     )
+
+
+def test_offer_amounts_are_exact_in_browser_json():
+    """Allow safe large offers but reject whole-rupee values beyond JS precision."""
+    for amount in (1_000_000_100, 9_007_199_254_740_900):
+        assert (
+            OfferRevisionRequest(amount_paise=amount, operation_id=uuid4()).amount_paise
+            == amount
+        )
+    with pytest.raises(ValidationError):
+        OfferRevisionRequest(amount_paise=9_007_199_254_741_000, operation_id=uuid4())

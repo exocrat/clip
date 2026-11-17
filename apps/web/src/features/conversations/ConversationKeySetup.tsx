@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { Button } from '../../shared/ui';
 import { sessionFetch } from '../../shared/http/sessionFetch';
-import { ConversationApi } from './api';
+import { ConversationApi, ConversationApiError } from './api';
 import { openIndexedDbConversationSession } from './relay';
 import { ConversationKeyStateLostError, KEY_REGISTRATION_WARNING, KeyRegistrationAcknowledgementRequiredError } from './crypto';
 import './ConversationKeySetup.css';
@@ -14,7 +14,7 @@ export function ConversationKeySetup({ userId, children }: PropsWithChildren<{ u
   return userId ? <AccountKeySetup key={userId} userId={userId}>{children}</AccountKeySetup> : children;
 }
 function AccountKeySetup({ userId, children }: PropsWithChildren<{ userId: string }>) {
-  const [state, setState] = useState<'checking' | 'consent' | 'ready' | 'lost' | 'error'>('checking');
+  const [state, setState] = useState<'checking' | 'consent' | 'ready' | 'lost' | 'error' | 'rate_limited'>('checking');
   const [consent, setConsent] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const approved = useRef(false);
@@ -35,12 +35,14 @@ function AccountKeySetup({ userId, children }: PropsWithChildren<{ userId: strin
           setState('ready');
         }
       }).catch((error: unknown) => {
-        if (active) setState(error instanceof KeyRegistrationAcknowledgementRequiredError ? 'consent' :
+        if (active) setState(error instanceof ConversationApiError && error.status === 429 ? 'rate_limited' :
+          error instanceof KeyRegistrationAcknowledgementRequiredError ? 'consent' :
           error instanceof ConversationKeyStateLostError ? 'lost' : 'error');
       });
     return () => { active = false; };
   }, [userId, attempt]);
   if (state === 'ready') return children;
+  if (state === 'rate_limited') return <>{children}<section role="alert"><p>Too many requests. Please wait a moment, then retry.</p><Button onClick={() => setAttempt((value) => value + 1)}>Retry</Button></section></>;
   const lost = state === 'lost';
   const createKey = () => {
     approved.current = true;

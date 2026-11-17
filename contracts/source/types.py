@@ -689,9 +689,9 @@ class OfferView(CurrentOfferSummary):
 
 
 class OfferRevisionRequest(ContractModel):
-    """Submit/revise an offer without plaintext notes or payment behavior."""
+    """Submit/revise an offer that remains exact in browser JSON."""
 
-    amount_paise: int = Field(ge=0, multiple_of=100)
+    amount_paise: int = Field(ge=0, le=9_007_199_254_740_991, multiple_of=100)
     note_envelope: CipherEnvelope | None = None
     expected_revision: int | None = Field(default=None, ge=1)
     operation_id: OperationId

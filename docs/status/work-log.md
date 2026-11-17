@@ -2,6 +2,14 @@
 
 > **Platform note:** All macOS-related references in this document are historical. They must not be cited as evidence that macOS is supported; Linux is the supported development environment.
 
+### Issues #63 and #66 — 2026-11-17 12:37:55 UTC
+
+Aditya requested both fixes on the pagination branch. Offer submission now rejects amounts outside JavaScript safe integer precision while preserving the separate listing cap; regenerated contracts and retained the internal guard. Key setup reports rate limiting without hiding marketplace content and retains explicit retry; CSRF transport preserves 429. Focused API/contract checks 56 passed, UI checks 10 passed plus 5 after 429 transport coverage, contract generation check, frontend typecheck/lint and Python formatting passed. Existing unsafe offer records were not migrated; live retest, human verification and affected-owner review remain pending.
+
+### Issue #60 conversation pagination — 2026-11-17 11:57:35 UTC
+
+Aditya requested a separate fix branch. Added HTTP-boundary validation for PostgreSQL bigint offsets in grouped and ungrouped conversation queries, with boundary route checks. Focused route suite: 28 passed; Black check passed. No real-database regression, independent review, merge or deployment yet; human verification pending.
+
 ### Documentation and rate-limit verification — 2026-11-16 18:45:33 UTC
 
 Aditya ran `uv run --locked pytest -q -W error`: 2,580 passed and 188 skipped. Skipped cases are not passing evidence; other aggregate gates were not reported.
@@ -1626,6 +1634,8 @@ evidence](../evaluation/README.md).
 
 | Task ID | Owner role | Task status | Current checkpoint / immediate next action | Execution state | Human verification | Branch/revision/evidence | Blockers | Last UTC update |
 |---|---|---|---|---|---|---|---|---|
+| Issues #63 and #66 | Aditya; Rahul (Conversations owner) | in progress | Review safe offer bound and rate-limit UX | Focused API/contract and UI checks passed; generated artifacts current | pending | `fix/conversation-pagination-offers-rate-limit`; local changes | Existing unsafe offer records, affected-owner review, integration and deployment | 2026-11-17 12:37:55 UTC |
+| Issue #60 conversation pagination | Aditya; Rahul (Conversations owner) | in progress | Review fix and obtain affected-owner review | HTTP validation and boundary route checks performed; 28 passed | pending | `fix/conversation-pagination-offers-rate-limit`; local changes | Independent/owner review, integration and deployment | 2026-11-17 11:57:35 UTC |
 | Chat and Wanted visual correction | Aditya; affected Search, Listings and Conversations owners | in progress | Complete desktop/phone visual verification and obtain required peer/owner reviews | Full `make check` passed: Python 2,580/188 skipped; data 331; web 515/3 skipped; all remaining aggregate checks passed | pending | `task/visual-navigation-wanted-chat`; head `5a03002` plus uncommitted test update | Visual verification, affected-owner/independent review, commit approval, PR/CI and deployment remain | 2026-11-07 14:52:31 UTC |
 | Approved marketplace redesign | Rahul; Aditya, Suraj and Mohit affected-owner review | in progress | Complete aggregate CI, visual inspection and review | Final rate-limit and affected integration suite 56 passed; frontend 513 passed/3 skipped; local aggregate timed out during Python tests | Original preview design and Handle button approved | `task/mobile-menu-checkbox`; [feedback plan](../tasks/next-03-visual-feedback-plan.md) | Full aggregate/CI, visual verification and affected-owner/security and independent review pending | 2026-11-06 19:50:28 UTC |
 | API default rate limits | Rahul; Aditya affected-owner reviewer | in progress | Review defaults and affected workloads | Defaults and settings guide updated; diff check passed | pending | `task/mobile-menu-checkbox`; local changes | Independent review, PR and deployment gates remain | 2026-11-06 17:03:07 UTC |
