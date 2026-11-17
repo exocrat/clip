@@ -188,7 +188,7 @@ An image-only push, or an SSM value change alone, does not refresh running tasks
 | Key | Secret? | Where it lives | Status |
 |---|---|---|---|
 | **Secret key** (verifier) | Yes | SSM SecureString `/clip/test/turnstile/secret-key` (`ap-south-1`, `aws/ssm` KMS, Standard tier) | ✅ provisioned v1 by `surajs2`, independently verified (metadata only) |
-| **Site key** (widget) | No (public) | Terraform variable `turnstile_site_key` → runtime env `CLIP_TURNSTILE_SITE_KEY` | ⬜ supplied at apply: `0x4AAAAAAGFVdCspJtgJL2F1` |
+| **Site key** (widget) | No (public) | Terraform variable `turnstile_site_key` → runtime env `CLIP_TURNSTILE_SITE_KEY` | ⬜ supplied at apply from your private deploy inputs (the public widget key; its value is in PR #72) |
 
 Key points:
 - The **secret stays in SSM** exactly as it is — that is correct and done. It is
@@ -207,7 +207,7 @@ Key points:
 The public fragment (`turnstile.tfvars.json`) is simply:
 
 ```json
-{ "turnstile_site_key": "0x4AAAAAAGFVdCspJtgJL2F1" }
+{ "turnstile_site_key": "<public-widget-key; value in PR #72 / your deploy inputs>" }
 ```
 
 ## 9. What a deploy resolves
