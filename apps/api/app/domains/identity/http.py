@@ -219,9 +219,15 @@ class IdentityBrowserMiddleware:
                     if not any(
                         k.lower() == b"retry-after" for k, _ in message["headers"]
                     ):
-                        # Credential/source windows are at most fifteen minutes;
-                        # preserve the API limiter's more precise header if present.
-                        message["headers"].append((b"retry-after", b"900"))
+                        # Conservative bounds: OTP send windows reach one hour;
+                        # other auth windows are at most fifteen minutes. Keep
+                        # the API limiter's more precise header when present.
+                        message["headers"].append(
+                            (
+                                b"retry-after",
+                                b"3600" if path.endswith("-challenges") else b"900",
+                            )
+                        )
                 message["headers"] = [
                     (k, v)
                     for k, v in message.get("headers", [])
@@ -232,11 +238,9 @@ class IdentityBrowserMiddleware:
         unsafe = request.method not in {"GET", "HEAD", "OPTIONS"}
         raw_path = request.url.path
         path = raw_path[4:] if raw_path.startswith("/api/") else raw_path
-        challenge_path = request.method == "POST" and path in {
-            "/auth/temporary/sessions",
-            "/auth/microsoft/login-attempts",
-            "/auth/microsoft/sessions",
-        }
+        # One registry owns public auth and its recovery boundary; a new public
+        # operation must not silently miss challenge-assisted rate recovery.
+        challenge_path = request.method == "POST" and path in PUBLIC_AUTH
         development_peer = True
         if self.policy.development:
             try:
@@ -632,7 +636,14 @@ def install_identity_http(
     ) -> ChallengeAccepted:
         """Keep transient delivery private and run blocking dispatch after response."""
         json_body(request)
-        result = sessions.challenges.start(email, purpose, operation, source(request))
+        result = sessions.challenges.start(
+            email,
+            purpose,
+            operation,
+            source(request),
+            challenged=request.scope.get("clip.signin_challenged", False),
+            protect_active=sessions.challenge is not None,
+        )
         delivery = result.delivery
         if delivery is not None:
             background.add_task(lambda: delivery.dispatch(sender, now=clock()))
@@ -653,7 +664,12 @@ def install_identity_http(
         json_body(request)
         return grant(
             response,
-            sessions.activate(payload.challenge_id, payload.code, payload.password),
+            sessions.activate(
+                payload.challenge_id,
+                payload.code,
+                payload.password,
+                challenged=request.scope.get("clip.signin_challenged", False),
+            ),
         )
 
     @app.post(
@@ -685,7 +701,10 @@ def install_identity_http(
         """Consume/reset/revoke all sessions, requiring normal login afterward."""
         json_body(request)
         sessions.reset_password(
-            payload.challenge_id, payload.code, payload.new_password
+            payload.challenge_id,
+            payload.code,
+            payload.new_password,
+            challenged=request.scope.get("clip.signin_challenged", False),
         )
         return Response(status_code=204)
 

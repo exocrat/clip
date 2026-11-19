@@ -6,7 +6,7 @@ import { ConversationApiError, type ConversationApi } from './api';
 import { ConversationListingSelection, isSellerSaleListingConversation, type ListingSelectionPort } from './ConversationListingSelection';
 import { ConversationListingDoneDeal, type ListingAvailabilityPort } from './ConversationListingDoneDeal';
 import { ConversationContactPreparation } from './ConversationContactPreparation';
-import { ConversationCryptoError, ConversationKeyChangeRequiredError, ConversationKeyStateLostError,
+import { ConversationCryptoError, RejectedConversationControlError, ConversationKeyChangeRequiredError, ConversationKeyStateLostError,
   KeyRegistrationAcknowledgementRequiredError, type ConversationReceiveContext, type OwnContactValues } from './crypto';
 import { ConversationInbox, type ConversationInboxFilters, type ConversationInboxItem } from './ConversationInbox';
 import { ConversationThread, type ConversationDisplayEntry, type ConversationKeyUiState } from './ConversationThread';
@@ -226,9 +226,10 @@ export async function processProtocolControlEntry(
   session: ConversationSession,
 ): Promise<string | null> {
   if (entry.kind !== 'protocol_control' || entry.sender_user_id === userId) return null;
-  if (!entry.envelope || !entry.recovery_target || !session.history) {
-    throw new ConversationCryptoError('Recovery control metadata is incomplete');
+  if (!entry.envelope || !entry.recovery_target) {
+    throw new RejectedConversationControlError('Recovery control metadata is incomplete');
   }
+  if (!session.history) throw new ConversationCryptoError('Local recovery history is unavailable');
   const target = entry.recovery_target;
   const outcome = await session.crypto.receiveProtocolEntry({
     conversation_id: conversationId,
@@ -276,6 +277,9 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
   const [loading, setLoading] = useState(true);
   const [keyState, setKeyState] = useState<ConversationKeyUiState>({ kind: 'error' });
   const cursor = useRef(0);
+  // Server history is the durable retry journal. Keep only a bounded scan
+  // position here; reload starts at zero and rediscovers unfinished controls.
+  const controlRetry = useRef<{ after: number; through: number; next: number | null } | null>(null);
   const generation = useRef(0);
   const activeSession = useRef<ConversationSession | null>(null);
   const initializing = useRef<number | null>(null);
@@ -327,6 +331,10 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
       if (generation.current !== token) return;
       setReadSequence(state.own_last_read_sequence);
       cursor.current = Math.max(0, state.own_last_read_sequence - 5);
+      // Revisit earlier controls after a reload without rewinding the visible
+      // inbox to its first message. No pending ciphertext journal can be lost.
+      controlRetry.current = cursor.current > 0
+        ? { after: 0, through: cursor.current, next: null } : null;
       // Publish readiness only after the opening cursor is established: a poll
       // must never race initialization and restart an already-read transcript.
       setKeyState({ kind: 'ready' });
@@ -347,6 +355,7 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
   useEffect(() => {
     const token = ++generation.current;
     cursor.current = 0;
+    controlRetry.current = null;
     decryptionFailureIds.current.clear();
     void initialize(false, token).catch(() => undefined);
     return () => {
@@ -393,6 +402,39 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
     }
     const history = ready.session.history;
     const observedDecryptionFailureIds = new Set(decryptionFailureIds.current);
+    const retry = controlRetry.current;
+    if (retry) {
+      try {
+        // One extra bounded page per poll, independently of visible messages.
+        // Freeze the scan horizon so new traffic cannot prevent a retry cycle.
+        const page = await runtime.api.readEntries(conversationId, retry.after);
+        if (!isCurrent()) return;
+        for (const entry of page.items) {
+          if (entry.sequence > retry.through || entry.kind !== 'protocol_control') continue;
+          if (entry.sender_user_id !== runtime.userId && entry.envelope?.recipient_key_version != null &&
+            entry.envelope.recipient_key_version < ready.ownKey.key_version) continue;
+          try {
+            const failedId = await processProtocolControlEntry(entry, runtime.userId, conversationId, ready.session);
+            if (!isCurrent()) return;
+            if (failedId) observedDecryptionFailureIds.add(failedId);
+          } catch (error) {
+            if (!(error instanceof RejectedConversationControlError)) {
+              retry.next = Math.min(retry.next ?? entry.sequence - 1, entry.sequence - 1);
+            }
+          }
+        }
+        if (controlRetry.current !== retry) return;
+        retry.after = Math.min(page.scanned_through_sequence, retry.through);
+        if (retry.after >= retry.through || !page.has_more) {
+          controlRetry.current = retry.next === null ? null : {
+            after: retry.next, through: Math.max(cursor.current, retry.through), next: null,
+          };
+        }
+      } catch {
+        // Keep the scan unchanged after an unavailable API. Normal reads still
+        // get their own attempt and may succeed independently.
+      }
+    }
     let after = cursor.current;
     const visible: ConversationDisplayEntry[] = [];
     for (let pageCount = 0; pageCount < 1; pageCount++) {
@@ -410,10 +452,20 @@ function ConversationDetailSession({ conversationId, renderOriginContext }: { co
           // Recovery controls are protocol traffic, not chat bubbles. The SDK
           // validates/handles them; only an authenticated retry request reports
           // that the original sender's message was not decryptable.
-          const failedEntryId = await processProtocolControlEntry(entry, runtime.userId, conversationId,
-            ready.session);
-          if (!isCurrent()) return;
-          if (failedEntryId) observedDecryptionFailureIds.add(failedEntryId);
+          try {
+            const failedEntryId = await processProtocolControlEntry(entry, runtime.userId, conversationId,
+              ready.session);
+            if (!isCurrent()) return;
+            if (failedEntryId) observedDecryptionFailureIds.add(failedEntryId);
+          } catch (error) {
+            // A control never pins visible traffic. Transient failures retain
+            // a server-backed retry range, rather than being silently dropped.
+            if (!(error instanceof RejectedConversationControlError)) {
+              const pending = controlRetry.current;
+              if (pending) pending.next = Math.min(pending.next ?? entry.sequence - 1, entry.sequence - 1);
+              else controlRetry.current = { after: entry.sequence - 1, through: page.scanned_through_sequence, next: null };
+            }
+          }
           continue;
         }
         const display = await decryptEntry(entry, runtime.userId, ready, local.sent,

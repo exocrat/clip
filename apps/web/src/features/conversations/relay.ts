@@ -16,7 +16,7 @@ import type { ContactShareRequest, KeyBundle, MessageRequest, PublicKeyBundleReq
 import type { ConversationApi } from './api';
 import {
   CLIP_ENVELOPE_VERSION, CLIP_PROTOCOL_ID, CLIP_PROTOCOL_VERSION,
-  ConversationCrypto, ConversationCryptoError, ConversationKeyStateLostError, assertConversationKeyState,
+  ConversationCrypto, ConversationCryptoError, RejectedConversationControlError, ConversationKeyStateLostError, assertConversationKeyState,
   toOpenE2eePreKeyBundle,
   type ConversationEnvelopeRoute, type ConversationRouteRegistry,
   type SendConversationMessage,
@@ -89,7 +89,7 @@ function readRetryControl(payloadBase64: string): {
     return { targetEntryId: request.failedEnvelopeId, originalSdkClientMessageId: request.failedClientMessageId,
       familyId: request.retryId.toLowerCase(), timestamp: request.failedTimestamp };
   } catch {
-    throw new ConversationCryptoError('SDK recovery request metadata is invalid');
+    throw new RejectedConversationControlError('SDK recovery request metadata is invalid');
   }
 }
 
@@ -459,7 +459,16 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
   async registerIncomingRecovery(context: ConversationReceiveContext): Promise<void> {
     const envelope = context.envelope;
     if (envelope.sdk_message_type !== 'retry_request') {
-      if (context.recovery_target) return;
+      if (context.recovery_target) {
+        const family = sdkFamily(envelope.sdk_client_message_id ?? '');
+        const saved = family ? await this.readRecoveryRoute(family.root) : null;
+        if (!family || !['resend', 'null'].includes(family.kind) || !saved ||
+          saved.peerUserId !== context.sender_user_id ||
+          saved.targetEntryId !== context.recovery_target.entry_id) {
+          throw new RejectedConversationControlError('Recovery response has no matching local request');
+        }
+        return;
+      }
       if (envelope.envelope_version !== CLIP_ENVELOPE_VERSION || envelope.recovery_for_entry_id !== null ||
         typeof envelope.sdk_client_message_id !== 'string' || !UUID_V4.test(envelope.sdk_client_message_id)) {
         throw new ConversationCryptoError('Incoming application message cannot be used for SDK recovery');
@@ -483,18 +492,18 @@ export class ConversationRelay implements SignalProtocolRelayServer, Conversatio
     if (family?.kind !== 'retry-request' || !context.recovery_target ||
       context.recovery_target.sender_user_id !== this.userId ||
       context.recovery_target.entry_id !== envelope.recovery_for_entry_id) {
-      throw new ConversationCryptoError('Incoming recovery request target is inconsistent');
+      throw new RejectedConversationControlError('Incoming recovery request target is inconsistent');
     }
     const parsed = readRetryControl(envelope.payload_base64);
     if (parsed.familyId !== family.root || parsed.targetEntryId !== context.recovery_target.entry_id) {
-      throw new ConversationCryptoError('Incoming recovery family does not match its target');
+      throw new RejectedConversationControlError('Incoming recovery family does not match its target');
     }
     const original = await this.readPrepared(parsed.originalSdkClientMessageId);
     if (!original || original.recipientUserId !== context.sender_user_id ||
       original.conversationId !== context.conversation_id ||
       original.sdkClientMessageId !== parsed.originalSdkClientMessageId ||
       original.request.envelope.client_timestamp_ms !== parsed.timestamp) {
-      throw new ConversationCryptoError('Incoming recovery request has no matching original send');
+      throw new RejectedConversationControlError('Incoming recovery request has no matching original send');
     }
     await this.persistRecoveryRoute(family.root, {
       conversationId: context.conversation_id, peerUserId: context.sender_user_id,

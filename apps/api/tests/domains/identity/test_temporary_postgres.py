@@ -316,21 +316,22 @@ def test_callback_failure_rolls_back_consumption_and_its_mutation(otp):
     )
 
 
-def test_target_limits_cross_purpose_and_hour_boundary(otp):
+def test_target_limits_isolate_purposes_and_keep_hour_boundary(otp):
     service, _, clock, connect = otp
     for index in range(6):
         clock[0] = NOW + timedelta(minutes=index)
-        issue(otp, purpose="initial_verification" if index % 2 else "password_reset")
+        issue(otp, purpose="password_reset")
     clock[0] = NOW + timedelta(minutes=6)
-    denied(429, lambda: issue(otp))
+    denied(429, lambda: issue(otp, purpose="password_reset"))
+    issue(otp)  # Reset quota must not deny first-time registration.
     clock[0] = NOW + timedelta(hours=1)
-    issue(otp)
+    issue(otp, purpose="password_reset")
     with connect() as c:
         assert (
             c.execute("SELECT count(*) FROM identity.otp_send_reservations").fetchone()[
                 0
             ]
-            == 7
+            == 8
         )
 
 

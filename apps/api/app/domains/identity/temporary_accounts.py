@@ -68,6 +68,8 @@ class TemporaryActivation:
         code: str,
         password: SecretStr,
         apply: Callable[[Database, TemporaryAccount], T],
+        *,
+        challenged: bool = False,
     ) -> T:
         """Add a trusted session mutation to the same activation/consume transaction.
 
@@ -127,7 +129,7 @@ class TemporaryActivation:
             return apply(connection, TemporaryAccount(user_id, activated, expires))
 
         return self._challenges.consume(
-            challenge_id, "initial_verification", code, create
+            challenge_id, "initial_verification", code, create, challenged=challenged
         )
 
 

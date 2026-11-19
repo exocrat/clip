@@ -503,3 +503,12 @@ composition; OpenAPI/TypeScript HTTP shapes remain unchanged.
 `ConversationSummary` adds nullable `counterparty_handle`, nullable `counterparty_account_class`, and `group_has_more` (default false). These fields are read through Identity’s public SQL view `identity.participant_profiles`; it exposes only user ID, claimed Handle and active account class, and blanks retired/inactive profiles. Conversations joins this exact view only after member authorization. No private Identity table, email or contact is read. The integrated runtime needs SELECT on this view and schema USAGE; cloud grants remain separately gated.
 
 `ConversationQuery` adds `marketplace_mode=all|buying|selling` and optional `group_by=item|person`. Buying means sale initiator or Wanted owner; Selling means sale owner or Wanted responder. Existing view/filter URLs remain compatible. With grouping, filters precede group ranking; page/page_size count groups, ordered by latest matching activity then stable group key. Each group initially returns at most 20 threads and reports `group_has_more`; continuation uses the existing member-filtered flat list endpoint for that item/person. A response can contain up to 100 groups × 20 threads, never the entire inbox. Message history remains independently cursor-paged. The default UI pages 20 groups. No title/Handle search or Unread filter is added.
+
+### OTP recovery clarification — #78
+
+With the existing Turnstile runtime configured, all four temporary OTP POSTs
+can recover a confirmed-refused 429 through one server-verified, one-use proof.
+Live-code replacement requires proof; target send quotas/cooldowns are isolated
+by purpose, while the shared source history remains. A proof permits one attempt,
+not successful OTP verification: code, expiry, consumption, account lifecycle
+and enrollment checks still apply. See [OTP recovery isolation](../docs/decisions/otp-and-conversation-recovery-isolation.md).
