@@ -204,3 +204,11 @@ a UUIDv4 equal to `operation_id`, and the assumption that every encrypted
 `ciphertext`/`prekey_bundle` SDK send is a new user message. It leaves the
 selected OpenE2EE release, application encryption format and no-backup policy
 unchanged.
+
+
+## Control failure isolation — 2026-11-19
+
+See [#79 recovery isolation](otp-and-conversation-recovery-isolation.md).
+Rejected controls are skipped without blocking visible messages. Transient or
+pending control work is retried in a bounded, independent scan of server
+history. Ordinary message verification and durable history gates remain.

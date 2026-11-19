@@ -132,7 +132,7 @@ function entry(value: unknown): boolean {
   const hasRecoveryReference = envelope.envelope_version === 2 && envelope.recovery_for_entry_id != null;
   if (hasRecoveryTarget !== hasRecoveryReference ||
     (hasRecoveryTarget && recoveryTarget && (recoveryTarget.entry_id !== envelope.recovery_for_entry_id ||
-      recoveryTarget.sender_user_id !== value.sender_user_id))) return false;
+      (envelope.sdk_message_type !== 'retry_request' && recoveryTarget.sender_user_id !== value.sender_user_id)))) return false;
   try {
     const payload = atob(envelope.payload_base64);
     if (payload.length < 1 || payload.length > 65536 || btoa(payload) !== envelope.payload_base64) return false;

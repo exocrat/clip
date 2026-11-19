@@ -148,6 +148,9 @@ export class ConversationCryptoError extends Error {
   }
 }
 
+/** Definitively invalid peer control; discard it without treating storage/transport failures as invalid. */
+export class RejectedConversationControlError extends ConversationCryptoError {}
+
 /** A newly published peer identity needs the user's deliberate acceptance. */
 export class ConversationKeyChangeRequiredError extends ConversationCryptoError {
   constructor(
@@ -727,7 +730,7 @@ export class ConversationCrypto {
       typeof envelope.sdk_client_message_id !== 'string' || !context.recovery_target ||
       (envelope.recovery_for_entry_id !== context.recovery_target.entry_id) ||
       !['ciphertext', 'prekey_bundle', 'retry_request'].includes(envelope.sdk_message_type)) {
-      throw new ConversationCryptoError('Recovery envelope metadata is incomplete or inconsistent');
+      throw new RejectedConversationControlError('Recovery envelope metadata is incomplete or inconsistent');
     }
     this.installRecoveryHooks();
     if (!this.routes.registerIncomingRecovery) {
@@ -768,7 +771,7 @@ export class ConversationCrypto {
       const matches = [...this.recoveryContexts.values()].filter((item) =>
         item.recovery_target?.entry_id === event.failedEnvelopeId);
       if (matches.length > 1 || (matches.length === 1 && matches[0].sender_user_id !== event.senderUserId)) {
-        this.recoveryHookError = new ConversationCryptoError('SDK recovery family does not match the server target');
+        this.recoveryHookError = new RejectedConversationControlError('SDK recovery family does not match the server target');
         throw this.recoveryHookError;
       }
     });
@@ -778,15 +781,16 @@ export class ConversationCrypto {
       const item = matches[0];
       const target = item?.recovery_target;
       if (matches.length !== 1 || !item || !target || !this.activeRecoveryHistory) {
-        this.recoveryHookError = new ConversationCryptoError('SDK decrypted content has no unique recovery route');
+        this.recoveryHookError = new RejectedConversationControlError('SDK decrypted content has no unique recovery route');
         throw this.recoveryHookError;
       }
       if (decrypted.senderId !== target.sender_user_id || decrypted.senderId !== item.sender_user_id) {
-        this.recoveryHookError = new ConversationCryptoError('Recovered message sender does not match the original entry');
+        this.recoveryHookError = new RejectedConversationControlError('Recovered message sender does not match the original entry');
         throw this.recoveryHookError;
       }
+      let decoded: ConversationMessageContext;
       try {
-        const decoded = decodeConversationMessage(decrypted.content, {
+        decoded = decodeConversationMessage(decrypted.content, {
           conversation_id: item.conversation_id,
           sender_user_id: target.sender_user_id,
           recipient_user_id: this.client.userId,
@@ -794,6 +798,11 @@ export class ConversationCrypto {
           recipient_key_version: item.expected_recipient_key_version,
           client_timestamp_ms: item.envelope.client_timestamp_ms,
         });
+      } catch {
+        this.recoveryHookError = new RejectedConversationControlError('Recovered content failed context validation');
+        throw this.recoveryHookError;
+      }
+      try {
         await this.activeRecoveryHistory.put({
           message_id: target.entry_id,
           sequence: target.sequence,
@@ -805,7 +814,7 @@ export class ConversationCrypto {
         });
         this.recoveredTargetIds.add(target.entry_id);
       } catch {
-        this.recoveryHookError = new ConversationCryptoError('Recovered content failed context or local-history validation');
+        this.recoveryHookError = new ConversationCryptoError('Recovered content local-history write failed');
         throw this.recoveryHookError;
       }
     });

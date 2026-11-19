@@ -1,4 +1,4 @@
-"""Bounded, fail-closed Turnstile verification for exceptional sign-in attempts.
+"""Bounded, fail-closed Turnstile verification for exceptional public authentication attempts.
 
 The challenge is not authentication. Only normal credential/nonce validation can
 issue a session. Ordinary sign-ins never call this external provider.

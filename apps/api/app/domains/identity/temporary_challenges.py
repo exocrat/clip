@@ -174,12 +174,17 @@ class PostgresTemporaryChallenges:
         purpose: str,
         operation_id: UUID,
         source: IPv4Address | IPv6Address,
+        *,
+        challenged: bool = False,
+        protect_active: bool = False,
     ) -> ChallengeRequest:
         """Reserve one generic challenge and optional send, with no provider call.
 
         Requests to ineligible targets consume identical send/attempt windows.
         Duplicate operations return their original ID/expiry without charging a
         send or extending expiry. Source is trusted server-resolved IP, not XFF.
+        Only trusted HTTP middleware may set challenged after verifying/consuming
+        a proof. With a verifier installed, protect_active guards live resends.
         """
         try:
             normalized = normalize_login(email)
@@ -204,15 +209,22 @@ class PostgresTemporaryChallenges:
                     ).fetchone()
                     if old is not None:
                         return ChallengeRequest(old[0], old[1])
-                    self._send_limits(c, target, source_digest, now)
+                    self._send_limits(
+                        c, target, source_digest, purpose, now, challenged=challenged
+                    )
                     prior = c.execute(
                         "SELECT expires_at, failures FROM identity.otp_verification_windows "
                         "WHERE key_version = %s AND target_digest = %s AND purpose = %s FOR UPDATE",
                         (self._keys.version, target, purpose),
                     ).fetchone()
+                    # A stranger must not replace a live code without a verified
+                    # proof. Proof recovery starts a fresh attempt budget; the
+                    # old code becomes unusable only when the new one commits.
+                    if protect_active and prior and now < prior[0] and not challenged:
+                        raise PublicError(ERRORS[429])
                     window = (
                         VerificationWindow(prior[0], prior[1]).resend(now)
-                        if prior
+                        if prior and not challenged
                         else VerificationWindow(now + OTP_LIFETIME)
                     )
                     eligible, user_id = self._eligible(c, target, purpose, now)
@@ -298,13 +310,24 @@ class PostgresTemporaryChallenges:
             raise PublicError(ERRORS[503]) from None
 
     def _send_limits(
-        self, c: Database, target: bytes, source: bytes, now: datetime
+        self,
+        c: Database,
+        target: bytes,
+        source: bytes,
+        purpose: str,
+        now: datetime,
+        *,
+        challenged: bool = False,
     ) -> None:
-        """Count committed reservations under source-then-target locks, across purposes."""
+        """Keep purpose-local target quotas and shared source history under locks.
+
+        One server-verified proof may exceed the quotas, never erase them.
+        Suppressed targets charge exactly like eligible ones within a purpose.
+        """
         row = c.execute(
             "SELECT count(*), max(created_at) FROM identity.otp_send_reservations "
-            "WHERE key_version = %s AND target_digest = %s AND created_at > %s",
-            (self._keys.version, target, now - timedelta(hours=1)),
+            "WHERE key_version = %s AND target_digest = %s AND purpose = %s AND created_at > %s",
+            (self._keys.version, target, purpose, now - timedelta(hours=1)),
         ).fetchone()
         source_row = c.execute(
             "SELECT count(*) FROM identity.otp_send_reservations "
@@ -313,7 +336,7 @@ class PostgresTemporaryChallenges:
         ).fetchone()
         if row is None or source_row is None:
             raise PublicError(ERRORS[503])
-        if (
+        if not challenged and (
             row[0] >= TARGET_SENDS_PER_HOUR
             or source_row[0] >= SOURCE_SENDS_PER_HOUR
             or (row[1] is not None and now - row[1] < RESEND_COOLDOWN)
@@ -326,13 +349,17 @@ class PostgresTemporaryChallenges:
         purpose: str,
         code: str,
         apply: Callable[[Database, VerifiedOtp], T],
+        *,
+        challenged: bool = False,
     ) -> T:
         """Consume once and apply owning-domain mutation atomically on the same DB.
 
         Callback must not send, commit, open a separate transaction/connection,
         expose proof to an untrusted caller or acquire locks in another order.
         Wrong-code failures commit before returning safe422, including bad format.
-        Correct third attempt is allowed; three failures block until latest expiry.
+        Correct third attempt is allowed. Three failures block until expiry or
+        a trusted, verified one-use proof permits another code check. Proof never
+        skips expiry, purpose, eligibility, consumption or verifier checks.
         """
         if (
             not isinstance(challenge_id, UUID)
@@ -376,7 +403,8 @@ class PostgresTemporaryChallenges:
                         )
                     ):
                         raise PublicError(ERRORS[422])
-                    VerificationWindow(window[1], window[2]).require_available(now)
+                    if not challenged:
+                        VerificationWindow(window[1], window[2]).require_available(now)
                     eligible, user_id = self._eligible(c, target, purpose, now)
                     # Suppressed/unknown reset acknowledgements spend the same
                     # failure budget, preventing enumeration via 422/429 behavior.
@@ -429,7 +457,7 @@ class PostgresTemporaryChallenges:
                         (challenge_id,),
                     )
                     c.execute(
-                        "UPDATE identity.otp_verification_windows SET failures = failures + 1 "
+                        "UPDATE identity.otp_verification_windows SET failures = least(3, failures + 1) "
                         "WHERE key_version = %s AND target_digest = %s AND purpose = %s",
                         (self._keys.version, target, purpose),
                     )

@@ -109,3 +109,16 @@ password hashes can still be verified with their exact original passwords, so
 this rule does not lock existing accounts out; reset selects a compliant password.
 UI guidance and server enforcement agree. This supersedes the earlier allowance
 of spaces for newly chosen passwords, not the historical test evidence.
+
+
+## OTP availability correction — 2026-11-19
+
+The [#78 correction](otp-and-conversation-recovery-isolation.md) supersedes the
+shared cross-purpose target quota and unconditional live-code replacement above.
+Target send quotas/cooldowns are purpose-local; source history remains shared.
+When Turnstile is configured, replacing a live code requires proof. A verified
+issuance starts a fresh attempt window; a verified completion may check the
+current correct code despite an exhausted failure budget. Failed verification
+counters saturate at three. OTP/lifecycle/consumption checks and uniform
+known/unknown responses remain enforced. Without proof, failures still survive
+resends and quotas remain enforced. Existing deployment keys are reused.

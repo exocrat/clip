@@ -247,7 +247,12 @@ class IdentitySessions:
         return SessionGrant(identity, SecretStr(token), expires)
 
     def activate(
-        self, challenge_id: UUID, code: str, password: SecretStr
+        self,
+        challenge_id: UUID,
+        code: str,
+        password: SecretStr,
+        *,
+        challenged: bool = False,
     ) -> SessionGrant:
         """Commit initial OTP, account/guard/password and first session together."""
         return self._activation.activate_with(
@@ -255,6 +260,7 @@ class IdentitySessions:
             code,
             password,
             lambda c, a: self._issue(c, a.user_id, a.activated_at),
+            challenged=challenged,
         )
 
     def password_login(
@@ -322,7 +328,12 @@ class IdentitySessions:
         raise PublicError(ERRORS[outcome])
 
     def reset_password(
-        self, challenge_id: UUID, code: str, password: SecretStr
+        self,
+        challenge_id: UUID,
+        code: str,
+        password: SecretStr,
+        *,
+        challenged: bool = False,
     ) -> None:
         """Change password/consume OTP/revoke sessions atomically; never renew or login."""
         self._passwords.validate(password)
@@ -340,7 +351,9 @@ class IdentitySessions:
                 (proof.verified_at, proof.user_id),
             )
 
-        self.challenges.consume(challenge_id, "password_reset", code, apply)
+        self.challenges.consume(
+            challenge_id, "password_reset", code, apply, challenged=challenged
+        )
 
     def authenticate(self, token: str | None) -> SessionIdentity:
         """Read fresh current user/session and renew idle time only while valid."""

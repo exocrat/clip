@@ -1,5 +1,5 @@
 import { solveSignInChallenge } from './SignInChallenge';
-import { sessionFetch, SessionFetchError } from '../../shared/http/sessionFetch';
+import { sessionFetch, SessionFetchError, isPublicAuthenticationPath } from '../../shared/http/sessionFetch';
 import type {
   ActivateTemporaryRequestWritable,
   ChallengeAccepted,
@@ -63,7 +63,7 @@ function session(value: unknown): SessionView {
   };
 }
 
-/** Same-origin, bounded cookie requests. Never retry credential/OTP writes. */
+/** Same-origin, bounded cookie requests. Replay only a challenge-marked, confirmed-refused operation once. */
 export async function request(
   path: string,
   method = 'GET',
@@ -84,16 +84,16 @@ export async function request(
       prefix: import.meta.env.MODE === 'identity-preview' ? '' : '/api',
       publicAuthentication: !protectedWrite,
     });
-    // A challenge-marked 429 guarantees this sign-in was refused, not issued.
+    // A challenge-marked 429 guarantees this authentication operation was refused.
     // Only explicit user completion permits one replay; never retry uncertain writes.
     const siteKey = response.headers.get('X-CLIP-Challenge-Site-Key');
     if (response.status === 429 && siteKey && !challengeToken && method === 'POST'
-      && ['/auth/temporary/sessions', '/auth/microsoft/login-attempts', '/auth/microsoft/sessions'].includes(path)) {
+      && isPublicAuthenticationPath(path)) {
       let proof: string;
       try { proof = await solveSignInChallenge(siteKey, signal); }
       catch {
         const failure = new IdentityError(503);
-        failure.message = 'The security check could not be completed. Please try signing in again.';
+        failure.message = 'The security check could not be completed. Please try again.';
         throw failure;
       }
       return request(path, method, body, protectedWrite, signal, proof);
