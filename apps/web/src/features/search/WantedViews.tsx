@@ -394,7 +394,8 @@ function WantedEditor({
         onSaved(value);
       }
     } catch (failure) {
-      if (active.current?.signal.aborted) return;
+      const controller = active.current;
+      if (!controller || controller.signal.aborted) return;
       // On a stale-revision conflict, reload the current request so the editor's
       // expected_revision advances; the user keeps their edits and the next save
       // can succeed, instead of re-sending the same doomed revision (#74).
@@ -404,8 +405,8 @@ function WantedEditor({
           'This request changed since you opened it. Reload the latest version before saving again.',
         );
         try {
-          const latest = await readWanted(initial.request_id, active.current.signal);
-          if (!active.current.signal.aborted && latest && 'revision' in latest) {
+          const latest = await readWanted(initial.request_id, controller.signal);
+          if (!controller.signal.aborted && latest && 'revision' in latest) {
             setRevision((latest as WantedRequestOwnerView).revision);
             setError(
               'This request changed since you opened it — we loaded the latest version. Review your changes and save again.',

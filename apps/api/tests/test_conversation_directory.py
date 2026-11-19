@@ -346,6 +346,124 @@ def test_sale_inbox_offer_sorting_filters_and_no_offer_rows():
     run_scenario(scenario)
 
 
+def test_grouped_inbox_honors_offer_amount_sort():
+    """Grouped mode must honor sort=offer_amount_* instead of silently falling
+    back to activity order (#76): groups are ranked by their representative
+    offer (best in the requested direction) and threads within a group share the
+    flat path's amount ordering, so a within-group continuation stays
+    consistent."""
+
+    async def scenario(pool):
+        from test_thread_creation import seed_users_and_listing
+
+        owner, buyer_a, listing_one = await seed_users_and_listing(pool)
+        listing_two, buyer_b, buyer_c = uuid4(), uuid4(), uuid4()
+        by_amount: dict[int, UUID] = {}
+        async with pool.connection() as connection:
+            async with connection.transaction():
+                for extra_buyer in (buyer_b, buyer_c):
+                    await connection.execute(
+                        "INSERT INTO identity.users (id, account_class, status) "
+                        "VALUES (%s, 'regular', 'active')",
+                        (extra_buyer,),
+                    )
+                category_id = (
+                    await (
+                        await connection.execute(
+                            "SELECT id FROM listings.categories WHERE code = 'other'"
+                        )
+                    ).fetchone()
+                )[0]
+                await connection.execute(
+                    "INSERT INTO listings.sale_listings "
+                    "(id, owner_id, title, description, category_id, condition_code, "
+                    "asking_price_paise, negotiable, pickup_area, availability) "
+                    "VALUES (%s, %s, 'Second item', 'Test-only description', %s, "
+                    "'good', 100, false, 'Test area', 'available')",
+                    (listing_two, owner, category_id),
+                )
+                # A live listing must carry at least one usable image.
+                upload_two, image_two = uuid4(), uuid4()
+                object_key = f"test/directory-grouped/{image_two}"
+                await connection.execute(
+                    "INSERT INTO listings.image_uploads "
+                    "(id, owner_id, object_key, state, created_at, expires_at, "
+                    "confirmed_at, operation_id, confirmed_media_type, confirmed_size_bytes) "
+                    "VALUES (%s, %s, %s, 'confirmed', CURRENT_TIMESTAMP, "
+                    "CURRENT_TIMESTAMP + INTERVAL '24 hours', CURRENT_TIMESTAMP, %s, "
+                    "'image/png', 1)",
+                    (upload_two, owner, object_key, uuid4()),
+                )
+                await connection.execute(
+                    "INSERT INTO listings.images "
+                    "(id, listing_id, upload_id, object_key, position, media_type, size_bytes) "
+                    "VALUES (%s, %s, %s, %s, 0, 'image/png', 1)",
+                    (image_two, listing_two, upload_two, object_key),
+                )
+                # listing_one holds offers {100, 300}; listing_two holds {200}.
+                for listing, buyer, amount in (
+                    (listing_one, buyer_a, 100),
+                    (listing_one, buyer_b, 300),
+                    (listing_two, buyer_c, 200),
+                ):
+                    thread, entry, offer = uuid4(), uuid4(), uuid4()
+                    by_amount[amount] = thread
+                    await connection.execute(
+                        "INSERT INTO conversations.threads "
+                        "(id, listing_id, initiator_id, counterparty_id) "
+                        "VALUES (%s, %s, %s, %s)",
+                        (thread, listing, buyer, owner),
+                    )
+                    await connection.execute(
+                        "INSERT INTO conversations.members "
+                        "(conversation_id, user_id) VALUES (%s, %s), (%s, %s)",
+                        (thread, buyer, thread, owner),
+                    )
+                    await connection.execute(
+                        "INSERT INTO conversations.entries "
+                        "(id, conversation_id, sender_id, client_operation_id, kind) "
+                        "VALUES (%s, %s, %s, %s, 'offer')",
+                        (entry, thread, buyer, uuid4()),
+                    )
+                    await connection.execute(
+                        "INSERT INTO conversations.offers "
+                        "(id, conversation_id, buyer_id, current_revision, next_revision) "
+                        "VALUES (%s, %s, %s, 1, 2)",
+                        (offer, thread, buyer),
+                    )
+                    await connection.execute(
+                        "INSERT INTO conversations.offer_revisions "
+                        "(offer_id, revision, entry_id, amount_paise, status) "
+                        "VALUES (%s, 1, %s, %s, 'submitted')",
+                        (offer, entry, amount),
+                    )
+        service = PostgresConversationQueries(pool)
+        descending = await service.list_mine(
+            caller(owner),
+            ConversationQuery(group_by="item", sort="offer_amount_desc"),
+        )
+        # listing_one (best offer 300) ranks above listing_two (200); within
+        # listing_one the 300 thread precedes the 100 thread.
+        assert [row.conversation_id for row in descending.items] == [
+            by_amount[300],
+            by_amount[100],
+            by_amount[200],
+        ]
+        ascending = await service.list_mine(
+            caller(owner),
+            ConversationQuery(group_by="item", sort="offer_amount_asc"),
+        )
+        # Ascending ranks listing_one (lowest offer 100) first; within it the 100
+        # thread precedes the 300 thread.
+        assert [row.conversation_id for row in ascending.items] == [
+            by_amount[100],
+            by_amount[300],
+            by_amount[200],
+        ]
+
+    run_scenario(scenario)
+
+
 def test_registration_retry_conflict_rotation_and_historical_thread_keys():
     async def scenario(pool):
         alice, bob, _, thread, *_ = await seed_thread(pool)
