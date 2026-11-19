@@ -347,6 +347,10 @@ function WantedEditor({
   const [budget, setBudget] = useState(
     initial?.budget_paise == null ? '' : String(initial.budget_paise / 100),
   );
+  // Live revision baseline for optimistic-concurrency: seeded from the opened
+  // request and refreshed after a 409 stale_revision so the next save targets
+  // the current revision instead of re-sending the stale one (#74).
+  const [revision, setRevision] = useState(initial?.revision);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const categories = useRead('catalogue', readDiscoveryCatalogue);
@@ -373,7 +377,7 @@ function WantedEditor({
         category_code: category,
         budget_paise: budgetPaise(budget),
       };
-      const body = { ...fields, ...(initial ? { expected_revision: initial.revision } : {}) };
+      const body = { ...fields, ...(initial ? { expected_revision: revision } : {}) };
       const operation_id = intent.current.key(body);
       const controller = new AbortController();
       active.current = controller;
@@ -381,7 +385,7 @@ function WantedEditor({
       const value = initial
         ? await editWanted(
             initial.request_id,
-            { ...fields, expected_revision: initial.revision, operation_id },
+            { ...fields, expected_revision: revision ?? initial.revision, operation_id },
             controller.signal,
           )
         : await createWanted({ ...fields, operation_id }, controller.signal);
@@ -390,7 +394,29 @@ function WantedEditor({
         onSaved(value);
       }
     } catch (failure) {
-      if (!active.current?.signal.aborted) setError((failure as Error).message);
+      if (active.current?.signal.aborted) return;
+      // On a stale-revision conflict, reload the current request so the editor's
+      // expected_revision advances; the user keeps their edits and the next save
+      // can succeed, instead of re-sending the same doomed revision (#74).
+      if (initial && failure instanceof WantedApiError && failure.status === 409) {
+        intent.current.clear();
+        setError(
+          'This request changed since you opened it. Reload the latest version before saving again.',
+        );
+        try {
+          const latest = await readWanted(initial.request_id, active.current.signal);
+          if (!active.current.signal.aborted && latest && 'revision' in latest) {
+            setRevision((latest as WantedRequestOwnerView).revision);
+            setError(
+              'This request changed since you opened it — we loaded the latest version. Review your changes and save again.',
+            );
+          }
+        } catch {
+          /* Keep the reload-before-retrying guidance if the refresh fails. */
+        }
+      } else {
+        setError((failure as Error).message);
+      }
     } finally {
       if (!active.current?.signal.aborted) setBusy(false);
     }

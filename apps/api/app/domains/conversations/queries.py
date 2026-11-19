@@ -162,13 +162,32 @@ class PostgresConversationQueries:
                 if query.group_by == "person"
                 else "origin_kind || ':' || origin_id::text"
             )
+            # Honor the requested offer-amount sort inside grouped mode too (see
+            # conversations-offers contract: amount sort places missing offers
+            # last with the same deterministic ties). Groups are ranked by their
+            # representative offer (best amount in the requested direction) and
+            # threads within a group share the same ordering as the flat path, so
+            # a within-group "Load more" (which falls back to the flat API) stays
+            # consistent with the first page. Default activity ordering is
+            # unchanged. `group_amount` is appended last so the positional row
+            # mapping in `_summary` is preserved.
+            if query.sort == "last_activity_desc":
+                within = "last_activity_at DESC, conversation_id DESC"
+                group_amount = ""
+                group_order = "activity DESC, group_key DESC"
+            else:
+                direction = "ASC" if query.sort == "offer_amount_asc" else "DESC"
+                aggregate = "min" if query.sort == "offer_amount_asc" else "max"
+                within = f"amount_paise {direction} NULLS LAST, last_activity_at DESC, conversation_id DESC"
+                group_amount = f", {aggregate}(amount_paise) OVER (PARTITION BY group_key) AS group_amount"
+                group_order = f"group_amount {direction} NULLS LAST, activity DESC, group_key DESC"
             statement = (
                 f"WITH base AS ({base}), keyed AS (SELECT base.*, {grouping} AS group_key FROM base), "
                 "ranked AS (SELECT keyed.*, max(last_activity_at) OVER (PARTITION BY group_key) AS activity, "
-                "row_number() OVER (PARTITION BY group_key ORDER BY last_activity_at DESC, conversation_id DESC) AS row_number, "
+                f"row_number() OVER (PARTITION BY group_key ORDER BY {within}) AS row_number, "
                 "count(*) OVER (PARTITION BY group_key) AS group_size, "
-                "sum(unread_count) OVER (PARTITION BY group_key) AS group_unread_count FROM keyed), "
-                "paged AS (SELECT ranked.*, dense_rank() OVER (ORDER BY activity DESC, group_key DESC) AS group_number FROM ranked) "
+                f"sum(unread_count) OVER (PARTITION BY group_key) AS group_unread_count{group_amount} FROM keyed), "
+                f"paged AS (SELECT ranked.*, dense_rank() OVER (ORDER BY {group_order}) AS group_number FROM ranked) "
                 "SELECT * FROM paged WHERE group_number > %s AND group_number <= %s AND row_number <= 20 "
                 "ORDER BY group_number, row_number"
             )
