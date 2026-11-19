@@ -151,8 +151,11 @@ def _service(
 
 
 def _caller(user_id: UUID = BUYER_ID) -> CallerContext:
-    # CallerContext checks wall-clock expiry independently of the frozen service clock.
-    return CallerContext(user_id, "regular", NOW + timedelta(days=30))
+    # CallerContext checks wall-clock expiry independently of the frozen service
+    # clock, so pin validity far into the future (as the temporary caller below
+    # does) rather than NOW + a fixed margin, which expires against the real
+    # clock once wall-clock time passes that margin from the frozen NOW.
+    return CallerContext(user_id, "regular", datetime(2099, 1, 1, tzinfo=UTC))
 
 
 @pytest.mark.parametrize(
