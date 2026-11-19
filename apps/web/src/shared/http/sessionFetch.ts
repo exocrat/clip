@@ -19,6 +19,11 @@ const publicAuthentication = new Set([
   '/auth/temporary/password-resets',
 ]);
 
+/** Canonical public auth path registry; a challenge does not authenticate its caller. */
+export function isPublicAuthenticationPath(path: string): boolean {
+  return publicAuthentication.has(path);
+}
+
 export interface SessionFetchPolicy {
   /** Normal Vite/hosted API prefix; empty is for the explicit Identity preview. */
   prefix?: '/api' | '';
@@ -50,7 +55,7 @@ export async function sessionFetch(
   if (!appPath(path) || !['', '/api'].includes(prefix) || !methods.has(method))
     throw new SessionFetchError(503);
   const unsafe = !safeMethods.has(method);
-  if (unsafe && policy.publicAuthentication && !publicAuthentication.has(path))
+  if (unsafe && policy.publicAuthentication && !isPublicAuthenticationPath(path))
     throw new SessionFetchError(503);
   const controller = new AbortController();
   const cancel = () => controller.abort();

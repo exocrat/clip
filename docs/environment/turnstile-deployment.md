@@ -191,3 +191,15 @@ immunity to automated abuse or continuous provider availability.
 
 AWS injection/reference behavior is documented in
 [ECS Parameter Store environment secrets](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/secrets-envvar-ssm-paramstore.html).
+
+
+## OTP recovery extension (#78)
+
+The same runtime site/secret pair now also protects temporary registration and
+password reset, including final OTP completion when rate limited. No new widget,
+SSM parameter, IAM permission or image build argument is needed. Existing
+hardened-runtime configuration remains mandatory for recovery. After rollout,
+verify normal first-code delivery, guarded resend/security-check completion,
+account creation and password reset; a proof does not replace the emailed code.
+Provider failure must leave the action refused and retryable. See the
+[OTP recovery decision](../decisions/otp-and-conversation-recovery-isolation.md).

@@ -31,7 +31,7 @@ The full API and session-only Listings composition use the same policy. Apps
 without an Identity runtime retain standalone request-limit middleware. Existing
 read/write defaults, rolling windows, bounded counters, Retry-After responses,
 body limits and authorization remain; the outer shared-peer ceiling is removed.
-OTP policies are unchanged. The combined #52/#65 correction retains credential
+The original #52/#65 change left OTP policies unchanged; [the #78/#79 correction](otp-and-conversation-recovery-isolation.md) adds OTP recovery and purpose isolation. The combined #52/#65 correction retains credential
 source/target counters but allows one exceptional sign-in attempt after server-side
 Turnstile verification and atomic local proof consumption. Cookie clearing does
 not reset those histories. Normal password/Microsoft verification remains required.
@@ -101,3 +101,5 @@ a controlled provider boundary and real SQL/session/credential logic. Deployment
 must supply the secret privately, verify real widget behavior and both sign-in
 methods, and obtain reporting-team retest. No commit/push/deploy is authorized
 by local test success; the latest human direction explicitly stops before commit.
+
+The OTP expansion and independent conversation-control retry semantics are recorded in [OTP and conversation recovery isolation](otp-and-conversation-recovery-isolation.md).

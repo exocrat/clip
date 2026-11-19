@@ -1,5 +1,16 @@
 # Campus Marketplace — Shared Work Log and Checkpoints
 
+### #78/#79 local correction — 2026-11-19 07:21:32 UTC
+
+| Scope | Owner | State | Next gate |
+|---|---|---|---|
+| OTP and conversation recovery isolation (#78/#79) | Suraj / execution agent | Local implementation and verification complete on `task/rt78-79-otp-recovery`, base `973e8b3` | PR/CI handoff authorized; independent affected-owner review required; no merge or deployment authorized |
+
+Suraj explicitly authorized both fixes plus adjacent-path review, with no commit, push or deployment. Reserved Identity recovery files and Conversations page/API/crypto/relay files for this batch. The [decision](../decisions/otp-and-conversation-recovery-isolation.md) records purpose-isolated OTP quotas, proof-assisted issuance/completion, protected live-code replacement and independent control retries. Existing worktrees are preserved.
+
+Verification completed 2026-11-19 07:40:27 UTC: all 12 local `make check` gates passed (Python 2,683 passed/189 skipped; data 331 passed; frontend initially 545 passed/3 skipped; clean/repeat/rollback PostgreSQL migrations; Conversations 197 passed; Gitleaks passed). After final historical-control/registry refinements, frontend lint, types, build and all 547 tests passed (3 existing skips); focused final authentication checks passed 24 cases, plus 4 explicit expired/revoked/wrong-purpose/expired-OTP proof checks. The OTP recovery module contains 18 collected cases. Changed Identity modules also passed mypy. Real local HTTP/PostgreSQL/SDK + React polling preserved new messages after a stored malformed control across repeated polls and session restarts. Provider decisions were controlled in OTP tests, not a real Turnstile/deployed retest. New-message durability, old #52/#65 behavior, bounded retry scans, continued-traffic fairness and read-watermark restart behavior have regressions. Public auth/recovery now use one backend registry and one frontend transport registry. Deployment reuses existing Turnstile configuration; no cloud, migration, commit, push or GitHub mutation was performed. Independent Identity/Conversations owner review and live reporting-team retest remain pending. Suraj authorized commit, push, PR creation and waiting for CI on 2026-11-19 08:55:39 UTC; merge/deployment remain separately gated.
+
+
 ### Issue 55 key-replacement repair — 2026-11-17 10:54:05 UTC
 
 Conversation client now displays previous-key incoming messages as unavailable and continues to current-key entries; accepted sends are no longer reported failed when the subsequent refresh fails. Real SDK synthetic tests cover key replacement, both directions and session restart; focused page tests cover old-key skipping and current-key failures. Frontend aggregate passed 519 tests (3 skipped), lint, typecheck and build. A three-profile Chromium replay with real local PostgreSQL and encryption passed key replacement, new messages in both directions and reloads, both with the old browser closed and with it open; the latter required stopping the old browser when its published key changes. The legacy fixture required temporary local adaptation for newer availability, Handle and Listings wiring; its synthetic image endpoint returned 503 and was outside this check. No cloud changes; independent peer review remains required.

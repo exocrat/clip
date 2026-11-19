@@ -189,3 +189,17 @@ describe('ConversationApi', () => {
     expect(publish.transport.mock.calls[0][1].method).toBe('POST');
   });
 });
+
+
+it('accepts the API recovery-request target owned by the recipient while keeping response sender binding', async () => {
+  const control = { ...entry, sequence: 2, kind: 'protocol_control', sender_user_id: bob,
+    recovery_target: { entry_id: entry.entry_id, sequence: 1, sender_user_id: alice, created_at: entry.created_at },
+    envelope: { ...entry.envelope, envelope_version: 2, sdk_message_type: 'retry_request',
+      sdk_client_message_id: `${operation}:retry-request`, recovery_for_entry_id: entry.entry_id,
+      sender_key_version: null, recipient_key_version: null } };
+  const page = { items: [control], scanned_through_sequence: 2, has_more: false };
+  expect((await setup(page).api.readEntries(thread, 1)).items).toHaveLength(1);
+  const badResponse = { ...control, envelope: { ...control.envelope, sdk_message_type: 'ciphertext',
+    sdk_client_message_id: `${operation}:resend`, sender_key_version: 1, recipient_key_version: 1 } };
+  await expect(setup({ ...page, items: [badResponse] }).api.readEntries(thread, 1)).rejects.toMatchObject({ kind: 'invalid_response' });
+});

@@ -9,7 +9,7 @@ declare global { interface Window { turnstile?: Widget } }
 let loading: Promise<Widget> | null = null;
 let active = false;
 
-/** Load the fixed provider script only after a challenged sign-in; allow retry on failure. */
+/** Load the fixed provider script only after a challenged authentication operation; allow retry on failure. */
 function provider(): Promise<Widget> {
   if (window.turnstile) return Promise.resolve(window.turnstile);
   if (!loading) loading = new Promise<Widget>((resolve, reject) => {
@@ -99,7 +99,7 @@ export function solveSignInChallenge(siteKey: string, signal?: AbortSignal): Pro
         if (previous instanceof HTMLElement && previous.isConnected) previous.focus();
       });
       if (token && token.length <= 2048) resolve(token);
-      else reject(new Error('Security check did not complete. Please try signing in again.'));
+      else reject(new Error('Security check did not complete. Please try again.'));
     }
     signal?.addEventListener('abort', cancel, { once: true });
     window.addEventListener('pagehide', cancel, { once: true });

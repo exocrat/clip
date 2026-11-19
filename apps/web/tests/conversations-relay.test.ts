@@ -10,6 +10,7 @@ import {
   ConversationRelay, KeyRegistrationAcknowledgementRequiredError, createConversationSession,
   type ConversationSession, type ConversationEnvelopeRoute,
 } from '../src/features/conversations';
+import { RejectedConversationControlError } from '../src/features/conversations/crypto';
 import { processProtocolControlEntry } from '../src/features/conversations/ConversationPages';
 
 const alice = '00000000-0000-4000-8000-000000000001';
@@ -476,4 +477,37 @@ it('exchanges current messages after replacing an account key and accepting the 
     await expect(reopenedB.receiveText({ ...receiveContext(reopenedEntry, alice), expected_recipient_key_version: 2 }))
       .resolves.toMatchObject({ text: 'After reload' });
   } finally { await Promise.allSettled(sessions.map(session => session.stop())); }
+}, 60_000);
+
+
+it('rejects malformed peer recovery data without changing the ability to receive later genuine SDK messages', async () => {
+  const server = new RelayHttpFixture();
+  const sessions: ConversationSession[] = [];
+  try {
+    const a = await createConversationSession(alice, thread, server.api(alice), inMemoryStore(), { acknowledgeUnrecoverableHistoryRisk: true }); sessions.push(a);
+    const b = await createConversationSession(bob, thread, server.api(bob), inMemoryStore(), { acknowledgeUnrecoverableHistoryRisk: true }); sessions.push(b);
+    await establish(a, server, alice, bob);
+    await a.sendText(message(bob));
+    const original = server.entries.at(-1);
+    if (!original?.envelope || !a.history) throw new Error('Expected synthetic encrypted entry and history');
+    await b.receiveText(receiveContext(original, alice));
+    const family = crypto.randomUUID();
+    const base = { ...original, entry_id: crypto.randomUUID(), sequence: 2, sender_user_id: bob,
+      kind: 'protocol_control' as const,
+      recovery_target: { entry_id: original.entry_id, sequence: 1, sender_user_id: alice, created_at: original.created_at },
+      envelope: { ...original.envelope, envelope_version: 2, sdk_message_type: 'retry_request' as const,
+        sdk_client_message_id: `${family}:retry-request`, recovery_for_entry_id: original.entry_id,
+        sender_key_version: null, recipient_key_version: null, payload_base64: btoa('invalid retry metadata') } };
+    await expect(processProtocolControlEntry(base, alice, thread, a)).rejects.toBeInstanceOf(RejectedConversationControlError);
+    await expect(processProtocolControlEntry({ ...base, recovery_target: null }, alice, thread, a)).rejects.toBeInstanceOf(RejectedConversationControlError);
+    const validShape = { v: 1, retryId: family, failedEnvelopeId: original.entry_id,
+      failedClientMessageId: original.envelope.sdk_client_message_id, failedTimestamp: original.envelope.client_timestamp_ms + 1 };
+    await expect(processProtocolControlEntry({ ...base, envelope: { ...base.envelope, payload_base64: btoa(JSON.stringify(validShape)) } }, alice, thread, a)).rejects.toBeInstanceOf(RejectedConversationControlError);
+    await establish(b, server, bob, alice);
+    await b.sendText(message(alice));
+    const later = server.entries.at(-1);
+    if (!later) throw new Error('Expected later synthetic message');
+    await a.receiveText(receiveContext(later, bob));
+    expect((await a.history.read()).received.at(-1)?.text).toBe('Synthetic encrypted exchange');
+  } finally { await Promise.all(sessions.map(s => s.stop())); }
 }, 60_000);

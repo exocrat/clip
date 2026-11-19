@@ -107,6 +107,35 @@ it('a blocked provider script fails safely without retrying the rejected write',
   });
   expect(await result).toBeInstanceOf(IdentityError);
   expect(fetcher).toHaveBeenCalledTimes(1);
-  expect(await result).toHaveProperty('message', 'The security check could not be completed. Please try signing in again.');
+  expect(await result).toHaveProperty('message', 'The security check could not be completed. Please try again.');
   expect(document.querySelector('script[src^="https://challenges.cloudflare.com/"]')).toBeNull();
+});
+
+
+it.each(['register', 'resetChallenge'] as const)('recovers a confirmed-refused OTP %s request once using the same operation', async (method) => {
+  const accepted = { challenge_id: '11111111-2222-4333-8444-555555555555', expires_at: '2100-01-01T00:00:00Z' };
+  const fetcher = vi.fn().mockResolvedValueOnce(reply(429, true)).mockResolvedValueOnce(new Response(JSON.stringify(accepted), { status: 202 }));
+  vi.stubGlobal('fetch', fetcher);
+  const work = identityApi[method]({ email: 'synthetic@example.invalid', operation_id: crypto.randomUUID() });
+  await screen.findByRole('heading', { name: 'Complete a security check' });
+  await waitFor(() => expect(window.turnstile?.render).toHaveBeenCalled());
+  await act(async () => { (options.callback as (token: string) => void)('one-use-otp-proof'); await work; });
+  expect(await work).toEqual(accepted);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(fetcher.mock.calls[1][1].body).toBe(fetcher.mock.calls[0][1].body);
+  expect(new Headers(fetcher.mock.calls[1][1].headers).get('X-CLIP-Challenge-Token')).toBe('one-use-otp-proof');
+});
+
+
+it.each(['activate', 'resetPassword'] as const)('replays refused OTP completion %s only after explicit proof', async (method) => {
+  const fetcher = vi.fn().mockResolvedValueOnce(reply(429, true)).mockResolvedValueOnce(method === 'activate' ? reply(200) : new Response(null, { status: 204 }));
+  vi.stubGlobal('fetch', fetcher);
+  const body = { challenge_id: '11111111-2222-4333-8444-555555555555', code: '123456', password: 'synthetic-password', new_password: 'synthetic-password' };
+  const work = method === 'activate' ? identityApi.activate(body) : identityApi.resetPassword(body);
+  await screen.findByRole('heading', { name: 'Complete a security check' });
+  await waitFor(() => expect(window.turnstile?.render).toHaveBeenCalled());
+  await act(async () => { (options.callback as (token: string) => void)('one-use-completion-proof'); await work; });
+  await work;
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(fetcher.mock.calls[1][1].body).toBe(fetcher.mock.calls[0][1].body);
 });
